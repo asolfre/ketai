@@ -148,13 +148,13 @@ public class KetaiOS extends PApplet {
 		    }
 		    popMatrix();
 		  }
-		  // PLOT TIMELINE
+		  // PLOT ABSOLUTE VALUES
 		  void plot(int index) {
-		    ;
 		    for (int i=0; i<value.length; i++) {
 		      ellipse(map(value[i].timeStamp, 0, myDuration, border, (width-2*border)),value[i].getValue(index), 3, 3);
 		    }
 		  }
+		  // PLOT TIMELINE // ROLLOVER
 		  void plotNormalized(int index) {
 		    beginShape();
 		    stroke(subColor(index));
