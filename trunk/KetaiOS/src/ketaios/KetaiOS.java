@@ -126,6 +126,7 @@ public class KetaiOS extends PApplet {
 		  int type;
 		  Textarea myTextarea;
 		  Textlabel myTextlabelMin, myTextlabelMax, myTextlabelZero;
+		  Textlabel[] label = new Textlabel[6];
 		  boolean plotVisible = true;
 		  String src = "[type] : milliSeconds : index : value\n";
 		  // CONSTRUCTOR
@@ -158,19 +159,35 @@ public class KetaiOS extends PApplet {
 		  void plotNormalized(int index) {
 		    beginShape();
 		    stroke(subColor(index));
+		    noFill();
+		    // graph
 		    for (int i=1; i<value.length; i++) {
-
 		      float plotX = map(value[i].timeStamp, 0, myDuration, border, (width-2*border));
 		      float plotY = map(value[i].getValue(index), myMin[index], myMax[index], -height/2+border, height/2-border*2);
+			  value[i].setPosition(index, plotX, plotY, 0);
 		      // check if value rolls over, don't connect the line then
 		      if (abs(plotY-map(value[i-1].getValue(index), myMin[index], myMax[index], -height/2+border, height/2-border*2)) > height*.75) {
 		        endShape();
 		        beginShape();
 		      }
-		      ellipse(plotX, plotY, 3, 3);
 		      vertex(plotX, plotY);
 		    }
 		    endShape();
+		    // rollover graphics
+		    for (int i=1; i<value.length; i++) {
+			    if (abs(mouseX-value[i].x[index])<2){
+			    	  fill(255);
+					    ellipse(value[i].x[index], value[i].y[index], 3, 3);
+					    // rollover label
+					    for (int j=0; j<3; j++){  // j<3 : only show data, not raw data (index 3..5)
+					    	label[j].setPosition(value[i].x[j]+2, value[i].y[j]+2+height/2);
+					    	label[j].setValue(j+": "+value[i].timeStamp);
+					    	label[j].setColorValue(myColor);
+					    }
+			    } else {
+			    	  noFill();
+			    }
+		    }
 		  }
 		  // UNIQUE COLOR FOR EVERY INDEX WITHIN A SPECIFIC SENSOR COLOR
 		  public int subColor(int index) {
@@ -229,7 +246,6 @@ public class KetaiOS extends PApplet {
 		    // zero
 		    myTextlabelZero = controlP5.addTextlabel("zero"+type,"0",(int)(width-1.5*border),(int)map(0, sensorMin, sensorMax, border, height-2*border));
 		    myTextlabelZero.setColorValue(myColor);
-		    line(0, map(0, sensorMin, sensorMax, border, height-2*border), width, map(0, sensorMin, sensorMax, border, height-2*border));
 		  }
 		  // ADD ROW FROM .csv FILE
 		  void addValue(long timeStamp, int index, float value) {
@@ -240,8 +256,9 @@ public class KetaiOS extends PApplet {
 		    }
 		    else {
 		      indexTypes.add(index);
-		      //ArrayList row+index = new ArrayList();
 		      println("index ["+index+"] added for sensor type "+type);
+		      // add text label for each index available
+			  label[index] = controlP5.addTextlabel("label_"+type+"_"+index, "index: "+index, -100, -100);
 		    }
 		    // detect unique timestamps, create timeStamp object
 		    if (timeStampTypes.contains(timeStamp-startTime)) {
@@ -271,6 +288,9 @@ public class KetaiOS extends PApplet {
 		        myTextlabelMax.hide();
 		        myTextlabelZero.hide();
 		        plotVisible = false;
+		        for (int i=0; i<6; i++){
+		        	label[i].hide();
+		        }
 		      } 
 		      else {
 		        myTextarea.show();
@@ -278,6 +298,9 @@ public class KetaiOS extends PApplet {
 		        myTextlabelMax.show();
 		        myTextlabelZero.show();
 		        plotVisible = true;
+		        for (int i=0; i<6; i++){
+		        	label[i].show();
+		        }
 		      }
 		    }
 		  }
@@ -312,11 +335,21 @@ public class KetaiOS extends PApplet {
 		  PVector valueRaw;
 		  long timeStamp;
 		  int type;
+		  float x[] = new float[6]; 
+		  float y[] = new float[6]; 
+		  float z[] = new float[6]; 
 		  Vector (long _timeStamp, int _type) {
 		    timeStamp = _timeStamp;
 		    value = new PVector(0, 0, 0);
 		    valueRaw = new PVector(0, 0, 0);
 		    type = _type;
+		  }
+		  void setPosition(int index, float _x, float _y, float _z) {
+			  x[index] = _x;
+			  y[index] = _y;
+			  z[index] = _z;
+		  }
+		  void updateLabel(){
 		  }
 		  long getTimeStamp() {
 		    return timeStamp;
