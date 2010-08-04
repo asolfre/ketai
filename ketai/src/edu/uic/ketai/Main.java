@@ -30,11 +30,9 @@ public class Main extends Activity implements SensorEventListener{
    private static final int MENU_MANAGE = 0;
    
    private EditText input;
-   private Button saveButton;
-   private Button deleteButton;
+   private Button pictureButton;
    private Button toggleSensorCollection;
    private Button exportSensorData;
-   private TextView output;
    private TextView sensorDataCount, accel_data, orientation_data;
    private CheckBox isOrientationSensorEnabled;
    private CheckBox isAccelerometerSensorEnabled;
@@ -54,9 +52,7 @@ public class Main extends Activity implements SensorEventListener{
 
       // inflate views
       this.input = (EditText)	 this.findViewById(R.id.in_text);
-      this.saveButton = (Button) this.findViewById(R.id.save_button);
-      this.deleteButton = (Button) this.findViewById(R.id.del_button);
-      this.output = (TextView) this.findViewById(R.id.out_text);
+      this.pictureButton = (Button) this.findViewById(R.id.picture_button);
       this.sensorDataCount = (TextView)this.findViewById(R.id.sensor_data_count);
       this.toggleSensorCollection = (Button) this.findViewById(R.id.sensor_button);
       this.exportSensorData = (Button)this.findViewById(R.id.export_sensor_data_button);
@@ -71,13 +67,13 @@ public class Main extends Activity implements SensorEventListener{
       sensorDataCount.setText("Total Raw Data Points: " + Long.toString(Main.this.application.getDataManager().getRawSensorDataCount()));
       
       // save new data to database (when save button is clicked)
-      this.saveButton.setOnClickListener(new OnClickListener() {
+      this.pictureButton.setOnClickListener(new OnClickListener() {
          public void onClick(final View v) {
-            new InsertDataTask().execute(Main.this.input.getText().toString());
+            new TakePictureTask().execute(Main.this.input.getText().toString());
             Main.this.input.setText("");
          }
       });
-      
+    
       this.toggleSensorCollection.setOnClickListener(new OnClickListener(){
     	  public void onClick(final View v) {
     		Main.this.sensorDataCount.setText("Total Raw Data Points: " + Long.toString(Main.this.application.getDataManager().getRawSensorDataCount()));
@@ -119,13 +115,6 @@ public class Main extends Activity implements SensorEventListener{
     		  new ExportSensorDataTask().execute();
     	   	  Main.this.sensorDataCount.setText("Total Raw Data Points: " + Long.toString(Main.this.application.getDataManager().getRawSensorDataCount()));
     	  }
-      });
-      
-      // delete all data from database (when delete button is clicked)
-      this.deleteButton.setOnClickListener(new OnClickListener() {
-         public void onClick(final View v) {
-            new DeleteDataTask().execute();
-         }
       });
      
       Sensor oSensor = sm.getDefaultSensor(Sensor.TYPE_ORIENTATION);       
@@ -194,18 +183,18 @@ public class Main extends Activity implements SensorEventListener{
       }
    }
 
-   private class InsertDataTask extends AsyncTask<String, Void, Void> {
+   private class TakePictureTask extends AsyncTask<String, Void, Void> {
       private final ProgressDialog dialog = new ProgressDialog(Main.this);
 
       // can use UI thread here
       protected void onPreExecute() {
-         this.dialog.setMessage("Inserting data...");
+         this.dialog.setMessage("Taking picture...");
          this.dialog.show();
       }
 
       // automatically done on worker thread (separate from UI thread)
       protected Void doInBackground(final String... args) {
-         Main.this.application.getDataManager().insertQRCode(args[0], System.currentTimeMillis());
+         Main.this.application.getCameraManager().takePicture();// .getDataManager().insertQRCode(args[0], System.currentTimeMillis());
          return null;
       }
 
@@ -214,11 +203,6 @@ public class Main extends Activity implements SensorEventListener{
          if (this.dialog.isShowing()) {
             this.dialog.dismiss();
          }
-         // reset the output view by retrieving the new data
-         // (note, this is a naive example, in the real world it might make sense
-         // to have a cache of the data and just append to what is already there, or such
-         // in order to cut down on expensive database operations)
-         new SelectDataTask().execute();
       }
    }
    
@@ -246,7 +230,6 @@ public class Main extends Activity implements SensorEventListener{
          if (this.dialog.isShowing()) {
             this.dialog.dismiss();
          }
-         Main.this.output.setText(result);
       }
    }
 
@@ -310,12 +293,10 @@ public class Main extends Activity implements SensorEventListener{
 	   }
 
 public void onAccuracyChanged(Sensor sensor, int accuracy) {
-	// TODO Auto-generated method stub
 	
 }
 
 public void onSensorChanged(SensorEvent event) {
-	// TODO Auto-generated method stub
 	String s = "";
 	DecimalFormat df = new DecimalFormat("#.00");
 	for(int i = 0; i < event.values.length; i++)

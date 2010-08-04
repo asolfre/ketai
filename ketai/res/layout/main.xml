@@ -5,20 +5,14 @@
 		android:orientation="vertical" android:layout_width="fill_parent"
 		android:layout_height="fill_parent"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/accelerometer_data" android:text="@+id/accelerometer_data"></TextView><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/orientation_data" android:text="@+id/orientation_data"></TextView><CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/accelerometer_checkbox" android:text="@string/accelerometer_sensor_checkbox_label"></CheckBox><CheckBox android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/orientation_sensor_checkbox_label" android:id="@+id/orientation_sensor_checkbox"></CheckBox><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/sensor_data_count" android:text="@+id/sensor_data_count"></TextView><Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="20dp" android:id="@+id/sensor_button" android:text="Toggle Sensor" />
 		
-		<TextView android:layout_width="fill_parent"
+		<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="20dp" android:id="@+id/picture_button" android:text="Take Picture" /><TextView android:layout_width="fill_parent"
 			android:layout_height="wrap_content" android:text="@string/database_file_label"/>
 		<EditText android:id="@+id/in_text" android:layout_width="fill_parent"
 			android:layout_height="wrap_content" />
-		<Button android:id="@+id/save_button" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:layout_marginBottom="20dp"
-			android:text="Save" android:visibility="invisible"/><Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="20dp" android:id="@+id/export_sensor_data_button" android:text="Export Sensor Data" />
-		<Button android:id="@+id/del_button" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:layout_marginBottom="20dp"
-			android:text="Delete all data" android:visibility="invisible"/>
-		<TextView android:layout_width="fill_parent"
-			android:layout_height="wrap_content" android:text="@string/out_label" />
-		<TextView android:id="@+id/out_text" android:layout_width="fill_parent"
-			android:layout_height="wrap_content" android:visibility="invisible"/>
+		<Button android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="20dp" android:id="@+id/export_sensor_data_button" android:text="Export Sensor Data" />
+		
+		
+		
 	
 
 
