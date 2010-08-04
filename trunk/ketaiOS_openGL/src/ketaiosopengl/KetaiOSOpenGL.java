@@ -32,40 +32,40 @@ public class KetaiOSOpenGL extends PApplet {
 	
 	public void setup() {
 		size(1400, 768, OPENGL);
-		  sensorTable = new Table("skate_KETAI_DB.csv");
-		  loadSensorNames();
-		  rowCount = sensorTable.getRowCount();
-		  guiSetup(); // make the GUI menu
-		  sensors = new ArrayList<Sensor>(); // create empty sensor Array of sensor objects
-		  sensorTypes = new ArrayList<Integer>(); // create empty sensor Array of sensor objects
-		  for (int row = 0; row < rowCount; row++) {
+		hint(DISABLE_OPENGL_2X_SMOOTH);
+		//hint(ENABLE_OPENGL_4X_SMOOTH); //after disabling the 2x this works fine
+		smooth(); // this works even better than the 4x! super-smooth! ;)
+		sensorTable = new Table("KETAI_DB_Ds_1280960966045.csv");
+		loadSensorNames();
+		rowCount = sensorTable.getRowCount();
+		guiSetup(); // make the GUI menu
+		sensors = new ArrayList<Sensor>(); // create empty sensor Array of sensor objects
+		sensorTypes = new ArrayList<Integer>(); // create empty sensor Array of sensor objects
+		for (int row = 0; row < rowCount; row++) {
 		    int type = sensorTable.getInt(row, 1);
 		    if (sensorTypes.contains(type)) {
-		    }
-		    else {
+		    } else {
 		      sensorTypes.add(type);
 		      println("sensor type ["+type+"] added");
 		      sensors.add(new Sensor(type));
 		    }
-		    smooth();
-		  }
-
-		  for (int row = 0; row < rowCount; row++) {
-		    for (int i = 0; i < sensors.size(); i++) {
-		      String timeStampString = sensorTable.getString(row, 0);
-		      long timeStamp = Long.parseLong(timeStampString);
-		      if (row == 0) startTime = timeStamp;
-		      int type = sensorTable.getInt(row, 1);
-		      int index = sensorTable.getInt(row, 2);
-		      float value = sensorTable.getFloat(row, 3);
-		      // println("type: "+type+" | index: "+index+" | value: "+value);
-		      // pointer to current sensor
-		      Sensor s = (Sensor) sensors.get(i);
-		      if (s.type == type) {
-		        s.addValue(timeStamp, index, value);
-		      }
-		    }
-		  }
+		 }
+		 for (int row = 0; row < rowCount; row++) {
+			for (int i = 0; i < sensors.size(); i++) {
+				String timeStampString = sensorTable.getString(row, 0);
+				long timeStamp = Long.parseLong(timeStampString);
+				if (row == 0) startTime = timeStamp;
+				int type = sensorTable.getInt(row, 1);
+				int index = sensorTable.getInt(row, 2);
+				float value = sensorTable.getFloat(row, 3);
+				// println("type: "+type+" | index: "+index+" | value: "+value);
+			// pointer to current sensor
+				Sensor s = (Sensor) sensors.get(i);
+				if (s.type == type) {
+				    s.addValue(timeStamp, index, value);
+				}
+			}
+		 }
 		  // initialize sensor object after data has been added
 		  for (int i = 0; i < sensors.size(); i++) {
 		    Sensor s = (Sensor) sensors.get(i);
@@ -145,7 +145,7 @@ public class KetaiOSOpenGL extends PApplet {
 	    pushMatrix();
 	    translate(0,height/2);
 	    noFill();
-	    for (int indexID=0; indexID<indexTypes.size(); indexID++) {
+	    for (int indexID=0; indexID<3; indexID++) { //replace 3 with indexTypes.size() to also show raw data
 	      if (plotVisible) plotNormalized(indexID);
 	    }
 	    popMatrix();
@@ -180,7 +180,7 @@ public class KetaiOSOpenGL extends PApplet {
 		    	  fill(255);
 				    ellipse(value[i].x[index], value[i].y[index], 3, 3);
 				    // rollover label
-				    for (int j=0; j<3; j++){  // j<3 : only show data 0..2, not raw data (index 3..5)
+				    for (int j=0; j<6; j++){  // j<3 : only show data 0..2, not raw data (index 3..5)
 				    	label[j].setPosition((int)value[i].x[j]+2, (int)value[i].y[j]+2+height/2);
 				    	label[j].setValue("["+j+"] "+value[i].timeStamp+"ms -> "+value[i].valueList[j]);
 				    	label[j].setColorValue(myColor);
@@ -188,6 +188,10 @@ public class KetaiOSOpenGL extends PApplet {
 		    } else {
 		    	  noFill();
 		    }
+		    pushMatrix();
+		    translate(value[i].x[index], 0, 0);
+		    value[i].display();
+		    popMatrix();
 	    }
 	  }
 	  // UNIQUE COLOR FOR EVERY INDEX WITHIN A SPECIFIC SENSOR COLOR
@@ -333,6 +337,10 @@ public class KetaiOSOpenGL extends PApplet {
 	    value = new PVector(0, 0, 0);
 	    valueRaw = new PVector(0, 0, 0);
 	    type = _type;
+	  }
+	  void display() {
+		  stroke(255);
+		  line(0, 0, 0, value.x, value.y, value.z);
 	  }
 	  void setPosition(int index, float _x, float _y, float _z) {
 		  x[index] = _x;
