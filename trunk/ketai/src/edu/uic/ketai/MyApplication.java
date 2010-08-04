@@ -10,6 +10,7 @@ public class MyApplication extends Application {
    
    private DataManager dataManager;
    private SensorProcessor sensorProcessor;
+   private CameraManager cameraManager;
    
    @Override
    public void onCreate() {
@@ -17,6 +18,7 @@ public class MyApplication extends Application {
       Log.d(APP_NAME, "APPLICATION onCreate");
       this.dataManager = new DataManager(this);
       this.sensorProcessor = new SensorProcessor(dataManager, (SensorManager)this.getSystemService(SENSOR_SERVICE)); 
+      this.cameraManager = new CameraManager();
    }
    
    @Override
@@ -31,6 +33,10 @@ public class MyApplication extends Application {
    
    public SensorProcessor getSensorProcessor(){
 	   return this.sensorProcessor;
+   }
+   
+   public CameraManager getCameraManager(){
+	   return this.cameraManager;
    }
 
    public void setDataHelper(DataManager dataHelper) {
