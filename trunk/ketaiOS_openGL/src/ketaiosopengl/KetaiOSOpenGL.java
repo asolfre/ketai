@@ -186,9 +186,10 @@ public class KetaiOSOpenGL extends PApplet {
 		    } else {
 		    	  noFill();
 		    }
+		    // plot the vector visuzlization over timeline
 		    pushMatrix();
 		    translate(value[i].x[index], 0, 0);
-		    value[i].display();
+		    value[i].display(5); // 500% magnification
 		    popMatrix();
 	    }
 	  }
@@ -336,9 +337,13 @@ public class KetaiOSOpenGL extends PApplet {
 	    valueRaw = new PVector(0, 0, 0);
 	    type = _type;
 	  }
-	  void display() {
+	  void display(int mag) {
 		  stroke(255);
-		  line(0, 0, 0, value.x, value.y, value.z);
+		  //rotateZ(PI/2);
+		  rotateX(PI*3/2);
+		  line(0, 0, 0, value.x*mag, value.y*mag, value.z*mag);
+		  translate(value.x*mag, value.y*mag, value.z*mag);
+		  sphere(2);
 	  }
 	  void setPosition(int index, float _x, float _y, float _z) {
 		  x[index] = _x;
