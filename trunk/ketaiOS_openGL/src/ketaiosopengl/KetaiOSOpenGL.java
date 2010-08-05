@@ -83,17 +83,17 @@ public class KetaiOSOpenGL extends PApplet {
 	}
 	
 	// GUI
-	
 
 	ControlP5 controlP5;
 	MultiList multiList;
 	MultiListButton mlButton;
-
+	Range range;
+	
 	public void guiSetup() {
 	  controlP5 = new ControlP5(this);
 	  multiList = controlP5.addMultiList("myNavigation",0,10,150,12);
 	  mlButton = multiList.add("sensor data", 1);
-	}
+	  range = controlP5.addRange("timeScale",0,100, 0,100, border,height-border,width/4,12);	}
 
 	public void controlEvent(ControlEvent theEvent) {
 	  println(theEvent.controller().name()+" = "+theEvent.value());  
@@ -139,9 +139,6 @@ public class KetaiOSOpenGL extends PApplet {
 	  void draw() {
 	    noStroke();
 	    fill(myColor);
-	    //for (int i=0; i<value.length; i++) {
-	    //ellipse(map(value[i].value.x, sensorMin, sensorMax, 0, width), map(value[i].value.y, 0, sensorMin, sensorMax, height), 5, 5);
-	    //}
 	    pushMatrix();
 	    translate(0,height/2);
 	    noFill();
@@ -153,7 +150,7 @@ public class KetaiOSOpenGL extends PApplet {
 	  // PLOT ABSOLUTE VALUES
 	  void plot(int index) {
 	    for (int i=0; i<value.length; i++) {
-	      ellipse(map(value[i].timeStamp, 0, myDuration, border, (width-2*border)),value[i].getValue(index), 3, 3);
+	      ellipse(map(value[i].timeStamp, 0, myDuration, border+(width-2*border)*100/range.lowValue(), (width-2*border)*100/range.highValue()),value[i].getValue(index), 3, 3);
 	    }
 	  }
 	  // PLOT TIMELINE // ROLLOVER
@@ -162,8 +159,9 @@ public class KetaiOSOpenGL extends PApplet {
 	    stroke(subColor(index));
 	    noFill();
 	    // graph
+	    //translate(range.lowValue(), 0, 0);
 	    for (int i=1; i<value.length; i++) {
-	      float plotX = map(value[i].timeStamp, 0, myDuration, border, (width-2*border));
+	      float plotX = -range.lowValue()/100*(width-2*border)*100/(range.highValue()-range.lowValue())+map(value[i].timeStamp, 0, myDuration, border, (width-2*border)*100/(range.highValue()-range.lowValue()));
 	      float plotY = map(value[i].getValue(index), myMin[index], myMax[index], -height/2+border, height/2-border*2);
 		  value[i].setPosition(index, plotX, plotY, 0);
 	      // check if value rolls over, don't connect the line then
