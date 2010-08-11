@@ -13,7 +13,7 @@ public class KetaiOSOpenGL extends PApplet {
 	Table sensorTable;
 	int rowCount;
 	ArrayList<Integer> sensorTypes;  // stores index of sensor types available
-	ArrayList<Sensor> sensors;      // stores data for every sensor
+	ArrayList<Sensor> sensors;       // stores data for every sensor
 	long startTime;
 	String[] sensorName = new String[129];
 	void loadSensorNames (){
@@ -32,14 +32,14 @@ public class KetaiOSOpenGL extends PApplet {
 	
 	public void setup() {
 		size(1400, 768, OPENGL);
-		hint(DISABLE_OPENGL_2X_SMOOTH);
-		//hint(ENABLE_OPENGL_4X_SMOOTH); //after disabling the 2x this works fine
-		smooth(); // this works even better than the 4x! super-smooth! ;)
+		//hint(DISABLE_OPENGL_2X_SMOOTH);
+		hint(ENABLE_OPENGL_4X_SMOOTH); //after disabling the 2x this works fine
+		smooth(); 								// this works even better than the 4x! super-smooth! ;)
 		sensorTable = new Table("KETAI_DB_Ds_1280960966045.csv");
 		loadSensorNames();
 		rowCount = sensorTable.getRowCount();
-		guiSetup(); // make the GUI menu
-		sensors = new ArrayList<Sensor>(); // create empty sensor Array of sensor objects
+		guiSetup(); 							// make the GUI menu
+		sensors = new ArrayList<Sensor>(); 		// create empty sensor Array of sensor objects
 		sensorTypes = new ArrayList<Integer>(); // create empty sensor Array of sensor objects
 		for (int row = 0; row < rowCount; row++) {
 		    int type = sensorTable.getInt(row, 1);
@@ -59,7 +59,7 @@ public class KetaiOSOpenGL extends PApplet {
 				int index = sensorTable.getInt(row, 2);
 				float value = sensorTable.getFloat(row, 3);
 				// println("type: "+type+" | index: "+index+" | value: "+value);
-			// pointer to current sensor
+			    // pointer to current sensor
 				Sensor s = (Sensor) sensors.get(i);
 				if (s.type == type) {
 				    s.addValue(timeStamp, index, value);
@@ -78,7 +78,7 @@ public class KetaiOSOpenGL extends PApplet {
 		  fill(255);
 		  for (int i = 0; i < sensors.size(); i++) {
 		    Sensor s = (Sensor) sensors.get(i);
-		    s.draw();
+		    s.display();
 		  }
 	}
 	
@@ -93,7 +93,7 @@ public class KetaiOSOpenGL extends PApplet {
 	  controlP5 = new ControlP5(this);
 	  multiList = controlP5.addMultiList("myNavigation",0,10,150,12);
 	  mlButton = multiList.add("sensor data", 1);
-	  range = controlP5.addRange("timeScale",0,100, 0,100, border,height-border,width/4,12);	}
+	  range = controlP5.addRange("timeScale",0, 100, 0, 10, border, height-border, width/4, 12);	}
 
 	public void controlEvent(ControlEvent theEvent) {
 	  println(theEvent.controller().name()+" = "+theEvent.value());  
@@ -136,7 +136,7 @@ public class KetaiOSOpenGL extends PApplet {
 	    src+= sensorName[type]+"\n\n";
 	  }
 	  // DRAW GRAPHIC SENSOR COMPONENTS
-	  void draw() {
+	  void display() {
 	    noStroke();
 	    fill(myColor);
 	    pushMatrix();
@@ -149,9 +149,9 @@ public class KetaiOSOpenGL extends PApplet {
 	  }
 	  // PLOT ABSOLUTE VALUES
 	  void plot(int index) {
-	    for (int i=0; i<value.length; i++) {
-	      ellipse(map(value[i].timeStamp, 0, myDuration, border+(width-2*border)*100/range.lowValue(), (width-2*border)*100/range.highValue()),value[i].getValue(index), 3, 3);
-	    }
+		  for (int i=0; i<value.length; i++) {
+			  ellipse(map(value[i].timeStamp, 0, myDuration, border+(width-2*border)*100/range.lowValue(), (width-2*border)*100/range.highValue()),value[i].getValue(index), 3, 3);
+		  }
 	  }
 	  // PLOT TIMELINE // ROLLOVER
 	  void plotNormalized(int index) {
@@ -159,7 +159,6 @@ public class KetaiOSOpenGL extends PApplet {
 	    stroke(subColor(index));
 	    noFill();
 	    // graph
-	    //translate(range.lowValue(), 0, 0);
 	    for (int i=1; i<value.length; i++) {
 	      float plotX = -range.lowValue()/100*(width-2*border)*100/(range.highValue()-range.lowValue())+map(value[i].timeStamp, 0, myDuration, border, (width-2*border)*100/(range.highValue()-range.lowValue()));
 	      float plotY = map(value[i].getValue(index), myMin[index], myMax[index], -height/2+border, height/2-border*2);
@@ -174,22 +173,33 @@ public class KetaiOSOpenGL extends PApplet {
 	    endShape();
 	    // rollover graphics
 	    for (int i=1; i<value.length; i++) {
-		    if (abs(mouseX-value[i].x[index])<2){
-		    	  fill(255);
-				    ellipse(value[i].x[index], value[i].y[index], 3, 3);
-				    // rollover label
-				    for (int j=0; j<6; j++){  // j<3 : only show data 0..2, not raw data (index 3..5)
-				    	label[j].setPosition((int)value[i].x[j]+2, (int)value[i].y[j]+2+height/2);
-				    	label[j].setValue("["+j+"] "+value[i].timeStamp+"ms -> "+value[i].valueList[j]);
-				    	label[j].setColorValue(myColor);
-				    }
+		    if (abs(mouseX-value[i].x[index])<100/(range.highValue()-range.lowValue()/100)){ // dependent on timeScale
+				noStroke();
+		    	if (index == 0 || index == 3){
+					fill(255,0,0);
+				}
+				else if (index == 1 || index == 4){
+					fill(0,255,0);
+				}
+				else if (index == 2 || index == 5){
+					fill(0,0,255);
+				}
+				ellipse(value[i].x[index], value[i].y[index], 4, 4);
+		    	stroke(255);
+				point(value[i].x[index], value[i].y[index]);
+				// rollover label
+				for (int j=0; j<6; j++){  // j<3 : only show data 0..2, not raw data (index 3..5)
+					label[j].setPosition((int)value[i].x[j]+2, (int)value[i].y[j]+2+height/2);
+					label[j].setValue("["+j+"] "+value[i].timeStamp+"ms -> "+value[i].valueList[j]);
+					label[j].setColorValue(myColor);
+				}
 		    } else {
-		    	  noFill();
+		    	noFill();
 		    }
 		    // plot the vector visuzlization over timeline
 		    pushMatrix();
 		    translate(value[i].x[index], 0, 0);
-		    value[i].display(5); // 500% magnification
+		    value[i].display(20); // scale factor (10)
 		    popMatrix();
 	    }
 	  }
@@ -338,12 +348,112 @@ public class KetaiOSOpenGL extends PApplet {
 	    type = _type;
 	  }
 	  void display(int mag) {
-		  stroke(255);
-		  //rotateZ(PI/2);
-		  rotateX(PI*3/2);
-		  line(0, 0, 0, value.x*mag, value.y*mag, value.z*mag);
-		  translate(value.x*mag, value.y*mag, value.z*mag);
-		  sphere(2);
+		  rotateX(HALF_PI); // turning y axis into z to match device orientation
+
+		  PVector origin = new PVector(0,0,0);
+		  PVector vector = new PVector(0,0,0); // determied by origin and value (for vecors away from origin)
+
+		  vector.x = origin.x-value.x;
+		  vector.y = origin.y-value.y;
+		  vector.z = origin.z-value.z;
+	
+		  pushMatrix();
+		  scale(mag);
+//		  rotateY(rotY);
+//		  rotY+=0.001;
+//		  rotY%=360.0;  
+//		  noFill();
+		  
+		  // static/normal matrix
+		  //box(1f,0.01f,1f);
+		  //value.x Vector
+		  stroke(255,0,0,127);
+		  line(origin.x, origin.y, origin.z, value.x, 0, 0);
+		  //value.y Vector
+		  stroke(0,255,0,127);
+		  line(origin.x, origin.y, origin.z, 0, value.y, 0);
+		  //value.z Vector
+		  stroke(0,0,255,127);
+		  line(origin.x, origin.y, origin.z, 0, 0, value.z);
+		  //value Vector
+		  //line(origin.x,origin.y,origin.z,value.x,value.y,value.z);
+
+		  stroke(255,255,0,127);
+		  // rotated matrix
+		  float r = sqrt(sq(vector.x)+sq(vector.y)+sq(vector.z));
+		  float theta = atan2(vector.y,vector.x);
+		  float phi = acos(vector.z/r);
+		  translate(origin.x,origin.y,origin.z);
+		  // if the normal plans should be on the vector tip at the position value
+		  //  translate(value.x,value.y,value.z);
+		  rotateZ(theta);
+		  rotateY(phi);
+		  rotateX(-HALF_PI);
+		  // ds added "correction rotation
+		  //rotateY(-theta);
+		  stroke(255,255,255,127);
+		  box(2f,.01f,1f);
+		  line(0,0,0,0,vector.mag(),0); // draw y axis in new Marix orientation
+		  
+		  noStroke();
+		  //display
+		  fill(127,127);
+		  beginShape();
+		  vertex(-.8f, .01f, -.4f);
+		  vertex(.8f, .01f, -.4f);
+		  vertex(.8f, .01f, .4f);
+		  vertex(-.8f, .01f, .4f);
+		  endShape();
+		  //top
+		  fill(127,50);
+		  beginShape();
+		  vertex(-1f, 0,-.5f);
+		  vertex(1f, 0, -.5f);
+		  vertex(1f, 0, .5f);
+		  vertex(-1f, 0, .5f);
+		  endShape();
+		  fill(127,50);
+		  //bottom
+		  beginShape();
+		  vertex(-1f, -.1f,-.5f);
+		  vertex(1f, -.1f, -.5f);
+		  vertex(1f, -.1f, .5f);
+		  vertex(-1f, -.1f, .5f);
+		  endShape();
+		  //front
+		  fill(127,50);
+		  beginShape();
+		  vertex(-1f, 0,-.5f);
+		  vertex(1f, 0, -.5f);
+		  vertex(1f, -.1f, -.5f);
+		  vertex(-1f, -.1f, -.5f);
+		  endShape();		  
+		  //back
+		  fill(127,50);
+		  beginShape();
+		  vertex(-1f, 0,.5f);
+		  vertex(1f, 0, .5f);
+		  vertex(1f, -.1f, .5f);
+		  vertex(-1f, -.1f, .5f);
+		  endShape();	
+		  //left
+		  fill(127,50);
+		  beginShape();
+		  vertex(-1f, 0,-.5f);
+		  vertex(-1f, 0, .5f);
+		  vertex(-1f, -.1f, .5f);
+		  vertex(-1f, -.1f, -.5f);
+		  endShape();	
+		  //right
+		  fill(127,50);
+		  beginShape();
+		  vertex(.1f, 0,-.5f);
+		  vertex(.1f, 0, .5f);
+		  vertex(.1f, -.1f, .5f);
+		  vertex(.1f, -.1f, -.5f);
+		  endShape();
+		  popMatrix();
+
 	  }
 	  void setPosition(int index, float _x, float _y, float _z) {
 		  x[index] = _x;
@@ -432,6 +542,23 @@ public class KetaiOSOpenGL extends PApplet {
 	  }
 	}
 
+	// ROTATE 3D
+	
+	void rotate3d(float angle, float _x, float _y, float _z) {
+		  float c = cos(angle);
+		  float s = sin(angle);
+		  // normalise
+		  float m = mag(_x, _y, _z);
+		  float x = _x / m;
+		  float y = _y / m;
+		  float z = _z / m;
+		  applyMatrix(
+		    x * x * (1 - c) + c, x * y * (1 - c) - z * s, x * z * (1 - c) + y * s, 0,
+		    y * x * (1 - c) + z * s, y * y * (1 - c) + c, y * z * (1 - c) - x * s, 0,
+		    x * z * (1 - c) - y * s, y * z * (1 - c) + x * s, z * z * (1 - c) + c, 0,
+		    0, 0, 0, 1);
+	}
+	
 	// TABLE
 	
 	public class Table {
