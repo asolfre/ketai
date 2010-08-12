@@ -58,6 +58,7 @@ public class KetaiOSOpenGL extends PApplet {
 			for (int i = 0; i < sensors.size(); i++) {
 				String timeStampString = sensorTable.getString(row, 0);
 				long timeStamp = Long.parseLong(timeStampString);
+				timeStamp /= 1000000; // converts nanoseconds into milliseconds
 				if (row == 0)
 					startTime = timeStamp;
 				int type = sensorTable.getInt(row, 1);
@@ -179,7 +180,7 @@ public class KetaiOSOpenGL extends PApplet {
 			endShape();
 			// rollover graphics
 			for (int i = 1; i < value.length; i++) {
-				if (abs(mouseX - value[i].x[index]) < 100 / (range.highValue() - range.lowValue() / 100)) { // dependent
+				if (abs(mouseX - value[i].x[index]) < 10) { // dependent
 					// on
 					// timeScale
 					noStroke();
@@ -367,16 +368,16 @@ public class KetaiOSOpenGL extends PApplet {
 		}
 
 		void display(int mag) {
+			//adjusting coordinate system to match device coordinate system http://developer.android.com/reference/android/hardware/SensorEvent.html
 			rotateX(HALF_PI); // turning y axis into z to match device
-			// orientation
+			rotateZ(PI);
+			scale(1,-1,1);	  // flip y-axis
 
-			PVector origin = new PVector(0, 0, 0);
-			PVector vector = new PVector(0, 0, 0); // determied by origin and
-			// value (for vecors away
-			// from origin)
+			PVector origin = new PVector(0, 0, 0); // origin, here (0|0|0);
+			PVector vector = new PVector(0, 0, 0); // determined by the origin point and value point (for vectors away from origin)
 
 			vector.x = origin.x - value.x;
-			vector.y = origin.y - value.y;
+			vector.y = origin.y - value.y;	
 			vector.z = origin.z - value.z;
 
 			pushMatrix();
@@ -425,7 +426,7 @@ public class KetaiOSOpenGL extends PApplet {
 			if (rollOver()) {
 				fill(255);
 			} else {
-				fill(127, 127);
+				fill(255, 127);
 			}
 			beginShape();
 			vertex(-.8f, .01f, -.4f);
@@ -434,14 +435,14 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-.8f, .01f, .4f);
 			endShape();
 			// top
-			fill(127, 50);
+			fill(127, 100);
 			beginShape();
 			vertex(-1f, 0, -.5f);
 			vertex(1f, 0, -.5f);
 			vertex(1f, 0, .5f);
 			vertex(-1f, 0, .5f);
 			endShape();
-			fill(127, 50);
+			fill(127, 255);
 			// bottom
 			beginShape();
 			vertex(-1f, -.1f, -.5f);
@@ -450,7 +451,7 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-1f, -.1f, .5f);
 			endShape();
 			// front
-			fill(127, 50);
+			fill(127, 100);
 			beginShape();
 			vertex(-1f, 0, -.5f);
 			vertex(1f, 0, -.5f);
@@ -458,7 +459,7 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-1f, -.1f, -.5f);
 			endShape();
 			// back
-			fill(127, 50);
+			fill(127, 100);
 			beginShape();
 			vertex(-1f, 0, .5f);
 			vertex(1f, 0, .5f);
@@ -466,7 +467,7 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-1f, -.1f, .5f);
 			endShape();
 			// left
-			fill(127, 50);
+			fill(127, 100);
 			beginShape();
 			vertex(-1f, 0, -.5f);
 			vertex(-1f, 0, .5f);
@@ -474,7 +475,7 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-1f, -.1f, -.5f);
 			endShape();
 			// right
-			fill(127, 50);
+			fill(127, 100);
 			beginShape();
 			vertex(.1f, 0, -.5f);
 			vertex(.1f, 0, .5f);
