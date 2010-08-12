@@ -33,8 +33,8 @@ public class KetaiOSOpenGL extends PApplet {
 
 	public void setup() {
 		size(1400, 768, OPENGL);
-		//hint(DISABLE_OPENGL_2X_SMOOTH);
-		hint(ENABLE_OPENGL_4X_SMOOTH); //after disabling the 2x this works
+		hint(DISABLE_OPENGL_2X_SMOOTH);
+		// hint(ENABLE_OPENGL_4X_SMOOTH); // after disabling the 2x this works
 		// fine
 		smooth(); // this works even better than the 4x! super-smooth! ;)
 		sensorTable = new Table("KETAI_data.csv");
@@ -92,10 +92,10 @@ public class KetaiOSOpenGL extends PApplet {
 
 	// GUI
 
-	ControlP5 controlP5;
-	MultiList multiList;
+	ControlP5 controlP5; // global GUI
+	MultiList multiList; // selecting sensor types to display - toggle
 	MultiListButton mlButton;
-	Range range;
+	Range range; // range slider to determine timeline scope, in/out point
 
 	public void guiSetup() {
 		controlP5 = new ControlP5(this);
@@ -110,7 +110,7 @@ public class KetaiOSOpenGL extends PApplet {
 			Sensor s = (Sensor) sensors.get(i);
 			s.active(theEvent.controller().name(), theEvent.value());
 		}
-		// theEvent.controller().setLabel(theEvent.controller().name()+" klicked");
+		// theEvent.controller().setLabel(theEvent.controller().name()+" clicked");
 	}
 
 	// SENSOR (one instance for each registered sensor)
@@ -149,7 +149,9 @@ public class KetaiOSOpenGL extends PApplet {
 			pushMatrix();
 			translate(0, height / 2);
 			noFill();
-			for (int indexID = 0; indexID < indexTypes.size(); indexID++) { // replace 3 with
+			for (int indexID = 0; indexID < indexTypes.size(); indexID++) { // replace
+				// 3
+				// with
 				// indexTypes.size()
 				// to also show raw
 				// data
@@ -166,8 +168,7 @@ public class KetaiOSOpenGL extends PApplet {
 			noFill();
 			beginShape();
 			for (int i = 1; i < value.length; i++) {
-				float plotX = -range.lowValue() / 100 * (width - 2 * border) * 100 / (range.highValue() - range.lowValue())
-						+ map(value[i].timeStamp, 0, myDuration, border, (width - 2 * border) * 100 / (range.highValue() - range.lowValue()));
+				float plotX = map(value[i].timeStamp, 0, myDuration, border, (width - 2 * border) * 100 / (range.highValue() - range.lowValue()));
 				float plotY = map(value[i].getValue(index), myMin[index], myMax[index], -height / 2 + border, height / 2 - border * 2);
 				value[i].setPosition(index, plotX, plotY, 0);
 				// check if value rolls over, don't connect the line then
@@ -179,10 +180,9 @@ public class KetaiOSOpenGL extends PApplet {
 			}
 			endShape();
 			// rollover graphics
-			for (int i = 1; i < value.length; i++) {
-				if (abs(mouseX - value[i].x[index]) < 10) { // dependent
-					// on
-					// timeScale
+			for (int i = 0; i < value.length; i++) {
+				if (abs(mouseX - value[i].x[index]) < 100 / (range.highValue() - range.lowValue())) {
+					// on timeScale
 					noStroke();
 					if (index == 0 || index == 3) {
 						fill(255, 0, 0);
@@ -204,11 +204,21 @@ public class KetaiOSOpenGL extends PApplet {
 				} else {
 					noFill();
 				}
-				// plot the vector visuzlization over timeline
-				pushMatrix();
-				translate(value[i].x[index], 0, 0);
-				value[i].display(20); // scale factor (10)
-				popMatrix();
+				if (mousePressed && mouseY < height - border) {
+					if (abs(mouseX - value[i].x[index]) < 100 / (range.highValue() - range.lowValue())) {
+						// plot the vector visuzlization over timeline
+						pushMatrix();
+						translate(value[i].x[index], 0, 0);
+						value[i].display(20); // scale factor (10)
+						popMatrix();
+					}
+				} else {
+					// plot the vector visuzlization over timeline
+					pushMatrix();
+					translate(value[i].x[index], 0, 0);
+					value[i].display(20); // scale factor (10)
+					popMatrix();
+				}
 			}
 		}
 
@@ -227,7 +237,7 @@ public class KetaiOSOpenGL extends PApplet {
 			value = new Vector[len];
 			for (int i = 0; i < len; i++) {
 				timeStamp[i] = fa[i];
-				value[i] = new Vector(timeStamp[i], type);
+				value[i] = new Vector(i, timeStamp[i], type);
 			}
 			// parsing all rows
 			for (int i = 0; i < row.size(); i++) {
@@ -355,12 +365,14 @@ public class KetaiOSOpenGL extends PApplet {
 		PVector valueRaw;
 		float[] valueList = new float[6];
 		long timeStamp;
+		int id;
 		int type;
 		float x[] = new float[6];
 		float y[] = new float[6];
 		float z[] = new float[6];
 
-		Vector(long _timeStamp, int _type) {
+		Vector(int _id, long _timeStamp, int _type) {
+			id = _id;
 			timeStamp = _timeStamp;
 			value = new PVector(0, 0, 0);
 			valueRaw = new PVector(0, 0, 0);
@@ -368,16 +380,20 @@ public class KetaiOSOpenGL extends PApplet {
 		}
 
 		void display(int mag) {
-			//adjusting coordinate system to match device coordinate system http://developer.android.com/reference/android/hardware/SensorEvent.html
+			// adjusting coordinate system to match device coordinate system
+			// http://developer.android.com/reference/android/hardware/SensorEvent.html
 			rotateX(HALF_PI); // turning y axis into z to match device
 			rotateZ(PI);
-			scale(1,-1,1);	  // flip y-axis
+			scale(1, -1, 1); // flip y-axis
 
 			PVector origin = new PVector(0, 0, 0); // origin, here (0|0|0);
-			PVector vector = new PVector(0, 0, 0); // determined by the origin point and value point (for vectors away from origin)
+			PVector vector = new PVector(0, 0, 0); // determined by the origin
+			// point and value point
+			// (for vectors away from
+			// origin)
 
 			vector.x = origin.x - value.x;
-			vector.y = origin.y - value.y;	
+			vector.y = origin.y - value.y;
 			vector.z = origin.z - value.z;
 
 			pushMatrix();
@@ -493,7 +509,7 @@ public class KetaiOSOpenGL extends PApplet {
 		}
 
 		boolean rollOver() {
-			if (abs(mouseX-x[0]) < 10) {
+			if (abs(mouseX - x[0]) < 100 / (range.highValue() - range.lowValue())) {
 				return true;
 			} else {
 				return false;
