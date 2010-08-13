@@ -3,6 +3,7 @@ package edu.uic.ketai;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,11 +13,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -43,6 +46,7 @@ public class Main extends Activity implements SensorEventListener{
    public void onCreate(final Bundle savedInstanceState) {
       Log.d(MyApplication.APP_NAME, "onCreate");
       super.onCreate(savedInstanceState);
+      this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
       sm = (SensorManager)getSystemService(SENSOR_SERVICE);
       this.setContentView(R.layout.main);
 
@@ -60,8 +64,9 @@ public class Main extends Activity implements SensorEventListener{
       this.isOrientationSensorEnabled = (CheckBox)this.findViewById(R.id.orientation_sensor_checkbox);
       this.accel_data = (TextView)this.findViewById(R.id.accelerometer_data);
       this.orientation_data = (TextView)this.findViewById(R.id.orientation_data);
-      
-      // initially populate "output" view from database
+	  ((FrameLayout) findViewById(R.id.preview_surface)).addView(this.application.getCameraManager());
+
+	  // initially populate "output" view from database
       new SelectDataTask().execute();
 
       sensorDataCount.setText("Total Raw Data Points: " + Long.toString(Main.this.application.getDataManager().getRawSensorDataCount()));
@@ -79,34 +84,34 @@ public class Main extends Activity implements SensorEventListener{
     		Main.this.sensorDataCount.setText("Total Raw Data Points: " + Long.toString(Main.this.application.getDataManager().getRawSensorDataCount()));
 
     		int s=0;
-    	    sm.unregisterListener(Main.this);
     		
     		if(Main.this.isAccelerometerSensorEnabled.isChecked())
-    			s |= SensorManager.SENSOR_ACCELEROMETER;
+    			s |= Sensor.TYPE_ACCELEROMETER;//.SENSOR_ACCELEROMETER;
     		else
-    			s &= ~SensorManager.SENSOR_ACCELEROMETER;
+    			s &= ~Sensor.TYPE_ACCELEROMETER;//SensorManager.SENSOR_ACCELEROMETER;
     		
     		if(Main.this.isOrientationSensorEnabled.isChecked())
-    			s |= SensorManager.SENSOR_ORIENTATION;
+    			s |= Sensor.TYPE_ORIENTATION;//SensorManager.SENSOR_ORIENTATION;
     		else
-    			s &= ~SensorManager.SENSOR_ORIENTATION;
+    			s &= ~Sensor.TYPE_ORIENTATION;//SensorManager.SENSOR_ORIENTATION;
     		
     		Main.this.application.getSensorProcessor().setSensorsToListenTo(s);
     		
     		Main.this.application.getSensorProcessor().toggleCollect();
     		if(Main.this.application.getSensorProcessor().getCollectionState())
     		{
+    			sm.unregisterListener(Main.this);
     			Main.this.toggleSensorCollection.setText("Disable Sensor Data Collection");
     		}
     		else
     		{
-    		      Sensor oSensor = sm.getDefaultSensor(Sensor.TYPE_ORIENTATION);       
-    		      Sensor aSensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-    		      
-    		      sm.registerListener(Main.this, oSensor, SensorManager.SENSOR_DELAY_UI);
-    		      sm.registerListener(Main.this, aSensor, SensorManager.SENSOR_DELAY_UI);
     			Main.this.toggleSensorCollection.setText("Enable Sensor Data Collection");
-    		}
+				Sensor oSensor = sm.getDefaultSensor(Sensor.TYPE_ORIENTATION);       
+				Sensor aSensor = sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+				  
+				sm.registerListener(Main.this, oSensor, SensorManager.SENSOR_DELAY_UI);
+				sm.registerListener(Main.this, aSensor, SensorManager.SENSOR_DELAY_UI);
+     		}
     	  }
       });
       
@@ -131,12 +136,12 @@ public class Main extends Activity implements SensorEventListener{
 
 	//setup the sensor checkboxes
 	int s = Main.this.application.getSensorProcessor().getSensorsToListenTo();
-	if((s | SensorManager.SENSOR_ACCELEROMETER) != 0)
+	if((s | Sensor.TYPE_ACCELEROMETER) != 0)
 		this.isAccelerometerSensorEnabled.setChecked(true);
 	else
 		this.isAccelerometerSensorEnabled.setChecked(false);
 
-	if((s | SensorManager.SENSOR_ORIENTATION) != 0)
+	if((s | Sensor.TYPE_ORIENTATION) != 0)
 		this.isOrientationSensorEnabled.setChecked(true);
 	else
 		this.isOrientationSensorEnabled.setChecked(false);
@@ -149,7 +154,9 @@ public class Main extends Activity implements SensorEventListener{
       if ((this.input.getText().toString() != null) && (this.input.getText().toString().length() > 0)) {
          b.putString(Main.NAME, this.input.getText().toString());
       }
+      this.application.getCameraManager().getReadyForSuspension();
       super.onSaveInstanceState(b);
+      
    }
 
    @Override
@@ -257,7 +264,7 @@ public class Main extends Activity implements SensorEventListener{
          // (note, this is a naive example, in the real world it might make sense
          // to have a cache of the data and just append to what is already there, or such
          // in order to cut down on expensive database operations)
-         new SelectDataTask().execute();
+         //new SelectDataTask().execute();
     	 Main.this.sensorDataCount.setText("Total Raw Data Points: " + Long.toString(Main.this.application.getDataManager().getRawSensorDataCount()));
       }
    }

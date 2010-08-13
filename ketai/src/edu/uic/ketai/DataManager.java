@@ -16,10 +16,10 @@ import java.util.List;
 public class DataManager {
 
    private static final String DATABASE_NAME = "edu.uic.ketai.db";
-   private static final int DATABASE_VERSION = 1;
-  // private static final String TABLE_NAME = "table1";
+   private static final int DATABASE_VERSION = 2;
    private static final String SENSOR_DATA_TABLE_NAME = "sensor_data";
    private static final String SENSOR_RAW_DATA = "sensor_raw_data";
+   private static final String SENSOR_EVENT_TABLE = "sensor_events";
    private static final String IMAGE_DATA_TABLE = "image_data";
    private static final String RFID_TABLE_NAME = "rfid_data";
    private static final String QRCODE_TABLE_NAME = "qrcode_data";
@@ -30,10 +30,10 @@ public class DataManager {
    private SQLiteStatement insertStmt, sqlStatement;
    private static final String INSERT_SENSOR_DATA = "insert into " + SENSOR_DATA_TABLE_NAME + "(timestamp, sensor_type) values (?, ?)";
    private static final String INSERT_SENSOR_RAW_DATA = "insert into " + SENSOR_RAW_DATA + "(sensorIndex, value, parent) values (?, ?, ?)";
-   private static final String INSERT_IMAGE_DATA = "insert into " + IMAGE_DATA_TABLE + "(data, timestamp) values (?, ?)";
-   private static final String INSERT_RFID_DATA = "insert into " + RFID_TABLE_NAME + "(data, timestamp) values (?, ?)";
+//   private static final String INSERT_IMAGE_DATA = "insert into " + IMAGE_DATA_TABLE + "(data, timestamp) values (?, ?)";
+//   private static final String INSERT_RFID_DATA = "insert into " + RFID_TABLE_NAME + "(data, timestamp) values (?, ?)";
    private static final String INSERT_QRCODE = "insert into " + QRCODE_TABLE_NAME + "(data, timestamp) values (?, ?)";
-   
+   private static final String INSERT_SENSOR_EVENT_DATA = "insert into " + SENSOR_EVENT_TABLE + "(timestamp, sensor_type, value0, value1, value2) values (?, ?, ?, ?, ?)";
    public DataManager(Context context) {
       this.context = context;
       OpenHelper openHelper = new OpenHelper(this.context);
@@ -52,7 +52,7 @@ public class DataManager {
    }
    
    public void insertSensorData(Long timestamp, int type, float vals[])
-   {
+   {	   
 	   this.insertStmt = this.db.compileStatement(INSERT_SENSOR_DATA);
 	   this.insertStmt.bindLong(1,timestamp);
 	   this.insertStmt.bindLong(2, type);
@@ -67,6 +67,17 @@ public class DataManager {
 		   this.insertStmt.executeInsert();		   
 	   }
    }
+   public void insertSensorEvent(Long timestamp, int type, float vals[])
+   {
+	   this.insertStmt = this.db.compileStatement(INSERT_SENSOR_EVENT_DATA);
+	   this.insertStmt.bindLong(1, timestamp);
+	   this.insertStmt.bindLong(2, type);
+	   for (int i = 0; i < vals.length && i < 3; i++)		   
+		   this.insertStmt.bindDouble(3+i, vals[i]);
+	   
+	   this.insertStmt.executeInsert();		   
+   }
+   
    
    public void deleteAll() {
       this.db.delete(SENSOR_DATA_TABLE_NAME, null, null);
@@ -74,6 +85,7 @@ public class DataManager {
       this.db.delete(IMAGE_DATA_TABLE, null, null);
       this.db.delete(RFID_TABLE_NAME, null, null);
       this.db.delete(QRCODE_TABLE_NAME, null, null);
+      this.db.delete(SENSOR_EVENT_TABLE, null, null);
    }
 
    public List<String> selectAll() {
@@ -94,7 +106,8 @@ public class DataManager {
    {
 	   try
 	   {
-		   this.sqlStatement = this.db.compileStatement("SELECT COUNT(*) FROM sensor_raw_data");
+//		   this.sqlStatement = this.db.compileStatement("SELECT COUNT(*) FROM sensor_raw_data");
+		   this.sqlStatement = this.db.compileStatement("SELECT COUNT(*) FROM sensor_events");
 		   return   this.sqlStatement.simpleQueryForLong();
 	   }
 	   catch (SQLiteDoneException x) { return 0; }
@@ -113,7 +126,7 @@ public class DataManager {
          db.execSQL("CREATE TABLE " + IMAGE_DATA_TABLE + " (id INTEGER PRIMARY KEY, timestamp BIGINT, name TEXT)");
          db.execSQL("CREATE TABLE " + RFID_TABLE_NAME + " (id INTEGER PRIMARY KEY, timestamp BIGINT, value INTEGER, intensity INTEGER)");
          db.execSQL("CREATE TABLE " + QRCODE_TABLE_NAME + " (id INTEGER PRIMARY KEY, timestamp BIGINT, data TEXT)");
-
+         db.execSQL("CREATE TABLE " + SENSOR_EVENT_TABLE + " (id INTEGER PRIMARY KEY, timestamp BIGINT, sensor_type INTEGER, value0 FLOAT, value1 FLOAT, value2 FLOAT)");
       }
 
       @Override
@@ -124,6 +137,7 @@ public class DataManager {
          db.execSQL("DROP TABLE IF EXISTS " + IMAGE_DATA_TABLE);
          db.execSQL("DROP TABLE IF EXISTS " + RFID_TABLE_NAME);
          db.execSQL("DROP TABLE IF EXISTS " + QRCODE_TABLE_NAME);
+         db.execSQL("DROP TABLE IF EXISTS " + SENSOR_EVENT_TABLE);
                    
          onCreate(db);
       }
@@ -131,7 +145,6 @@ public class DataManager {
    
    	public void exportData(String filenameLabel) throws IOException
    	{
-//   		DataXmlExporter exporter = new DataXmlExporter(db);
    		SensorDataCSVExporter exporter = new SensorDataCSVExporter(db);
    		exporter.export(DATABASE_NAME, "KETAI_DB_" + filenameLabel + "_" + System.currentTimeMillis());
    	}
