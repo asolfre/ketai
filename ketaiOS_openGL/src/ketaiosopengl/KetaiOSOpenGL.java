@@ -6,8 +6,6 @@ import processing.core.PVector; //import processing.opengl.*;
 import controlP5.*;
 
 public class KetaiOSOpenGL extends PApplet {
-
-	Table sensorTable;
 	int rowCount;
 	ArrayList<Integer> sensorTypes; // stores index of sensor types available
 	ArrayList<Sensor> sensors; // stores data for every sensor
@@ -19,9 +17,9 @@ public class KetaiOSOpenGL extends PApplet {
 
 	public void setup() {
 		size(1400, 768, OPENGL);
-		hint(DISABLE_OPENGL_2X_SMOOTH);
-		// hint(ENABLE_OPENGL_4X_SMOOTH);
-		sensorTable = new Table("KETAI_DB_THREEVALUES_1281638153946.csv");
+		//hint(DISABLE_OPENGL_2X_SMOOTH);
+		hint(ENABLE_OPENGL_4X_SMOOTH);
+		Table sensorTable = new Table("KETAI_data.csv");
 		rowCount = sensorTable.getRowCount();
 		guiSetup(); // make the GUI menu
 		sensors = new ArrayList<Sensor>(); // create empty sensor Array
@@ -41,12 +39,12 @@ public class KetaiOSOpenGL extends PApplet {
 			} else {
 				sensorTypes.add(type);
 				println("sensor type [" + type + "] added");
-				sensors.add(new Sensor(type, dataStructure));
+				sensors.add(new Sensor(type, dataStructure, sensorTable));
 			}
 		}
 		// initialize sensor object after data has been added
 		for (int i = 0; i < sensors.size(); i++) {
-			sensors.get(i).gui(lerpColor(guiColor1, guiColor2, sensors.get(i).type / sensors.size()));
+			sensors.get(i).gui(lerpColor(guiColor1, guiColor2, (float) sensors.get(i).type / sensors.size()));
 		}
 	}
 
@@ -69,17 +67,8 @@ public class KetaiOSOpenGL extends PApplet {
 	public void guiSetup() {
 		controlP5 = new ControlP5(this);
 		multiList = controlP5.addMultiList("myNavigation", 0, 10, 150, 12);
-		mlButton = multiList.add("sensor data", 1);
+		mlButton = multiList.add("sensor", 1);
 		range = controlP5.addRange("timeScale", 0, 100, 0, 10, border, height - border, width / 4, 12);
-	}
-
-	public void controlEvent(ControlEvent theEvent) {
-		println(theEvent.controller().name() + " = " + theEvent.value());
-		for (int i = 0; i < sensors.size(); i++) {
-			Sensor s = (Sensor) sensors.get(i);
-			s.active(theEvent.controller().name(), theEvent.value());
-		}
-		// theEvent.controller().setLabel(theEvent.controller().name()+" clicked");
 	}
 
 	// SENSOR (one instance for each registered sensor)
@@ -95,22 +84,39 @@ public class KetaiOSOpenGL extends PApplet {
 		// store maximum values for all indexes of the sensor type
 		float myMax[] = { MIN_FLOAT, MIN_FLOAT, MIN_FLOAT, MIN_FLOAT, MIN_FLOAT, MIN_FLOAT };
 		float myDuration = 0;
-		int type; // sensor type
 		Textarea myTextarea;
 		Textlabel myTextlabelMin, myTextlabelMax, myTextlabelZero;
 		Textlabel[] label = new Textlabel[6];
 		boolean plotVisible = true;
 		String src = "[type] : milliSeconds : index : value\n";
 		Vector[] vector;
+		int type; // sensor type
+		Table sensorTable;
 
-		// CONSTRUCTOR
-		Sensor(int sensorType, String dataStructure) {
+		// CONSTRUCTOR ANALYSIS FLAT FILE
+		Sensor(int sensorType, String dataStructure, Table _sensorTable) {
+			sensorTable = _sensorTable;
 			type = sensorType; // int type, represents specific sensor id
 			src += sensorName[type] + " | ";
-			src += "DATA: "+dataStructure + "\n\n";
+			src += "DATA: " + dataStructure + "\n\n";
 			// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
+			loadData(type, dataStructure);
+		}
+
+		// CONSTRUCTOR REALTIME
+		Sensor(int sensorType) {
+			type = sensorType; // int type, represents specific sensor id
+			src += sensorName[type] + "\n\n";
+			//loadData(type, dataStructure);
+			captureData();
+		}
+
+		void captureData() {
+
+		}
+
+		void loadData(int type2, String dataStructure) {
 			if (dataStructure.equals("TTIV")) {
-				println(dataStructure);
 				for (int row = 0; row < rowCount; row++) {
 					Long timeStamp = sensorTable.getLong(row, 0);
 					timeStamp /= 1000000; // converts nanoseconds into milliseconds
@@ -177,7 +183,6 @@ public class KetaiOSOpenGL extends PApplet {
 					}
 				}
 			} else if (dataStructure.equals("TTXYZ")) {
-				println(dataStructure);
 				// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
 				indexTypes.add(0);
 				label[0] = controlP5.addTextlabel("label_" + type + "_" + 0, "index: " + 0, -100, -100);
@@ -288,7 +293,7 @@ public class KetaiOSOpenGL extends PApplet {
 			pushMatrix();
 			translate(0, height / 2);
 			noFill();
-			for (int indexID = 0; indexID < 3; indexID++) { // replace 3 with indexTypes.size() to also show raw data
+			for (int indexID = 0; indexID < sensorTable.data[0].length-2; indexID++) { // replace 3 with indexTypes.size() to also show raw data
 				if (plotVisible)
 					plotNormalized(indexID);
 			}
@@ -330,7 +335,7 @@ public class KetaiOSOpenGL extends PApplet {
 					stroke(255);
 					point(vector[i].x[index], vector[i].y[index]);
 					// rollover label
-					for (int j = 0; j < 3; j++) { // j<3 : only show data 0..2,
+					for (int j = 0; j < sensorTable.data[0].length-2; j++) { // j<3 : only show data 0..2,
 						// not raw data (index 3..5)
 						label[j].setPosition((int) vector[i].x[j] + 2, (int) vector[i].y[j] + 2 + height / 2);
 						label[j].setValue("[" + j + "] " + vector[i].timeStamp + "ms -> " + vector[i].valueList[j]);
@@ -359,7 +364,7 @@ public class KetaiOSOpenGL extends PApplet {
 
 		// UNIQUE COLOR FOR EVERY INDEX WITHIN A SPECIFIC SENSOR COLOR
 		public int subColor(int index) {
-			return lerpColor(myColor, color(myColor, 127), (float) (index) / indexTypes.size());
+			return lerpColor(myColor, color(myColor, 150), (float) (index) / indexTypes.size());
 		}
 
 		// SENSOR NAME/DESCRIPITON
@@ -383,7 +388,7 @@ public class KetaiOSOpenGL extends PApplet {
 					myTextlabelMax.hide();
 					myTextlabelZero.hide();
 					plotVisible = false;
-					for (int i = 0; i < 6; i++) {
+					for (int i = 0; i < sensorTable.data[0].length-2; i++) {
 						label[i].hide();
 					}
 				} else {
@@ -392,7 +397,7 @@ public class KetaiOSOpenGL extends PApplet {
 					myTextlabelMax.show();
 					myTextlabelZero.show();
 					plotVisible = true;
-					for (int i = 0; i < 6; i++) {
+					for (int i = 0; i < sensorTable.data[0].length-2; i++) {
 						label[i].show();
 					}
 				}
@@ -456,7 +461,6 @@ public class KetaiOSOpenGL extends PApplet {
 				// value Vector
 				// line(origin.x,origin.y,origin.z,value.x,value.y,value.z);
 			}
-			stroke(255, 255, 0, 127);
 			// rotated matrix
 			float r = sqrt(sq(delta.x) + sq(delta.y) + sq(delta.z));
 			float theta = atan2(delta.y, delta.x);
@@ -468,16 +472,15 @@ public class KetaiOSOpenGL extends PApplet {
 			rotateX(-HALF_PI);
 			// ds added "correction rotation rotateY(-theta);
 			stroke(255, 255, 255, 127);
-			box(2f, .01f, 1f);
+			//box(2f, .01f, 1f);
 			noFill();
 			line(0, 0, 0, 0, delta.mag(), 0); // draw y axis in new Marix orientation
-
 			noStroke();
 			// display
 			if (rollOver()) {
 				fill(255);
 			} else {
-				fill(255, 127);
+				fill(255, 70);
 			}
 			beginShape();
 			vertex(-.8f, .01f, -.4f);
@@ -649,14 +652,22 @@ public class KetaiOSOpenGL extends PApplet {
 			sensorName[64] = "SENSOR_TRICORDER";
 			sensorName[128] = "SENSOR_ORIENTATION_RAW";
 		} else if (dataStructure.equals("TTXYZ")) {
-			sensorName[2] = "SENSOR_MAGNETIC_FIELD";
 			sensorName[1] = "SENSOR_ACCELEROMETER";
+			sensorName[2] = "SENSOR_MAGNETIC_FIELD";
 			sensorName[3] = "SENSOR_ORIENTATION";
 		}
 	}
 
-	// 
-
+	// CONTROLP5 EVENTS
+	public void controlEvent(ControlEvent theEvent) {
+		println(theEvent.controller().name() + " = " + theEvent.value());
+		for (int i = 0; i < sensors.size(); i++) {
+			Sensor s = (Sensor) sensors.get(i);
+			s.active(theEvent.controller().name(), theEvent.value());
+		}
+		// theEvent.controller().setLabel(theEvent.controller().name()+" clicked");
+	}
+	
 	// TABLE
 	public class Table {
 		int rowCount;
