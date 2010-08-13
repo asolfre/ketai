@@ -21,7 +21,7 @@ public class KetaiOSOpenGL extends PApplet {
 		size(1400, 768, OPENGL);
 		hint(DISABLE_OPENGL_2X_SMOOTH);
 		// hint(ENABLE_OPENGL_4X_SMOOTH);
-		sensorTable = new Table("KETAI_data.csv");
+		sensorTable = new Table("KETAI_DB_THREEVALUES_1281638153946.csv");
 		loadSensorNames(); // fullText sensor descriptions
 		rowCount = sensorTable.getRowCount();
 		guiSetup(); // make the GUI menu
@@ -101,13 +101,11 @@ public class KetaiOSOpenGL extends PApplet {
 		Sensor(int sensorType, int colIndex) {
 			type = sensorType; // int type, represents specific sensor id
 			src += sensorName[type] + "\n\n";
-			// Parser for .csv data format [timeStamp | type | index | value] ->
-			// TTIV
+			// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
 			if (colIndex == 4) {
 				for (int row = 0; row < rowCount; row++) {
 					Long timeStamp = sensorTable.getLong(row, 0);
-					timeStamp /= 1000000; // converts nanoseconds into
-					// milliseconds
+					timeStamp /= 1000000; // converts nanoseconds into milliseconds
 					if (row == 0)
 						startTime = timeStamp;
 					int index = sensorTable.getInt(row, 2);
@@ -135,8 +133,6 @@ public class KetaiOSOpenGL extends PApplet {
 				for (int i = 0; i < len; i++) {
 					timeStamps[i] = fa[i];
 					vector[i] = new Vector(i, timeStamps[i], type);
-					println("myType" + type);
-
 				}
 				// parsing all rows
 				for (int row = 0; row < rowCount; row++) {
@@ -146,8 +142,6 @@ public class KetaiOSOpenGL extends PApplet {
 					int typeVal = sensorTable.getInt(row, 1);
 					int index = sensorTable.getInt(row, 2);
 					float value = sensorTable.getFloat(row, 3);
-					// text("[" + type + "] " + (timeStamp - startTime) + " : "
-					// + index + " : " + value + "", type, row * 12);
 					if (type == typeVal) {
 						src += "[" + type + "] " + (timeStamp - startTime) + " : " + index + " : " + value + "\n";
 						for (int j = 0; j < vector.length; j++) {
@@ -168,7 +162,6 @@ public class KetaiOSOpenGL extends PApplet {
 								} else {
 									sensorMax = abs(sensorMin);
 								}
-
 								if ((timeStamp - startTime) > myDuration)
 									myDuration = (timeStamp - startTime);
 							}
@@ -176,8 +169,83 @@ public class KetaiOSOpenGL extends PApplet {
 					}
 				}
 			} else if (colIndex == 5) {
-				// parser for .csv data format [timeStamp | type | x | y | z] ->
-				// TTXYZ
+				int index;
+				indexTypes.add(0);
+				label[0] = controlP5.addTextlabel("label_" + type + "_" + 0, "index: " + 0, -100, -100);
+				indexTypes.add(1);
+				label[1] = controlP5.addTextlabel("label_" + type + "_" + 1, "index: " + 1, -100, -100);
+				indexTypes.add(2);
+				label[2] = controlP5.addTextlabel("label_" + type + "_" + 2, "index: " + 2, -100, -100);
+				for (int row = 0; row < rowCount; row++) {
+					Long timeStamp = sensorTable.getLong(row, 0);
+					timeStamp /= 1000000; // converts nanoseconds into milliseconds
+					if (row == 0)
+						startTime = timeStamp;
+					// detect unique timestamps, create timeStamp object
+					if (timeStampTypes.contains(timeStamp - startTime)) {
+					} else {
+						timeStampTypes.add((timeStamp - startTime));
+						// ArrayList row+index = new ArrayList();
+						println("timeStamp [" + (timeStamp - startTime) + "] added for sensor type " + type);
+					}
+				}
+				// unboxing unique timeStamps
+				int len = timeStampTypes.size();
+				long[] timeStamps = new long[len];
+				Long[] fa = new Long[len];
+				timeStampTypes.toArray(fa);
+				vector = new Vector[len];
+				for (int i = 0; i < len; i++) {
+					timeStamps[i] = fa[i];
+					vector[i] = new Vector(i, timeStamps[i], type);
+				}
+				// parsing all rows
+				for (int row = 0; row < rowCount; row++) {
+					long timeStamp = sensorTable.getLong(row, 0);
+					timeStamp /= 1000000; // converts nanoseconds into
+					// milliseconds
+					int typeVal = sensorTable.getInt(row, 1);
+					float x = sensorTable.getInt(row, 2);
+					float y = sensorTable.getFloat(row, 3);
+					float z = sensorTable.getFloat(row, 4);
+					if (type == typeVal) {
+						src += "[" + type + "] " + (timeStamp - startTime) + " : " + 0 + " : " + x + "\n";
+						src += "[" + type + "] " + (timeStamp - startTime) + " : " + 1 + " : " + y + "\n";
+						src += "[" + type + "] " + (timeStamp - startTime) + " : " + 2 + " : " + z + "\n";
+						for (int j = 0; j < vector.length; j++) {
+							if (timeStamps[j] == (timeStamp - startTime)) {
+								vector[j].setValue(0, x);
+								vector[j].setValue(1, y);
+								vector[j].setValue(2, z);
+								if (myMin[0] > x)
+									myMin[0] = x;
+								if (myMax[0] < x)
+									myMax[0] = x;
+								if (myMin[1] > y)
+									myMin[1] = y;
+								if (myMax[1] < y)
+									myMax[1] = y;
+								if (myMin[2] > z)
+									myMin[2] = z;
+								if (myMax[2] < z)
+									myMax[2] = z;
+								// for gui
+								if (sensorMax < x)
+									sensorMax = x;
+								if (sensorMin > x)
+									sensorMin = x;
+								// center align all values
+								if (sensorMax > abs(sensorMin)) {
+									sensorMin = -abs(sensorMax);
+								} else {
+									sensorMax = abs(sensorMin);
+								}
+								if ((timeStamp - startTime) > myDuration)
+									myDuration = (timeStamp - startTime);
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -213,12 +281,7 @@ public class KetaiOSOpenGL extends PApplet {
 			pushMatrix();
 			translate(0, height / 2);
 			noFill();
-			for (int indexID = 0; indexID < indexTypes.size(); indexID++) { // replace
-				// 3
-				// with
-				// indexTypes.size()
-				// to also show raw
-				// data
+			for (int indexID = 0; indexID < 3; indexID++) { // replace 3 with indexTypes.size() to also show raw data
 				if (plotVisible)
 					plotNormalized(indexID);
 			}
@@ -232,7 +295,8 @@ public class KetaiOSOpenGL extends PApplet {
 			noFill();
 			beginShape();
 			for (int i = 1; i < vector.length; i++) {
-				float plotX = map(vector[i].timeStamp, 0, myDuration, border, (width - 2 * border) * 100 / (range.highValue() - range.lowValue()));
+				float plotX = -range.lowValue() * (width - 2 * border) / (range.highValue() - range.lowValue())
+						+ map(vector[i].timeStamp, 0, myDuration, border, (width - 2 * border) * 100 / (range.highValue() - range.lowValue()));
 				float plotY = map(vector[i].getValue(index), myMin[index], myMax[index], -height / 2 + border, height / 2 - border * 2);
 				vector[i].setPosition(index, plotX, plotY, 0);
 				// check if value rolls over, don't connect the line then
@@ -355,17 +419,14 @@ public class KetaiOSOpenGL extends PApplet {
 		}
 
 		void display(int mag) {
-			// adjusting coordinate system to match device coordinate system
-			// http://developer.android.com/reference/android/hardware/SensorEvent.html
+			// adjusting coordinate system to match device coordinate system http://developer.android.com/reference/android/hardware/SensorEvent.html
 			rotateX(HALF_PI); // turning y axis into z to match device
 			rotateZ(PI);
 			scale(1, -1, 1); // flip y-axis
 
 			PVector origin = new PVector(0, 0, 0); // origin, here (0|0|0);
 			PVector delta = new PVector(0, 0, 0); // determined by the origin
-			// point and value point
-			// (for vectors away from
-			// origin)
+			// point and value point (for vectors away from origin)
 
 			delta.x = origin.x - value.x;
 			delta.y = origin.y - value.y;
@@ -373,10 +434,6 @@ public class KetaiOSOpenGL extends PApplet {
 
 			pushMatrix();
 			scale(mag);
-			// rotateY(rotY);
-			// rotY+=0.001;
-			// rotY%=360.0;
-			// noFill();
 
 			// static/normal matrix
 			if (rollOver()) {
@@ -398,19 +455,15 @@ public class KetaiOSOpenGL extends PApplet {
 			float theta = atan2(delta.y, delta.x);
 			float phi = acos(delta.z / r);
 			translate(origin.x, origin.y, origin.z);
-			// if the normal plans should be on the vector tip at the position
-			// value
-			// translate(value.x,value.y,value.z);
+			// if the normal plans should be on the vector tip at the position value translate(value.x,value.y,value.z);
 			rotateZ(theta);
 			rotateY(phi);
 			rotateX(-HALF_PI);
-			// ds added "correction rotation
-			// rotateY(-theta);
+			// ds added "correction rotation rotateY(-theta);
 			stroke(255, 255, 255, 127);
 			box(2f, .01f, 1f);
 			noFill();
-			line(0, 0, 0, 0, delta.mag(), 0); // draw y axis in new Marix
-			// orientation
+			line(0, 0, 0, 0, delta.mag(), 0); // draw y axis in new Marix orientation
 
 			noStroke();
 			// display
@@ -474,7 +527,6 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(.1f, -.1f, -.5f);
 			endShape();
 			popMatrix();
-
 		}
 
 		void setPosition(int index, float _x, float _y, float _z) {
@@ -519,8 +571,8 @@ public class KetaiOSOpenGL extends PApplet {
 			return value.z;
 		}
 
+		// .csv formatting [timeStamp, type, index, value] TTIV
 		void setValue(int index, float input) {
-
 			switch (index) {
 			case 0:
 				value.set(input, value.y, value.z);
@@ -613,8 +665,7 @@ public class KetaiOSOpenGL extends PApplet {
 				data[rowCount] = pieces;
 				rowCount++;
 
-				// this could be done in one fell swoop via:
-				// data[rowCount++] = split(rows[i], TAB);
+				// this could be done in one fell swoop via: data[rowCount++] = split(rows[i], TAB);
 			}
 			// resize the 'data' array as necessary
 			data = (String[][]) subset(data, 0, rowCount);
