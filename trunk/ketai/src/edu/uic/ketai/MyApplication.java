@@ -18,7 +18,7 @@ public class MyApplication extends Application {
       Log.d(APP_NAME, "APPLICATION onCreate");
       this.dataManager = new DataManager(this);
       this.sensorProcessor = new SensorProcessor(dataManager, (SensorManager)this.getSystemService(SENSOR_SERVICE)); 
-      this.cameraManager = new CameraManager();
+      this.cameraManager = new CameraManager(this);
    }
    
    @Override

@@ -16,46 +16,71 @@ public class SensorDataCSVExporter {
 	   private static final String DATASUBDIRECTORY = "ketai_data";
 
 	   private SQLiteDatabase db;
-	   private String filenameLabel;
-
 	   public SensorDataCSVExporter(SQLiteDatabase db) {
 	      this.db = db;
-//	      filenameLabel = label;
 	   }
 
+//	   public void export(String dbName, String exportFileNamePrefix) throws IOException {
+//	      Log.i(MyApplication.APP_NAME, "exporting database - " + dbName + " exportFileNamePrefix=" + exportFileNamePrefix);
+//	      String output="";
+//	      
+//	      //First lets get the total number of parent records we will need to write out so we can pace ourselves.
+//	      // get the tables
+//	      String sql = "select count(*) from sensor_data";
+//	      Cursor c = this.db.rawQuery(sql, new String[0]);
+//
+//	      // get the tables
+//	      sql = "select * from sensor_data";
+//	      c = this.db.rawQuery(sql, new String[0]);
+//	      
+//	      if (c.moveToFirst()) {
+//	         do {
+//	        	
+//	            String id = c.getString(c.getColumnIndex("id"));
+//	            String timestamp = c.getString(c.getColumnIndex("timestamp"));
+//	            String type = c.getString(c.getColumnIndex("sensor_type"));
+//	            String innerSQL = "select * from sensor_raw_data where parent='" + id + "' order by sensorIndex desc";
+//	            Cursor cc = this.db.rawQuery(innerSQL, new String[0]);
+//	            if(cc.moveToFirst())
+//	            {
+//	            	do{
+//	            		output += timestamp + "\t" + type + "\t" + cc.getString(cc.getColumnIndex("sensorIndex")) + "\t" + cc.getString(cc.getColumnIndex("value")) + "\n";
+//	            	}while(cc.moveToNext());
+//	            }
+//	         } while (c.moveToNext());
+//	      }
+//	      this.writeToFile(output, exportFileNamePrefix + ".csv");
+//	      Log.i(MyApplication.APP_NAME, "exporting database complete");
+//	   }
+	   
 	   public void export(String dbName, String exportFileNamePrefix) throws IOException {
-	      Log.i(MyApplication.APP_NAME, "exporting database - " + dbName + " exportFileNamePrefix=" + exportFileNamePrefix);
-	      String output="";
-	      
-	      //First lets get the total number of parent records we will need to write out so we can pace ourselves.
-	      // get the tables
-	      String sql = "select count(*) from sensor_data";
-	      Cursor c = this.db.rawQuery(sql, new String[0]);
-//	      int numberOfRows = c.getInt(c.getColumnIndex(""));
-	      // get the tables
-	      sql = "select * from sensor_data";
-	      c = this.db.rawQuery(sql, new String[0]);
-	      
-	      if (c.moveToFirst()) {
-	         do {
-	        	
-	            String id = c.getString(c.getColumnIndex("id"));
-	            String timestamp = c.getString(c.getColumnIndex("timestamp"));
-	            String type = c.getString(c.getColumnIndex("sensor_type"));
-	            String innerSQL = "select * from sensor_raw_data where parent='" + id + "' order by sensorIndex desc";
-	            Cursor cc = this.db.rawQuery(innerSQL, new String[0]);
-	            if(cc.moveToFirst())
-	            {
-	            	do{
-	            		output += timestamp + "\t" + type + "\t" + cc.getString(cc.getColumnIndex("sensorIndex")) + "\t" + cc.getString(cc.getColumnIndex("value")) + "\n";
-	            	}while(cc.moveToNext());
-	            }
-	         } while (c.moveToNext());
-	      }
-	      this.writeToFile(output, exportFileNamePrefix + ".csv");
-	      Log.i(MyApplication.APP_NAME, "exporting database complete");
-	   }
+		      Log.i(MyApplication.APP_NAME, "exporting database - " + dbName + " exportFileNamePrefix=" + exportFileNamePrefix);
+		      String output="";
+		      
+		      //First lets get the total number of parent records we will need to write out so we can pace ourselves.
+		      // get the tables
+		      String sql = "select count(*) from sensor_events";
+		      Cursor c = this.db.rawQuery(sql, new String[0]);
 
+		      // get the tables
+		      sql = "select * from sensor_events";
+		      c = this.db.rawQuery(sql, new String[0]);
+		      
+		      if (c.moveToFirst()) {
+		         do {		        	
+			            String timestamp = c.getString(c.getColumnIndex("timestamp"));
+			            String type = c.getString(c.getColumnIndex("sensor_type"));
+			            String v0 = c.getString(c.getColumnIndex("value0"));
+			            String v1 = c.getString(c.getColumnIndex("value1"));
+			            String v2 = c.getString(c.getColumnIndex("value2"));
+			            output += timestamp + "\t" + type + "\t" + v0 + "\t" + v1 + "\t" + v2 + "\n";
+		         } while (c.moveToNext());
+		      }
+		      this.writeToFile(output, exportFileNamePrefix + ".csv");
+		      Log.i(MyApplication.APP_NAME, "exporting database complete");
+		   }
+
+	   
 
 	   private void writeToFile(String xmlString, String exportFileName) throws IOException {
 	      File dir = new File(Environment.getExternalStorageDirectory(), DATASUBDIRECTORY);
