@@ -22,20 +22,26 @@ public class KetaiOSOpenGL extends PApplet {
 		hint(DISABLE_OPENGL_2X_SMOOTH);
 		// hint(ENABLE_OPENGL_4X_SMOOTH);
 		sensorTable = new Table("KETAI_DB_THREEVALUES_1281638153946.csv");
-		loadSensorNames(); // fullText sensor descriptions
 		rowCount = sensorTable.getRowCount();
 		guiSetup(); // make the GUI menu
 		sensors = new ArrayList<Sensor>(); // create empty sensor Array
 		sensorTypes = new ArrayList<Integer>(); // create empty sensorTypes
 		// Array
 		// parse data for sensor types
+		String dataStructure = "";
+		if (sensorTable.data[0].length == 4) {
+			dataStructure = "TTIV";
+		} else if (sensorTable.data[0].length == 5) {
+			dataStructure = "TTXYZ";
+		}
+		loadSensorNames(dataStructure); // fullText sensor descriptions
 		for (int row = 0; row < rowCount; row++) {
 			int type = sensorTable.getInt(row, 1);
 			if (sensorTypes.contains(type)) {
 			} else {
 				sensorTypes.add(type);
 				println("sensor type [" + type + "] added");
-				sensors.add(new Sensor(type, sensorTable.data[0].length));
+				sensors.add(new Sensor(type, dataStructure));
 			}
 		}
 		// initialize sensor object after data has been added
@@ -98,11 +104,13 @@ public class KetaiOSOpenGL extends PApplet {
 		Vector[] vector;
 
 		// CONSTRUCTOR
-		Sensor(int sensorType, int colIndex) {
+		Sensor(int sensorType, String dataStructure) {
 			type = sensorType; // int type, represents specific sensor id
-			src += sensorName[type] + "\n\n";
+			src += sensorName[type] + " | ";
+			src += "DATA: "+dataStructure + "\n\n";
 			// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
-			if (colIndex == 4) {
+			if (dataStructure.equals("TTIV")) {
+				println(dataStructure);
 				for (int row = 0; row < rowCount; row++) {
 					Long timeStamp = sensorTable.getLong(row, 0);
 					timeStamp /= 1000000; // converts nanoseconds into milliseconds
@@ -143,7 +151,7 @@ public class KetaiOSOpenGL extends PApplet {
 					int index = sensorTable.getInt(row, 2);
 					float value = sensorTable.getFloat(row, 3);
 					if (type == typeVal) {
-						src += "[" + type + "] " + (timeStamp - startTime) + " : " + index + " : " + value + "\n";
+						src += "[" + type + "] " + (timeStamp - startTime) + "ms : " + index + " : " + value + "\n";
 						for (int j = 0; j < vector.length; j++) {
 							if (timeStamps[j] == (timeStamp - startTime)) {
 								vector[j].setValue(index, value);
@@ -168,8 +176,9 @@ public class KetaiOSOpenGL extends PApplet {
 						}
 					}
 				}
-			} else if (colIndex == 5) {
-				int index;
+			} else if (dataStructure.equals("TTXYZ")) {
+				println(dataStructure);
+				// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
 				indexTypes.add(0);
 				label[0] = controlP5.addTextlabel("label_" + type + "_" + 0, "index: " + 0, -100, -100);
 				indexTypes.add(1);
@@ -209,9 +218,7 @@ public class KetaiOSOpenGL extends PApplet {
 					float y = sensorTable.getFloat(row, 3);
 					float z = sensorTable.getFloat(row, 4);
 					if (type == typeVal) {
-						src += "[" + type + "] " + (timeStamp - startTime) + " : " + 0 + " : " + x + "\n";
-						src += "[" + type + "] " + (timeStamp - startTime) + " : " + 1 + " : " + y + "\n";
-						src += "[" + type + "] " + (timeStamp - startTime) + " : " + 2 + " : " + z + "\n";
+						src += "[" + type + "] " + (timeStamp - startTime) + "ms : " + x + " : " + y + " : " + z + "\n";
 						for (int j = 0; j < vector.length; j++) {
 							if (timeStamps[j] == (timeStamp - startTime)) {
 								vector[j].setValue(0, x);
@@ -631,16 +638,24 @@ public class KetaiOSOpenGL extends PApplet {
 	}
 
 	// SENSOR NAMES (id to text)
-	void loadSensorNames() {
-		sensorName[1] = "SENSOR_ORIENTATION";
-		sensorName[2] = "SENSOR_ACCELEROMETER";
-		sensorName[4] = "SENSOR_TEMPERATURE";
-		sensorName[8] = "SENSOR_MAGNETIC_FIELD";
-		sensorName[16] = "SENSOR_LIGHT";
-		sensorName[32] = "SENSOR_PROXIMITY";
-		sensorName[64] = "SENSOR_TRICORDER";
-		sensorName[128] = "SENSOR_ORIENTATION_RAW";
+	void loadSensorNames(String dataStructure) {
+		if (dataStructure.equals("TTIV")) {
+			sensorName[1] = "SENSOR_ORIENTATION";
+			sensorName[2] = "SENSOR_ACCELEROMETER";
+			sensorName[4] = "SENSOR_TEMPERATURE";
+			sensorName[8] = "SENSOR_MAGNETIC_FIELD";
+			sensorName[16] = "SENSOR_LIGHT";
+			sensorName[32] = "SENSOR_PROXIMITY";
+			sensorName[64] = "SENSOR_TRICORDER";
+			sensorName[128] = "SENSOR_ORIENTATION_RAW";
+		} else if (dataStructure.equals("TTXYZ")) {
+			sensorName[2] = "SENSOR_MAGNETIC_FIELD";
+			sensorName[1] = "SENSOR_ACCELEROMETER";
+			sensorName[3] = "SENSOR_ORIENTATION";
+		}
 	}
+
+	// 
 
 	// TABLE
 	public class Table {
