@@ -18,13 +18,26 @@ public class KetaiOSOpenGL extends PApplet {
 	public void setup() {
 		size(1400, 768, OPENGL);
 		//hint(DISABLE_OPENGL_2X_SMOOTH);
-		hint(ENABLE_OPENGL_4X_SMOOTH);
-		Table sensorTable = new Table("KETAI_data.csv");
-		rowCount = sensorTable.getRowCount();
-		guiSetup(); // make the GUI menu
 		sensors = new ArrayList<Sensor>(); // create empty sensor Array
 		sensorTypes = new ArrayList<Integer>(); // create empty sensorTypes
-		// Array
+		
+	}
+
+	public void draw() {
+		background(0);
+		fill(255);
+		for (int i = 0; i < sensors.size(); i++) {
+			sensors.get(i).display();
+		}
+		// save("Ketai_Capture.tif");
+		// exit();
+	}
+	
+	// KEY COMMANDS
+	public void keyPressed(){
+		Table sensorTable = new Table("KETAI_DB_THREEVALUES_1281638153946.csv");
+		rowCount = sensorTable.getRowCount();
+		guiSetup(); // make the GUI menu
 		// parse data for sensor types
 		String dataStructure = "";
 		if (sensorTable.data[0].length == 4) {
@@ -45,17 +58,7 @@ public class KetaiOSOpenGL extends PApplet {
 		// initialize sensor object after data has been added
 		for (int i = 0; i < sensors.size(); i++) {
 			sensors.get(i).gui(lerpColor(guiColor1, guiColor2, (float) sensors.get(i).type / sensors.size()));
-		}
-	}
-
-	public void draw() {
-		background(0);
-		fill(255);
-		for (int i = 0; i < sensors.size(); i++) {
-			sensors.get(i).display();
-		}
-		// save("Ketai_Capture.tif");
-		// exit();
+		}	
 	}
 
 	// GUI
