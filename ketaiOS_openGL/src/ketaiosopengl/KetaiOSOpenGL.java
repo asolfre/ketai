@@ -1,12 +1,8 @@
 package ketaiosopengl;
 
 import java.util.ArrayList;
-
-import com.sun.tools.hat.internal.util.VectorSorter;
-
 import processing.core.PApplet;
 import processing.core.PVector; //import processing.opengl.*;
-import sun.awt.SunHints.Value;
 import controlP5.*;
 
 public class KetaiOSOpenGL extends PApplet {
@@ -18,6 +14,7 @@ public class KetaiOSOpenGL extends PApplet {
 	int guiColor1 = color(204, 102, 0);
 	int guiColor2 = color(0, 102, 153);
 	int border = 50;
+	boolean playBack = true;
 
 	public void setup() {
 		size(1400, 768, OPENGL);
@@ -38,12 +35,11 @@ public class KetaiOSOpenGL extends PApplet {
 		for (int i = 0; i < sensors.size(); i++) {
 			sensors.get(i).display();
 		}
-		if (sensors.get(0).vector.length > 0) {
-			sensors.get(0).vector[0].setValue(mouseX, mouseY, 0);
-		}
+		if (playBack)
+			sensors.get(0).captureData(5);
 	}
 
-	// KEY COMMANDS
+	// LOAD FLATFILE
 	void loadFile(String fileName) {
 		Table sensorTable = new Table(fileName);
 		rowCount = sensorTable.getRowCount();
@@ -73,7 +69,7 @@ public class KetaiOSOpenGL extends PApplet {
 		controlP5 = new ControlP5(this);
 		multiList = controlP5.addMultiList("myNavigation", 0, 10, 150, 12);
 		mlButton = multiList.add("sensor", 1);
-		range = controlP5.addRange("timeScale", 0, 100, 0, 10, border, height - border, width / 4, 12);
+		range = controlP5.addRange("timeScale", 0, 100, 0, 100, border, height - border, width / 4, 12);
 	}
 
 	// SENSOR (one instance for each registered sensor)
@@ -93,7 +89,7 @@ public class KetaiOSOpenGL extends PApplet {
 		Textlabel[] label = new Textlabel[6];
 		boolean plotVisible = false;
 		String src = "[type] : milliSeconds : index : value\n";
-		Vector[] vector;
+		ArrayList<Vector> vector = new ArrayList<Vector>();
 		int type; // sensor type
 		Table sensorTable;
 		String dataStructure = "";
@@ -104,7 +100,6 @@ public class KetaiOSOpenGL extends PApplet {
 			sensorTable = _sensorTable;
 			type = sensorType; // int type, represents specific sensor id
 			// parse data for sensor types
-			String dataStructure = "";
 			if (sensorTable.data[0].length == 4) {
 				dataStructure = "TTIV";
 			} else if (sensorTable.data[0].length == 5) {
@@ -120,9 +115,9 @@ public class KetaiOSOpenGL extends PApplet {
 		// CONSTRUCTOR REALTIME
 		Sensor(int sensorType) {
 			type = sensorType; // int type, represents specific sensor id
-			src += sensorName[type] + "\n\n";
 			dataStructure = "XYZ"; // default
-			captureData(type, dataStructure);
+			src += sensorName[type] + "\n\n";
+			captureData(type);
 			// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
 			label[0] = controlP5.addTextlabel("label_" + type + "_" + 0, "index: " + 0, -100, -100);
 			label[1] = controlP5.addTextlabel("label_" + type + "_" + 1, "index: " + 1, -100, -100);
@@ -130,39 +125,47 @@ public class KetaiOSOpenGL extends PApplet {
 		}
 
 		// REAL-TIME VISUALIZATION
-		void captureData(int type, String dataStructure) {
-			int len = 1;
-			vector = new Vector[len];
-			for (int i = 0; i < len; i++) {
-				vector[i] = new Vector(i, millis(), type);
-				float x = i * 10;
-				float y = random(1);
-				float z = 0;
-				vector[i].setValue(x, y, z);
-				if (myMin[0] > x)
-					myMin[0] = x;
-				if (myMax[0] < x)
-					myMax[0] = x;
-				if (myMin[1] > y)
-					myMin[1] = y;
-				if (myMax[1] < y)
-					myMax[1] = y;
-				if (myMin[2] > z)
-					myMin[2] = z;
-				if (myMax[2] < z)
-					myMax[2] = z;
-				// for gui
-				if (sensorMax < x)
-					sensorMax = x;
-				if (sensorMin > x)
-					sensorMin = x;
-				// center align all values
-				if (sensorMax > abs(sensorMin)) {
-					sensorMin = -abs(sensorMax);
-				} else {
-					sensorMax = abs(sensorMin);
-				}
-				myDuration = 1000;
+		void captureData(int type) {
+			vector.add(new Vector(0, millis(), type));
+			//			long min=MAX_INT;
+			//			for (int row = 0; row < vector.size(); row++) {
+			//				if (vector.get(row).timeStamp<min) min = vector.get(row).timeStamp;
+			//			}
+			//			println(min);
+			// TODO spread buffer over screen width (subtract min timeStamp from duration)
+			myDuration = millis();
+			startTime = vector.get(0).timeStamp;
+			// TODO make buffer flexible
+			if (vector.size() >= 100) {
+				vector.remove(0);
+			}
+			float x = mouseX;
+			float y = mouseY;
+			float z = 0;
+			vector.get(vector.size() - 1).setValue(x, y, z);
+			// TODO consolidate min, max, sensorMin, sensorMax to method
+			if (myMin[0] > x)
+				myMin[0] = x;
+			if (myMax[0] < x)
+				myMax[0] = x;
+			if (myMin[1] > y)
+				myMin[1] = y;
+			if (myMax[1] < y)
+				myMax[1] = y;
+			if (myMin[2] > z)
+				myMin[2] = z;
+			if (myMax[2] < z)
+				myMax[2] = z;
+			// for gui
+			if (sensorMax < x)
+				sensorMax = x;
+			if (sensorMin > x)
+				sensorMin = x;
+			// center align all values
+			if (sensorMax > abs(sensorMin)) {
+				sensorMin = -abs(sensorMax);
+			} else {
+				sensorMax = abs(sensorMin);
 			}
 		}
 
@@ -187,10 +190,10 @@ public class KetaiOSOpenGL extends PApplet {
 				long[] timeStamps = new long[len];
 				Long[] fa = new Long[len];
 				timeStampTypes.toArray(fa);
-				vector = new Vector[len];
 				for (int i = 0; i < len; i++) {
 					timeStamps[i] = fa[i];
-					vector[i] = new Vector(i, timeStamps[i], type);
+					vector.add(new Vector(i, timeStamps[i], type));
+
 				}
 				// parsing all rows
 				for (int row = 0; row < rowCount; row++) {
@@ -202,9 +205,9 @@ public class KetaiOSOpenGL extends PApplet {
 					float value = sensorTable.getFloat(row, 3);
 					if (type == typeVal) {
 						src += "[" + type + "] " + (timeStamp - startTime) + "ms : " + index + " : " + value + "\n";
-						for (int j = 0; j < vector.length; j++) {
+						for (int j = 0; j < vector.size(); j++) {
 							if (timeStamps[j] == (timeStamp - startTime)) {
-								vector[j].setValue(index, value);
+								vector.get(j).setValue(index, value);
 								if (myMin[index] > value)
 									myMin[index] = value;
 								if (myMax[index] < value)
@@ -250,10 +253,10 @@ public class KetaiOSOpenGL extends PApplet {
 				Long[] fa = new Long[len];
 				timeStampTypes.toArray(fa);
 				// storing data packages per timeStamp
-				vector = new Vector[len];
 				for (int i = 0; i < len; i++) {
 					timeStamps[i] = fa[i];
-					vector[i] = new Vector(i, timeStamps[i], type);
+					vector.add(new Vector(i, timeStamps[i], type));
+
 				}
 				// parsing all rows
 				for (int row = 0; row < rowCount; row++) {
@@ -266,9 +269,9 @@ public class KetaiOSOpenGL extends PApplet {
 					float z = sensorTable.getFloat(row, 4);
 					if (type == typeVal) {
 						src += "[" + type + "] " + (timeStamp - startTime) + "ms : " + x + " : " + y + " : " + z + "\n";
-						for (int j = 0; j < vector.length; j++) {
+						for (int j = 0; j < vector.size(); j++) {
 							if (timeStamps[j] == (timeStamp - startTime)) {
-								vector[j].setValue(x, y, z);
+								vector.get(j).setValue(x, y, z);
 								if (myMin[0] > x)
 									myMin[0] = x;
 								if (myMax[0] < x)
@@ -307,7 +310,7 @@ public class KetaiOSOpenGL extends PApplet {
 			// sensor-specific gui
 			MultiListButton multi;
 			// add sensor to global navigation
-			multi = mlButton.add("sensors_" + type, 100 + type);
+			multi = mlButton.add("" + type, 100 + type);
 			multi.setLabel(type + " : " + sensorName[type]);
 			// textarea for source data
 			myTextarea = controlP5.addTextarea("src_" + type, "", (width - 4 * border) / sensors.size() * (type - 1) + type * border, border,
@@ -350,13 +353,13 @@ public class KetaiOSOpenGL extends PApplet {
 			stroke(subColor(index));
 			noFill();
 			beginShape();
-			for (int i = 1; i < vector.length; i++) {
+			for (int i = 1; i < vector.size(); i++) {
 				float plotX = -range.lowValue() * (width - 2 * border) / (range.highValue() - range.lowValue())
-						+ map(vector[i].timeStamp, 0, myDuration, border, (width - 2 * border) * 100 / (range.highValue() - range.lowValue()));
-				float plotY = map(vector[i].getValue(index), myMin[index], myMax[index], -height / 2 + border, height / 2 - border * 2);
-				vector[i].setPosition(index, plotX, plotY, 0);
+						+ map(vector.get(i).timeStamp, 0, myDuration, border, (width - 2 * border) * 100 / (range.highValue() - range.lowValue()));
+				float plotY = map(vector.get(i).getValue(index), myMin[index], myMax[index], -height / 2 + border, height / 2 - border * 2);
+				vector.get(i).setPosition(index, plotX, plotY, 0);
 				// check if value rolls over, don't connect the line then
-				if (abs(plotY - map(vector[i - 1].getValue(index), myMin[index], myMax[index], -height / 2 + border, height / 2 - border * 2)) > height * .75) {
+				if (abs(plotY - map(vector.get(i - 1).getValue(index), myMin[index], myMax[index], -height / 2 + border, height / 2 - border * 2)) > height * .75) {
 					endShape();
 					beginShape();
 				}
@@ -364,8 +367,8 @@ public class KetaiOSOpenGL extends PApplet {
 			}
 			endShape();
 			// rollover graphics
-			for (int i = 0; i < vector.length; i++) {
-				if (abs(mouseX - vector[i].x[index]) < 100 / (range.highValue() - range.lowValue())) {
+			for (int i = 0; i < vector.size(); i++) {
+				if (abs(mouseX - vector.get(i).x[index]) < 100 / (range.highValue() - range.lowValue())) {
 					// on timeScale
 					noStroke();
 					if (index == 0 || index == 3) {
@@ -375,32 +378,32 @@ public class KetaiOSOpenGL extends PApplet {
 					} else if (index == 2 || index == 5) {
 						fill(0, 0, 255);
 					}
-					ellipse(vector[i].x[index], vector[i].y[index], 4, 4);
+					ellipse(vector.get(i).x[index], vector.get(i).y[index], 4, 4);
 					stroke(255);
-					point(vector[i].x[index], vector[i].y[index]);
+					point(vector.get(i).x[index], vector.get(i).y[index]);
 					// rollover label
 					for (int j = 0; j < numFields; j++) { // j<3 : only show data 0..2,
 						// not raw data (index 3..5)
-						label[j].setPosition((int) vector[i].x[j] + 2, (int) vector[i].y[j] + 2 + height / 2);
-						label[j].setValue("[" + j + "] " + vector[i].timeStamp + "ms -> " + vector[i].valueList[j]);
+						label[j].setPosition((int) vector.get(i).x[j] + 2, (int) vector.get(i).y[j] + 2 + height / 2);
+						label[j].setValue("[" + j + "] " + vector.get(i).timeStamp + "ms -> " + vector.get(i).valueList[j]);
 						label[j].setColorValue(myColor);
 					}
 				} else {
 					noFill();
 				}
 				if (mousePressed && mouseY < height - border) {
-					if (abs(mouseX - vector[i].x[index]) < 100 / (range.highValue() - range.lowValue())) {
+					if (abs(mouseX - vector.get(i).x[index]) < 100 / (range.highValue() - range.lowValue())) {
 						// plot the vector visuzlization over timeline
 						pushMatrix();
-						translate(vector[i].x[index], 0, 0);
-						vector[i].display(20); // scale factor (10)
+						translate(vector.get(i).x[index], 0, 0);
+						vector.get(i).display(20); // scale factor (10)
 						popMatrix();
 					}
 				} else {
 					// plot the vector visuzlization over timeline
 					pushMatrix();
-					translate(vector[i].x[index], 0, 0);
-					vector[i].display(20); // scale factor (10)
+					translate(vector.get(i).x[index], 0, 0);
+					vector.get(i).display(20); // scale factor (10)
 					popMatrix();
 				}
 			}
@@ -418,8 +421,8 @@ public class KetaiOSOpenGL extends PApplet {
 
 		// NORMALIZING VALUES -> WARNING: NOT CONSISTENT THROUGH ALL ROWS
 		void normalizeValues() {
-			for (int i = 0; i < vector.length; i++) {
-				vector[i].normalizeValues();
+			for (int i = 0; i < vector.size(); i++) {
+				vector.get(i).normalizeValues();
 			}
 		}
 
@@ -694,7 +697,7 @@ public class KetaiOSOpenGL extends PApplet {
 
 	// SENSOR NAMES (id to text)
 	void loadSensorNames(String dataStructure) {
-		if (dataStructure.equals("TTIV")) {
+		if (dataStructure.equals("TTIV") || dataStructure.equals("XYZ")) {
 			sensorName[1] = "SENSOR_ORIENTATION";
 			sensorName[2] = "SENSOR_ACCELEROMETER";
 			sensorName[4] = "SENSOR_TEMPERATURE";
@@ -714,10 +717,17 @@ public class KetaiOSOpenGL extends PApplet {
 	public void controlEvent(ControlEvent theEvent) {
 		println(theEvent.controller().name() + " = " + theEvent.value());
 		for (int i = 0; i < sensors.size(); i++) {
-			Sensor s = (Sensor) sensors.get(i);
-			s.active(theEvent.controller().name(), theEvent.value());
+			sensors.get(i).active(theEvent.controller().name(), theEvent.value());
 		}
 		// theEvent.controller().setLabel(theEvent.controller().name()+" clicked");
+	}
+
+	// KEYBOARD INPUT
+	public void keyPressed() {
+		if (key == ' ') {
+			playBack = !playBack;
+			println("pause/play");
+		}
 	}
 
 	// TABLE
