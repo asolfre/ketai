@@ -295,7 +295,7 @@ public class KetaiSensorManager implements SensorEventListener {
 
 		timeOfLastUpdate = now;
 
-		if (onAccelerometerSensorEventMethod != null) {
+		if (arg0.sensor.getType() == Sensor.TYPE_ACCELEROMETER && accelerometerSensorEnabled && onAccelerometerSensorEventMethod != null ) {
 			try {
 				onAccelerometerSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values });
 			} catch (Exception e) {
@@ -306,7 +306,7 @@ public class KetaiSensorManager implements SensorEventListener {
 			}
 		}
 
-		if (onOrientationSensorEventMethod != null) {
+		if (arg0.sensor.getType() == Sensor.TYPE_ORIENTATION && orientationSensorEnabled && onOrientationSensorEventMethod != null) {
 			try {
 				onOrientationSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values });
 				} catch (Exception e) {
@@ -317,7 +317,7 @@ public class KetaiSensorManager implements SensorEventListener {
 			}
 		}
 
-		if (onMagneticFieldSensorEventMethod != null) {
+		if (arg0.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD && magneticFieldSensorEnabled && onMagneticFieldSensorEventMethod != null) {
 			try {
 				onMagneticFieldSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values });
 			} catch (Exception e) {
