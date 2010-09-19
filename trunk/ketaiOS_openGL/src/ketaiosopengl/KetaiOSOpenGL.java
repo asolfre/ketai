@@ -478,37 +478,24 @@ public class KetaiOSOpenGL extends PApplet {
 		}
 
 		void display(int mag) {
-			// adjusting coordinate system to match device coordinate system http://developer.android.com/reference/android/hardware/SensorEvent.html
-			PVector origin = new PVector(0, 0, 0); // origin, here (0|0|0);
-			PVector delta = new PVector(0, 0, 0); // determined by the origin
-			// point and value point (for vectors away from origin)
-			delta.x = origin.x - value.x;
-			delta.y = origin.y - value.y;
-			delta.z = origin.z - value.z;
-
 			pushMatrix();
 			// VERSION 1 correction
-						rotateX(HALF_PI); // turning y axis into z to match device
-						//rotateZ(HALF_PI); // turning y axis into z to match device
-
-						//rotateX(PI);
-						scale(-mag, -mag, -mag); // flip y-axis
-
-			// static/normal matrix
+			rotateX(HALF_PI); // turning y axis into z to match device
+			scale(mag, -mag, mag); // flip y-axis
+			// value breakdown
 			if (rollOver()) {
 				// value.x Vector
 				stroke(255, 0, 0, 127);
-				line(origin.x, origin.y, origin.z, value.x, 0, 0);
+				line(0, 0, 0, value.x, 0, 0);
 				// value.y Vector
 				stroke(0, 255, 0, 127);
-				line(origin.x, origin.y, origin.z, 0, value.y, 0);
+				line(0, 0, 0, 0, value.y, 0);
 				// value.z Vector
 				stroke(0, 0, 255, 127);
-				line(origin.x, origin.y, origin.z, 0, 0, value.z);
+				line(0, 0, 0, 0, 0, value.z);
 				// value Vector
 				// line(origin.x,origin.y,origin.z,value.x,value.y,value.z);
 			}
-			translate(origin.x, origin.y, origin.z);
 
 			// ROTATED MATRIX VERSION 1
 			//			rotateX(HALF_PI); // turning y axis into z to match device
@@ -517,30 +504,15 @@ public class KetaiOSOpenGL extends PApplet {
 			//			float r = sqrt(sq(delta.x) + sq(delta.y) + sq(delta.z));
 			//			float theta = atan2(delta.y, delta.x);
 			//			float phi = acos(delta.z / r);
-			//
 			//			rotateZ(theta);
 			//			rotateY(phi);
 			//			rotateX(-HALF_PI);
-			//		     ds added "correction rotation rotateY(-theta);
+			//		    ds added "correction rotation rotateY(-theta);			
 
 			// ROTATED MATRIX VERSION 2
-			//						PVector new_dir = new PVector(delta.x, delta.y, delta.z);
-			//						new_dir.normalize();
-			//						PVector new_up = new PVector(0, 1, 0);
-			//						stroke(0);
-			//						line(0, 0, 0, new_dir.x * 100, new_dir.y * 100, new_dir.z * 100);
-			//						new_up.normalize();
-			//						PVector crossP = new_dir.cross(new_up);
-			//						crossP.normalize();
-			//						float dotP = new_dir.dot(new_up);
-			//						float angle = PVector.angleBetween(new_up, new_dir);
-			//						rotate(-angle, crossP.x, crossP.y, crossP.z);
-			//						
-
-			// ROTATED MATRIX VERSION 3
 			PVector up = new PVector(0, 1, 0);
 			// dir vector
-			PVector N = new PVector(delta.x, delta.y, delta.z);
+			PVector N = new PVector(value.x, value.y, value.z);
 			N.normalize();
 			// up vector
 			PVector U = up.cross(N);
@@ -549,11 +521,10 @@ public class KetaiOSOpenGL extends PApplet {
 			PVector V = N.cross(U);
 			V.normalize();
 			applyMatrix(U.x, U.y, U.z, 0, V.x, V.y, V.z, 0, N.x, N.y, N.z, 0, 0, 0, 0, 1);
-			rotateX(HALF_PI);
-			rotateY(HALF_PI);
+			
 			stroke(255, 255, 255, 127);
 			noFill();
-			line(0, 0, 0, 0, delta.mag(), 0); // draw y axis in new Marix orientation
+			line(0, 0, 0, 0, 0, value.mag()); // draw y axis in new Marix orientation
 			noStroke();
 			// display
 			if (rollOver()) {
@@ -561,60 +532,62 @@ public class KetaiOSOpenGL extends PApplet {
 			} else {
 				fill(255, 70);
 			}
+			// display
 			beginShape();
-			vertex(-.8f, .01f, -.4f);
-			vertex(.8f, .01f, -.4f);
-			vertex(.8f, .01f, .4f);
-			vertex(-.8f, .01f, .4f);
+			vertex(-.4f, -.8f, .001f);
+			vertex(.4f, -.8f, .001f);
+			vertex(.4f, .8f, .001f);
+			vertex(-.4f, .8f, .001f);
 			endShape();
 			// top
 			fill(127, 100);
 			beginShape();
-			vertex(-1f, 0, -.5f);
-			vertex(1f, 0, -.5f);
-			vertex(1f, 0, .5f);
-			vertex(-1f, 0, .5f);
+			vertex(-.5f, -1f, 0);
+			vertex(.5f, -1f, 0);
+			vertex(.5f, 1f, 0);
+			vertex(-.5f, 1f, 0);
 			endShape();
 			fill(127, 255);
 			// bottom
 			beginShape();
-			vertex(-1f, -.1f, -.5f);
-			vertex(1f, -.1f, -.5f);
-			vertex(1f, -.1f, .5f);
-			vertex(-1f, -.1f, .5f);
+			vertex(-.5f, -1f, -.1f);
+			vertex(.5f, -1f, -.1f);
+			vertex(.5f, 1f, -.1f);
+			vertex(-.5f, 1f, -.1f);
 			endShape();
 			// front
 			fill(127, 100);
 			beginShape();
-			vertex(-1f, 0, -.5f);
-			vertex(1f, 0, -.5f);
-			vertex(1f, -.1f, -.5f);
-			vertex(-1f, -.1f, -.5f);
+			vertex(-.5f, -1f, 0);
+			vertex(.5f, -1f, 0);
+			vertex(.5f, -1f, -.1f);
+			vertex(-.5f, -1f, -.1f);
 			endShape();
 			// back
 			fill(127, 100);
 			beginShape();
-			vertex(-1f, 0, .5f);
-			vertex(1f, 0, .5f);
-			vertex(1f, -.1f, .5f);
-			vertex(-1f, -.1f, .5f);
+			vertex(-.5f, 1f, 0);
+			vertex(.5f, 1f, 0);
+			vertex(.5f, 1f, -.1f);
+			vertex(-.5f, 1f, -.1f);
 			endShape();
 			// left
 			fill(127, 100);
 			beginShape();
-			vertex(-1f, 0, -.5f);
-			vertex(-1f, 0, .5f);
-			vertex(-1f, -.1f, .5f);
-			vertex(-1f, -.1f, -.5f);
+			vertex(-.5f, 1f, 0);
+			vertex(-.5f, 1f, -.1f);
+			vertex(-.5f, -1f, -.1f);
+			vertex(-.5f, -1f, 0);
 			endShape();
 			// right
 			fill(127, 100);
 			beginShape();
-			vertex(.1f, 0, -.5f);
-			vertex(.1f, 0, .5f);
-			vertex(.1f, -.1f, .5f);
-			vertex(.1f, -.1f, -.5f);
+			vertex(.5f, 1, 0);
+			vertex(.5f, 1, -.1f);
+			vertex(.5f, -1f, -.1f);
+			vertex(.5f, -1f, 0);
 			endShape();
+
 			popMatrix();
 		}
 
