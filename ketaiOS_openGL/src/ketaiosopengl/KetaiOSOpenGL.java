@@ -479,20 +479,20 @@ public class KetaiOSOpenGL extends PApplet {
 
 		void display(int mag) {
 			// adjusting coordinate system to match device coordinate system http://developer.android.com/reference/android/hardware/SensorEvent.html
-			rotateX(HALF_PI); // turning y axis into z to match device
-			rotateZ(PI);
-			scale(1, -1, 1); // flip y-axis
-
 			PVector origin = new PVector(0, 0, 0); // origin, here (0|0|0);
 			PVector delta = new PVector(0, 0, 0); // determined by the origin
 			// point and value point (for vectors away from origin)
-
 			delta.x = origin.x - value.x;
 			delta.y = origin.y - value.y;
 			delta.z = origin.z - value.z;
 
 			pushMatrix();
-			scale(mag);
+			// VERSION 1 correction
+						rotateX(HALF_PI); // turning y axis into z to match device
+						//rotateZ(HALF_PI); // turning y axis into z to match device
+
+						//rotateX(PI);
+						scale(-mag, -mag, -mag); // flip y-axis
 
 			// static/normal matrix
 			if (rollOver()) {
@@ -508,18 +508,50 @@ public class KetaiOSOpenGL extends PApplet {
 				// value Vector
 				// line(origin.x,origin.y,origin.z,value.x,value.y,value.z);
 			}
-			// rotated matrix
-			float r = sqrt(sq(delta.x) + sq(delta.y) + sq(delta.z));
-			float theta = atan2(delta.y, delta.x);
-			float phi = acos(delta.z / r);
 			translate(origin.x, origin.y, origin.z);
-			// if the normal plans should be on the vector tip at the position value translate(value.x,value.y,value.z);
-			rotateZ(theta);
-			rotateY(phi);
-			rotateX(-HALF_PI);
-			// ds added "correction rotation rotateY(-theta);
+
+			// ROTATED MATRIX VERSION 1
+			//			rotateX(HALF_PI); // turning y axis into z to match device
+			//			rotateZ(PI);
+			//			scale(1, -1, 1); // flip y-axis
+			//			float r = sqrt(sq(delta.x) + sq(delta.y) + sq(delta.z));
+			//			float theta = atan2(delta.y, delta.x);
+			//			float phi = acos(delta.z / r);
+			//
+			//			rotateZ(theta);
+			//			rotateY(phi);
+			//			rotateX(-HALF_PI);
+			//		     ds added "correction rotation rotateY(-theta);
+
+			// ROTATED MATRIX VERSION 2
+			//						PVector new_dir = new PVector(delta.x, delta.y, delta.z);
+			//						new_dir.normalize();
+			//						PVector new_up = new PVector(0, 1, 0);
+			//						stroke(0);
+			//						line(0, 0, 0, new_dir.x * 100, new_dir.y * 100, new_dir.z * 100);
+			//						new_up.normalize();
+			//						PVector crossP = new_dir.cross(new_up);
+			//						crossP.normalize();
+			//						float dotP = new_dir.dot(new_up);
+			//						float angle = PVector.angleBetween(new_up, new_dir);
+			//						rotate(-angle, crossP.x, crossP.y, crossP.z);
+			//						
+
+			// ROTATED MATRIX VERSION 3
+			PVector up = new PVector(0, 1, 0);
+			// dir vector
+			PVector N = new PVector(delta.x, delta.y, delta.z);
+			N.normalize();
+			// up vector
+			PVector U = up.cross(N);
+			U.normalize();
+			// right vector
+			PVector V = N.cross(U);
+			V.normalize();
+			applyMatrix(U.x, U.y, U.z, 0, V.x, V.y, V.z, 0, N.x, N.y, N.z, 0, 0, 0, 0, 1);
+			rotateX(HALF_PI);
+			rotateY(HALF_PI);
 			stroke(255, 255, 255, 127);
-			//box(2f, .01f, 1f);
 			noFill();
 			line(0, 0, 0, 0, delta.mag(), 0); // draw y axis in new Marix orientation
 			noStroke();
@@ -847,5 +879,45 @@ public class KetaiOSOpenGL extends PApplet {
 	// FULLSCREEN APP
 	public static void main(String args[]) {
 		PApplet.main(new String[] { "--present", ketaiosopengl.KetaiOSOpenGL.class.getName() });
+	}
+
+	public double x_;
+	public double y_;
+	public double z_;
+
+	public void yaw(double yaw) {
+		PVector v = new PVector(); // temporary vector
+		double yawRad = Math.toRadians(yaw);
+		double cos = Math.cos(yawRad);
+		double sin = Math.sin(yawRad);
+		x_ = cos * v.x + sin * v.y;
+		y_ = -sin * v.x + cos * v.y;
+		z_ = v.z;
+	}
+
+	public void pitch(double pitch) {
+		PVector v = new PVector(); // temporary vector
+		double pitchRad = Math.toRadians(pitch); // negative sign => positive as defined in SDK.
+		double cos = Math.cos(pitchRad);
+		double sin = Math.sin(pitchRad);
+		x_ = v.x;
+		y_ = cos * v.y + sin * v.z;
+		z_ = -sin * v.y + cos * v.z;
+	}
+
+	public void roll(double roll) {
+		PVector v = new PVector(); // temporary vector
+		double rollRad = Math.toRadians(roll);
+		double cos = Math.cos(rollRad);
+		double sin = Math.sin(rollRad);
+		x_ = cos * v.x + sin * v.z;
+		y_ = v.y;
+		z_ = -sin * v.x + cos * v.z;
+	}
+
+	public void rollpitchyaw(double roll, double pitch, double yaw) {
+		roll(roll);
+		pitch(pitch);
+		yaw(yaw);
 	}
 }
