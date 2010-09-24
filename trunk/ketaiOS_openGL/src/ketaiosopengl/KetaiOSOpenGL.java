@@ -479,6 +479,11 @@ public class KetaiOSOpenGL extends PApplet {
 
 		void display(int mag) {
 			pushMatrix();
+
+			// create switch here for each sensor type
+			// add orientation, make work the same way as accelerometer, allow comparison
+			// accelerometer below
+
 			// VERSION 1 correction
 			rotateX(HALF_PI); // turning y axis into z to match device
 			scale(mag, -mag, mag); // flip y-axis
@@ -486,10 +491,10 @@ public class KetaiOSOpenGL extends PApplet {
 			if (rollOver()) {
 				// value.x Vector
 				stroke(255, 0, 0, 127);
-				line(0, 0, 0, value.x, 0, 0);
+				line(0, 0, 0, -value.x, 0, 0);
 				// value.y Vector
 				stroke(0, 255, 0, 127);
-				line(0, 0, 0, 0, value.y, 0);
+				line(0, 0, 0, 0, -value.y, 0);
 				// value.z Vector
 				stroke(0, 0, 255, 127);
 				line(0, 0, 0, 0, 0, value.z);
@@ -512,7 +517,7 @@ public class KetaiOSOpenGL extends PApplet {
 			// ROTATED MATRIX VERSION 2
 			PVector up = new PVector(0, 1, 0);
 			// dir vector
-			PVector N = new PVector(value.x, value.y, value.z);
+			PVector N = new PVector(value.x, value.y, abs(value.z));
 			N.normalize();
 			// up vector
 			PVector U = up.cross(N);
@@ -521,7 +526,7 @@ public class KetaiOSOpenGL extends PApplet {
 			PVector V = N.cross(U);
 			V.normalize();
 			applyMatrix(U.x, U.y, U.z, 0, V.x, V.y, V.z, 0, N.x, N.y, N.z, 0, 0, 0, 0, 1);
-			
+
 			stroke(255, 255, 255, 127);
 			noFill();
 			line(0, 0, 0, 0, 0, value.mag()); // draw y axis in new Marix orientation
