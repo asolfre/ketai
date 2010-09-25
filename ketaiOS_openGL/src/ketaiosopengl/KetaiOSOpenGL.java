@@ -396,14 +396,14 @@ public class KetaiOSOpenGL extends PApplet {
 						// plot the vector visuzlization over timeline
 						pushMatrix();
 						translate(vector.get(i).x[index], 0, 0);
-						vector.get(i).display(20); // scale factor (10)
+						vector.get(i).display(); // scale factor (10)
 						popMatrix();
 					}
 				} else {
 					// plot the vector visuzlization over timeline
 					pushMatrix();
 					translate(vector.get(i).x[index], 0, 0);
-					vector.get(i).display(20); // scale factor (10)
+					vector.get(i).display(); // scale factor (10)
 					popMatrix();
 				}
 			}
@@ -439,7 +439,7 @@ public class KetaiOSOpenGL extends PApplet {
 						label[i].hide();
 					}
 				} else {
-					myTextarea.show();
+					//					myTextarea.show();
 					myTextlabelMin.show();
 					myTextlabelMax.show();
 					myTextlabelZero.show();
@@ -477,7 +477,7 @@ public class KetaiOSOpenGL extends PApplet {
 			type = _type;
 		}
 
-		void display(int mag) {
+		void display() {
 			pushMatrix();
 
 			// create switch here for each sensor type
@@ -486,50 +486,70 @@ public class KetaiOSOpenGL extends PApplet {
 
 			// VERSION 1 correction
 			rotateX(HALF_PI); // turning y axis into z to match device
-			scale(mag, -mag, mag); // flip y-axis
-			// value breakdown
-			if (rollOver()) {
-				// value.x Vector
-				stroke(255, 0, 0, 127);
-				line(0, 0, 0, -value.x, 0, 0);
-				// value.y Vector
-				stroke(0, 255, 0, 127);
-				line(0, 0, 0, 0, -value.y, 0);
-				// value.z Vector
-				stroke(0, 0, 255, 127);
-				line(0, 0, 0, 0, 0, value.z);
-				// value Vector
-				// line(origin.x,origin.y,origin.z,value.x,value.y,value.z);
+			scale(height/8, -height/8, height/8); // flip y-axis
+			
+			// ROTATION FOR ACCELEROMETER (MIN. -9.81, MAX. 9.81 DURING REST 
+			if (type == 1) {
+				
+				// ROTATED MATRIX VERSION 1
+				//			rotateX(HALF_PI); // turning y axis into z to match device
+				//			rotateZ(PI);
+				//			scale(1, -1, 1); // flip y-axis
+				//			float r = sqrt(sq(delta.x) + sq(delta.y) + sq(delta.z));
+				//			float theta = atan2(delta.y, delta.x);
+				//			float phi = acos(delta.z / r);
+				//			rotateZ(theta);
+				//			rotateY(phi);
+				//			rotateX(-HALF_PI);
+				//		    ds added "correction rotation rotateY(-theta);			
+
+				// ROTATED MATRIX VERSION 2
+				PVector up = new PVector(0, 1, 0);
+				// dir vector
+				PVector N = new PVector(value.x, value.y, abs(value.z));
+				N.normalize();
+				// up vector
+				PVector U = up.cross(N);
+				U.normalize();
+				// right vector
+				PVector V = N.cross(U);
+				V.normalize();
+				// value breakdown
+				if (rollOver()) {
+					// value.x Vector
+					stroke(255, 0, 0, 127);
+					line(0, 0, 0, -N.x, 0, 0);
+					// value.y Vector
+					stroke(0, 255, 0, 127);
+					line(0, 0, 0, 0, -N.y, 0);
+					// value.z Vector
+					stroke(0, 0, 255, 127);
+					line(0, 0, 0, 0, 0, N.z);
+				}
+				applyMatrix(U.x, U.y, U.z, 0, V.x, V.y, V.z, 0, N.x, N.y, N.z, 0, 0, 0, 0, 1);
 			}
-
-			// ROTATED MATRIX VERSION 1
-			//			rotateX(HALF_PI); // turning y axis into z to match device
-			//			rotateZ(PI);
-			//			scale(1, -1, 1); // flip y-axis
-			//			float r = sqrt(sq(delta.x) + sq(delta.y) + sq(delta.z));
-			//			float theta = atan2(delta.y, delta.x);
-			//			float phi = acos(delta.z / r);
-			//			rotateZ(theta);
-			//			rotateY(phi);
-			//			rotateX(-HALF_PI);
-			//		    ds added "correction rotation rotateY(-theta);			
-
-			// ROTATED MATRIX VERSION 2
-			PVector up = new PVector(0, 1, 0);
-			// dir vector
-			PVector N = new PVector(value.x, value.y, abs(value.z));
-			N.normalize();
-			// up vector
-			PVector U = up.cross(N);
-			U.normalize();
-			// right vector
-			PVector V = N.cross(U);
-			V.normalize();
-			applyMatrix(U.x, U.y, U.z, 0, V.x, V.y, V.z, 0, N.x, N.y, N.z, 0, 0, 0, 0, 1);
-
+			// ROTATION FOR ORIENTATION SENSOR (YAW, PITCH, ROLL DURING REST) 
+			if (type == 3) {
+				PVector N = new PVector(value.x, value.y, value.z);
+				N.normalize();
+				if (rollOver()) {
+					// value.x Vector
+					stroke(255, 0, 0, 127);
+					line(0, 0, 0, -N.x, 0, 0);
+					// value.y Vector
+					stroke(0, 255, 0, 127);
+					line(0, 0, 0, 0, -N.y, 0);
+					// value.z Vector
+					stroke(0, 0, 255, 127);
+					line(0, 0, 0, 0, 0, N.z);
+				}
+				rotateZ(-radians(value.x));
+				rotateX(-radians(value.y));
+				rotateY(-radians(value.z));
+			}
 			stroke(255, 255, 255, 127);
 			noFill();
-			line(0, 0, 0, 0, 0, value.mag()); // draw y axis in new Marix orientation
+			line(0, 0, 0, 0, 0, 1); // draw y axis in new Marix orientation
 			noStroke();
 			// display
 			if (rollOver()) {
