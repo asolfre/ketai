@@ -56,4 +56,3 @@ public void mousePressed() {
   println("SensorManager isStarted: " + sensorManager.isStarted());
 }
 
-
