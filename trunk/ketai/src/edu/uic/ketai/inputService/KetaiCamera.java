@@ -49,7 +49,7 @@ public class KetaiCamera extends PImage implements Runnable {
 			// exposes the call-back method. The first argument is the method
 			// name followed by what should match the method argument(s)
 			onPreviewEventMethod = parent.getClass().getMethod(
-					"onCameraPreviewEvent", new Class[] { int[].class });
+					"onCameraPreviewEvent");
 			PApplet.println("KetaiCamera found onCameraPreviewEvent in parent... ");
 		} catch (Exception e) {
 			// no such method, or an error.. which is fine, just ignore
@@ -158,6 +158,8 @@ public class KetaiCamera extends PImage implements Runnable {
 
 	PreviewCallback previewcallback = new PreviewCallback() {
 		public void onPreviewFrame(byte[] data, Camera camera) {
+			if (camera == null)
+				return;
 			// The camera does NOT return RGB even when set for it so we will
 			// just deal w/the NV21 format
 			//
@@ -192,8 +194,7 @@ public class KetaiCamera extends PImage implements Runnable {
 			if (onPreviewEventMethod != null && myPixels != null)
 				try {
 					// PApplet.println("onCameraPreviewEvent() calling parent method");
-					onPreviewEventMethod.invoke(parent,
-							new Object[] { myPixels });
+					onPreviewEventMethod.invoke(parent);
 					return;
 				} catch (Exception e) {
 					PApplet.println("Disabling onCameraPreviewEvent() because of an error:"
@@ -206,7 +207,8 @@ public class KetaiCamera extends PImage implements Runnable {
 
 	PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
-
+			if(camera == null)
+				return;
 			FileOutputStream outStream = null;
 			// BitmapFactory.Options options = new BitmapFactory.Options();
 			// options.inSampleSize = 1;
