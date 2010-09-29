@@ -8,7 +8,7 @@ import edu.uic.ketai.analyzer.SensorAnalyzer;
 import edu.uic.ketai.data.DataManager;
 import edu.uic.ketai.inputService.KetaiSensorManager;
 
-public class Ketai implements IKetai {
+public class Ketai {
 	PApplet parent;
 	DataManager datamanager;
 	InputManager inputmanager;
