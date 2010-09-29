@@ -145,6 +145,7 @@ public class DataManager {
 							int i = c.getColumnCount();
 							for (int j = 0; j < i; j++)
 								row += c.getString(j) + "\t";
+							row += "\n";
 						} while (c.moveToNext());
 					}
 					if (row.length() > 0)
