@@ -53,7 +53,8 @@ public class Ketai implements IKetai {
 	public void exportData(String _destinationFilename) {
 		try {
 			datamanager.exportData(_destinationFilename);
-		} catch (IOException x) { x.printStackTrace();
+		} catch (IOException x) {
+			x.printStackTrace();
 		}
 	}
 
