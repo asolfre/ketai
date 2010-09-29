@@ -37,14 +37,6 @@ public class DataManager {
 		return this.db;
 	}
 
-	public String getStats() {
-		return "";
-	}
-
-	public void deleteAllTables() {
-
-	}
-
 	public long getDataCount() {
 		long count = 0;
 		String tablename;
@@ -76,20 +68,6 @@ public class DataManager {
 		return count;
 	}
 
-	private static class OpenHelper extends SQLiteOpenHelper {
-
-		OpenHelper(Context context) {
-			super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		}
-
-		@Override
-		public void onCreate(SQLiteDatabase db) {
-		}
-
-		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		}
-	}
-
 	public boolean tableExists(String _table) {
 		Cursor cursor = this.db
 				.rawQuery("select name from SQLite_Master", null);
@@ -116,12 +94,10 @@ public class DataManager {
 		File dir = new File(Environment.getExternalStorageDirectory(),
 				DATA_ROOT_DIRECTORY + "/" + directory);
 		if (!dir.exists()) {
-			PApplet.println("Creating directory: " + dir.getAbsolutePath());
-			if(dir.mkdirs())
-				PApplet.println("success making dir");
-			else
-			{
-				PApplet.println("Failed making dir");
+			if (dir.mkdirs())
+				PApplet.println("success making directory: " + dir.getAbsolutePath() );
+			else {
+				PApplet.println("Failed making directory. Check your sketch permissions or that your device is not connected in disk mode.");
 				return;
 			}
 		}
@@ -203,4 +179,18 @@ public class DataManager {
 				channel.close();
 		}
 	}
+
+	private static class OpenHelper extends SQLiteOpenHelper {
+
+		OpenHelper(Context context) {
+			super(context, DATABASE_NAME, null, DATABASE_VERSION);
+		}
+
+		public void onCreate(SQLiteDatabase db) {
+		}
+
+		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		}
+	}
+
 }

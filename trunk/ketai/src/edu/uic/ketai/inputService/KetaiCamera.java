@@ -47,7 +47,7 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 		start();
 		super.init(_width, _height, RGB);
 		myPixels = new int[_width * _height];
-		listeners=new ArrayList<IKetaiAnalyzer>();		
+		listeners = new ArrayList<IKetaiAnalyzer>();
 
 		try {
 			// the following uses reflection to see if the parent
@@ -123,7 +123,7 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 		loadPixels();
 		synchronized (pixels) {
 			if (crop) {
-
+				// Taken straight from Capture.java in processing core video
 				// f#$)(#$ing quicktime / jni is so g-d slow, calling
 				// copyToArray
 				// for the invidual rows is literally 100x slower. instead,
@@ -228,14 +228,12 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 
 				outStream.write(data);
 				outStream.close();
-				Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
 			}
-			Log.d(TAG, "onPictureTaken - jpeg");
 		}
 	};
 
@@ -250,25 +248,8 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 
 	public void dispose() {
 		stop();
-		// System.out.println("calling dispose");
-		// this is important so that the next app can do video
 	}
 
-	// public void surfaceCreated(SurfaceHolder holder) {
-	// try {
-	// camera.setPreviewDisplay(holder);
-	//
-	// camera.setPreviewCallback( new PreviewCallback() {
-	// // Called for each frame previewed
-	// public void onPreviewFrame(byte[] data, Camera camera) {
-	// Log.d(TAG, "onPreviewFrame called at: " + System.currentTimeMillis());
-	// // CameraManager.this.invalidate();
-	// }
-	// });
-	// } catch (IOException e) {
-	// e.printStackTrace();
-	// }
-	// }
 
 	static public void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width,
 			int height) {
@@ -309,7 +290,6 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 		}
 	}
 
-	@Override
 	public void run() {
 		// while ((Thread.currentThread() == runner) && (camera != null)) {
 		// try {
@@ -341,12 +321,10 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 
 	}
 
-	@Override
 	public void startService() {
 		start();
 	}
 
-	@Override
 	public int getStatus() {
 		// TODO Auto-generated method stub
 		return 0;
@@ -363,21 +341,19 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	}
 
 	public void registerAnalyzer(IKetaiAnalyzer _analyzer) {
-		if(listeners.contains(_analyzer))
+		if (listeners.contains(_analyzer))
 			return;
-		PApplet.println("InputService Registering this analyzer: " + _analyzer.getClass());
+		PApplet.println("KetaiCamera Registering this analyzer: "
+				+ _analyzer.getClass());
 		listeners.add(_analyzer);
 	}
-	
-	public void removeAnalyzer(IKetaiAnalyzer _analyzer)
-	{
+
+	public void removeAnalyzer(IKetaiAnalyzer _analyzer) {
 		listeners.remove(_analyzer);
 	}
-	
-	public void broadcastData(Object data)
-	{
-		for(IKetaiAnalyzer analyzer: listeners)
-		{
+
+	public void broadcastData(Object data) {
+		for (IKetaiAnalyzer analyzer : listeners) {
 			analyzer.analyzeData(data);
 		}
 	}

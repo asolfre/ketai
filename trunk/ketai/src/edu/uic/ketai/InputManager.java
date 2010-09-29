@@ -14,81 +14,66 @@ public class InputManager {
 	ArrayList<IKetaiAnalyzer> analyzers;
 	PApplet parent;
 	DataManager datamanager;
-	
-	public InputManager(PApplet _parent, DataManager _datamanager)
-	{
+
+	public InputManager(PApplet _parent, DataManager _datamanager) {
 		services = new ArrayList<IKetaiInputService>();
 		analyzers = new ArrayList<IKetaiAnalyzer>();
-		datamanager = _datamanager; 
+		datamanager = _datamanager;
 		parent = _parent;
-	} 
-	
-	void startServices()
-	{
+	}
+
+	void startServices() {
 		Iterator<IKetaiInputService> it = services.iterator();
-		while(it.hasNext())
-		{
+		while (it.hasNext()) {
 			IKetaiInputService item = (IKetaiInputService) it.next();
 			item.startService();
-		}		
+		}
 	}
-	
-	void stopServices()
-	{
+
+	void stopServices() {
 		Iterator<IKetaiInputService> it = services.iterator();
-		while(it.hasNext())
-		{
+		while (it.hasNext()) {
 			IKetaiInputService item = (IKetaiInputService) it.next();
 			item.stopService();
-		}		
+		}
 	}
-	
-	
-	void addService(IKetaiInputService _service)
-	{
+
+	void addService(IKetaiInputService _service) {
 		services.add(_service);
 	}
-	
-	void addAnalyzer(IKetaiAnalyzer _analyzer)
-	{
+
+	void addAnalyzer(IKetaiAnalyzer _analyzer) {
 		analyzers.add(_analyzer);
 		registerAnalyzerWithService(_analyzer);
 	}
-	
-	IKetaiAnalyzer getAnalyzer(String name)
-	{
+
+	IKetaiAnalyzer getAnalyzer(String name) {
 		Iterator<IKetaiAnalyzer> it = analyzers.iterator();
-		while(it.hasNext())
-		{
+		while (it.hasNext()) {
 			IKetaiAnalyzer item = (IKetaiAnalyzer) it.next();
-			if(item.toString().equalsIgnoreCase(name))
+			if (item.toString().equalsIgnoreCase(name))
 				return item;
 		}
 		return null;
 	}
 
-	IKetaiInputService getInputService(String name)
-	{
+	IKetaiInputService getInputService(String name) {
 		Iterator<IKetaiInputService> it = services.iterator();
-		while(it.hasNext())
-		{
+		while (it.hasNext()) {
 			IKetaiInputService item = (IKetaiInputService) it.next();
-			if(item.toString().equalsIgnoreCase(name))
+			if (item.toString().equalsIgnoreCase(name))
 				return item;
 		}
 		return null;
 	}
-	
-	private void registerAnalyzerWithService(IKetaiAnalyzer _analyzer)
-	{
-		for(IKetaiInputService service: services)
-		{
-			if(service.getClass() == _analyzer.getServiceProviderClass())
-			{
+
+	private void registerAnalyzerWithService(IKetaiAnalyzer _analyzer) {
+		for (IKetaiInputService service : services) {
+			if (service.getClass() == _analyzer.getServiceProviderClass()) {
 				service.registerAnalyzer(_analyzer);
 				return;
 			}
 		}
 	}
-	
+
 }
