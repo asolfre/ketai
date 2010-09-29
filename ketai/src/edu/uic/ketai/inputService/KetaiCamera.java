@@ -27,14 +27,10 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	private static final String TAG = "ketaiCamera";
 	private Camera camera;
 	private int[] myPixels;
-	private Method onPreviewEventMethod;
+	private Method onPreviewEventMethod, onPreviewEventMethodPImage;
 	private int frameWidth, frameHeight, cameraFPS;
-	public boolean crop;
-
-	public int cropX;
-	public int cropY;
-	public int cropW;
-	public int cropH;
+	public boolean isStarted;
+	PImage self;
 	Thread runner;
 	boolean available = false;
 
@@ -44,10 +40,11 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 		frameWidth = _width;
 		frameHeight = _height;
 		cameraFPS = _framesPerSecond;
-		start();
+		isStarted = false;
 		super.init(_width, _height, RGB);
 		myPixels = new int[_width * _height];
 		listeners = new ArrayList<IKetaiAnalyzer>();
+		self = this;
 
 		try {
 			// the following uses reflection to see if the parent
@@ -63,11 +60,20 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 					+ e.getMessage());
 		}
 
-		if (camera != null) {
-			PApplet.println("KetaiCamera: starting preview for camera...");
-			camera.setPreviewCallback(previewcallback);
-			camera.startPreview();
+		try {
+			// the following uses reflection to see if the parent
+			// exposes the call-back method. The first argument is the method
+			// name followed by what should match the method argument(s)
+			onPreviewEventMethodPImage = parent.getClass().getMethod(
+					"onCameraPreviewEvent", new Class[] { KetaiCamera.class });
+			PApplet.println("KetaiCamera found onCameraPreviewEvent for PImage in parent... ");
+		} catch (Exception e) {
+			// no such method, or an error.. which is fine, just ignore
+			onPreviewEventMethodPImage = null;
+			PApplet.println("KetaiCamera did not find onCameraPreviewEvent for Image Method: "
+					+ e.getMessage());
 		}
+
 		PApplet.println("KetaiCamera completed instantiation... ");
 		runner = new Thread(this);
 		runner.run();
@@ -88,12 +94,11 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 			cameraParameters.setPreviewSize(frameWidth, frameHeight);
 
 			camera.setParameters(cameraParameters);
+			isStarted = true;
 			PApplet.println("KetaiCamera: Set camera parameters...");
+			camera.setPreviewCallback(previewcallback);
+			camera.startPreview();
 
-			// Parameters p = camera.getParameters();
-			// PApplet.println("KetaiCamera preview format returned from camera is: "
-			// + p.getPreviewFormat() + " and it should be : " +
-			// ImageFormat.RGB_565);
 		} catch (Exception x) {
 			x.printStackTrace(System.out);
 		}
@@ -118,37 +123,16 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	};
 
 	public void read() {
-		// try {
-		// synchronized (capture) {
 		loadPixels();
 		synchronized (pixels) {
-			if (crop) {
-				// Taken straight from Capture.java in processing core video
-				// f#$)(#$ing quicktime / jni is so g-d slow, calling
-				// copyToArray
-				// for the invidual rows is literally 100x slower. instead,
-				// first
-				// copy the entire buffer to a separate array (i didn't need
-				// that
-				// memory anyway), and do an arraycopy for each row.
-				// if (data == null) {
-				// data = new int[frameWidth * frameHeight];
-				// }
-				// raw.copyToArray(0, data, 0, frameWidth * frameHeight);
-				// int sourceOffset = cropX + cropY * dataWidth;
-				// int destOffset = 0;
-				// for (int y = 0; y < cropH; y++) {
-				// System.arraycopy(data, sourceOffset, pixels, destOffset,
-				// cropW);
-				// sourceOffset += dataWidth;
-				// destOffset += width;
-				// }
-			} else
-				System.arraycopy(myPixels, 0, pixels, 0, width * height);
-
+			System.arraycopy(myPixels, 0, pixels, 0, frameWidth * frameHeight);
 			available = false;
 			updatePixels();
 		}
+	}
+
+	public boolean isStarted() {
+		return isStarted;
 	}
 
 	PreviewCallback previewcallback = new PreviewCallback() {
@@ -177,26 +161,39 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 			// bitmap.getPixels(myPixels, 0, w, 0, 0, w, h);
 			// }
 			if (myPixels == null)
-				myPixels = new int[width * height];
+				myPixels = new int[frameWidth * frameHeight];
 
-			KetaiCamera.decodeYUV420SP(myPixels, data, width, height);
+			// camera.getParameters().getPreviewSize().width;
+			KetaiCamera.decodeYUV420SP(myPixels, data, frameWidth, frameHeight);
 
 			if (myPixels == null)
 				return;
 
 			// PApplet.println("KetaiCamera.previewCallback: pixels buffer is of length: "
-			// + myPixels.length);
+			// + myPixels.length +"/"+onPreviewEventMethod);
 			if (onPreviewEventMethod != null && myPixels != null)
 				try {
-					// PApplet.println("onCameraPreviewEvent() calling parent method");
+					PApplet.println("onCameraPreviewEvent() calling parent method");
 					onPreviewEventMethod.invoke(parent);
-					return;
 				} catch (Exception e) {
 					PApplet.println("Disabling onCameraPreviewEvent() because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onPreviewEventMethod = null;
 				}
+
+			if (onPreviewEventMethodPImage != null && myPixels != null)
+				try {
+					PApplet.println("onCameraPreviewEvent(KetaiCamera) calling parent method");
+					onPreviewEventMethodPImage.invoke(parent,
+							new Object[] { (KetaiCamera) self });
+				} catch (Exception e) {
+					PApplet.println("Disabling onCameraPreviewEvent(KetaiCamera) because of an error:"
+							+ e.getMessage());
+					e.printStackTrace();
+					onPreviewEventMethodPImage = null;
+				}
+			broadcastData(self);
 		}
 	};
 
@@ -238,10 +235,12 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	};
 
 	public void stop() {
-		if (camera != null) {
+		PApplet.println("Stopping Camera...");
+		if (camera != null && isStarted) {
 			camera.stopPreview();
 			camera.release();
 			camera = null;
+			isStarted = false;
 		}
 		runner = null; // unwind the thread
 	}
@@ -249,7 +248,6 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	public void dispose() {
 		stop();
 	}
-
 
 	static public void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width,
 			int height) {
@@ -322,22 +320,24 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	}
 
 	public void startService() {
-		start();
+		if (!isStarted || camera == null)
+			start();
 	}
 
 	public int getStatus() {
-		// TODO Auto-generated method stub
-		return 0;
+		if (isStarted)
+			return IKetaiInputService.STATE_STARTED;
+		else
+			return IKetaiInputService.STATE_STOPPED;
+
 	}
 
 	public void stopService() {
 		stop();
 	}
 
-	@Override
 	public String getServiceDescription() {
-		// TODO Auto-generated method stub
-		return null;
+		return "Android camera access.";
 	}
 
 	public void registerAnalyzer(IKetaiAnalyzer _analyzer) {

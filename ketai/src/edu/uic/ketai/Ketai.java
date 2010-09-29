@@ -4,8 +4,10 @@ import processing.core.*;
 
 import java.io.IOException;
 
+import edu.uic.ketai.analyzer.FaceAnalyzer;
 import edu.uic.ketai.analyzer.SensorAnalyzer;
 import edu.uic.ketai.data.DataManager;
+import edu.uic.ketai.inputService.KetaiCamera;
 import edu.uic.ketai.inputService.KetaiSensorManager;
 
 public class Ketai {
@@ -21,8 +23,9 @@ public class Ketai {
 
 		// Let's add the default services
 		inputmanager.addService(new KetaiSensorManager(parent));
+		inputmanager.addService(new KetaiCamera(parent, 640, 480, 10));
 	}
-
+	
 	public long getDataCount() {
 		return datamanager.getDataCount();
 	}
@@ -30,6 +33,7 @@ public class Ketai {
 	public void enableDefaultAnalyzer() {
 		// Let's add the default analyzers
 		inputmanager.addAnalyzer(new SensorAnalyzer(datamanager));
+		inputmanager.addAnalyzer(new FaceAnalyzer(datamanager));
 	}
 
 	public boolean isCollectingData() {
