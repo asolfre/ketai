@@ -4,6 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+
+import edu.uic.ketai.analyzer.IKetaiAnalyzer;
 
 import processing.core.PImage;
 import processing.core.PApplet;
@@ -17,8 +20,9 @@ import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
 import android.util.Log;
 
-public class KetaiCamera extends PImage implements Runnable {
+public class KetaiCamera extends PImage implements Runnable, IKetaiInputService {
 
+	private ArrayList<IKetaiAnalyzer> listeners;
 	private PApplet parent;
 	private static final String TAG = "ketaiCamera";
 	private Camera camera;
@@ -42,8 +46,9 @@ public class KetaiCamera extends PImage implements Runnable {
 		cameraFPS = _framesPerSecond;
 		start();
 		super.init(_width, _height, RGB);
-		myPixels = new int[_width*_height];
-		
+		myPixels = new int[_width * _height];
+		listeners=new ArrayList<IKetaiAnalyzer>();		
+
 		try {
 			// the following uses reflection to see if the parent
 			// exposes the call-back method. The first argument is the method
@@ -68,8 +73,7 @@ public class KetaiCamera extends PImage implements Runnable {
 		runner.run();
 	}
 
-	public void start()
-	{
+	public void start() {
 		try {
 			PApplet.println("KetaiCamera: opening camera...");
 			camera = Camera.open();
@@ -79,7 +83,7 @@ public class KetaiCamera extends PImage implements Runnable {
 
 			// /We should probably verify that the numbers passed in are
 			// suppported by the camera....sure...eventually we will
-//			cameraParameters.setPreviewFormat(ImageFormat.NV21);
+			// cameraParameters.setPreviewFormat(ImageFormat.NV21);
 			cameraParameters.setPreviewFrameRate(cameraFPS);
 			cameraParameters.setPreviewSize(frameWidth, frameHeight);
 
@@ -92,9 +96,9 @@ public class KetaiCamera extends PImage implements Runnable {
 			// ImageFormat.RGB_565);
 		} catch (Exception x) {
 			x.printStackTrace(System.out);
-		}	
+		}
 	}
-	
+
 	public void takePicture() {
 		if (camera != null)
 			camera.takePicture(null, null, jpegCallback);
@@ -119,7 +123,7 @@ public class KetaiCamera extends PImage implements Runnable {
 		loadPixels();
 		synchronized (pixels) {
 			if (crop) {
-				// System.out.println("read2a");
+
 				// f#$)(#$ing quicktime / jni is so g-d slow, calling
 				// copyToArray
 				// for the invidual rows is literally 100x slower. instead,
@@ -139,20 +143,11 @@ public class KetaiCamera extends PImage implements Runnable {
 				// sourceOffset += dataWidth;
 				// destOffset += width;
 				// }
-				// } else { // no crop, just copy directly
-				// // System.out.println("read2b");
-				System.arraycopy(myPixels, 0, pixels, 0, width*height);
-				// raw.copyToArray(0, pixels, 0, width * height);
-			}else
-				System.arraycopy(myPixels, 0, pixels, 0, width*height);
-				
-			// System.out.println("read3");
+			} else
+				System.arraycopy(myPixels, 0, pixels, 0, width * height);
 
 			available = false;
-			// mark this image as modified so that PGraphicsJava2D and
-			// PGraphicsOpenGL will properly re-blit and draw this guy
 			updatePixels();
-			// System.out.println("read4");
 		}
 	}
 
@@ -181,7 +176,7 @@ public class KetaiCamera extends PImage implements Runnable {
 			// myPixels = new int[width * height];
 			// bitmap.getPixels(myPixels, 0, w, 0, 0, w, h);
 			// }
-			if(myPixels == null)
+			if (myPixels == null)
 				myPixels = new int[width * height];
 
 			KetaiCamera.decodeYUV420SP(myPixels, data, width, height);
@@ -207,7 +202,7 @@ public class KetaiCamera extends PImage implements Runnable {
 
 	PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
-			if(camera == null)
+			if (camera == null)
 				return;
 			FileOutputStream outStream = null;
 			// BitmapFactory.Options options = new BitmapFactory.Options();
@@ -345,4 +340,46 @@ public class KetaiCamera extends PImage implements Runnable {
 		// }
 
 	}
+
+	@Override
+	public void startService() {
+		start();
+	}
+
+	@Override
+	public int getStatus() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public void stopService() {
+		stop();
+	}
+
+	@Override
+	public String getServiceDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void registerAnalyzer(IKetaiAnalyzer _analyzer) {
+		if(listeners.contains(_analyzer))
+			return;
+		PApplet.println("InputService Registering this analyzer: " + _analyzer.getClass());
+		listeners.add(_analyzer);
+	}
+	
+	public void removeAnalyzer(IKetaiAnalyzer _analyzer)
+	{
+		listeners.remove(_analyzer);
+	}
+	
+	public void broadcastData(Object data)
+	{
+		for(IKetaiAnalyzer analyzer: listeners)
+		{
+			analyzer.analyzeData(data);
+		}
+	}
+
 }

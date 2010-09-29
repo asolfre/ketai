@@ -12,31 +12,24 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.content.Context;
 
-/**
- * The KetaiSensorManager facilitates the registering and delivering of sensor
- * events on the android platform to a Processing sketch.
- */
-
-public class KetaiSensorManager implements SensorEventListener {
+public class KetaiSensorManager extends AbstractKetaiInputService implements
+		SensorEventListener {
 
 	private SensorManager sensorManager = null;
 	private boolean isRegistered = false;
 	private PApplet parent;
 	private Method onSensorEventMethod;
-	private Method onAccelerometerSensorEventMethod, onMagneticFieldSensorEventMethod, onOrientationSensorEventMethod,
-					onLightSensorEventMethod, onProximitySensorEventMethod, onGyroscopeSensorEventMethod, onPressureSensorEventMethod, 
-					onTemperatureSensorEventMethod;
+	private Method onAccelerometerSensorEventMethod,
+			onMagneticFieldSensorEventMethod, onOrientationSensorEventMethod,
+			onLightSensorEventMethod, onProximitySensorEventMethod,
+			onGyroscopeSensorEventMethod, onPressureSensorEventMethod,
+			onTemperatureSensorEventMethod;
 	private boolean accelerometerSensorEnabled, magneticFieldSensorEnabled,
 			orientationSensorEnabled, proximitySensorEnabled;
 	private boolean lightSensorEnabled, pressureSensorEnabled,
 			temperatureSensorEnabled, gyroscopeSensorEnabled;
 	private long delayInterval, timeOfLastUpdate;
-	
-	//temp vars for interrogation mode...perhaps we will use them...perhaps not!
-//	private SensorEvent lastPressureSensorEvent, lastAccelerometerSensorEvent,
-//			lastProximitySensorEvent, lastTemperatureSensorEvent,
-//			lastOrientationSensorEvent, lastMagneticFieldSensorEvent,
-//			lastLightSensorEvent, lastGyroscopeSensorEvent;
+	final static String SERVICE_DESCRIPTION = "Android Sensors.";
 
 	public KetaiSensorManager(PApplet pParent) {
 		parent = pParent;
@@ -44,7 +37,7 @@ public class KetaiSensorManager implements SensorEventListener {
 				.getSystemService(Context.SENSOR_SERVICE);
 		PApplet.println("KetaiSensorManager instantiated...");
 		findParentIntentions();
-		
+
 		delayInterval = timeOfLastUpdate = 0;
 	}
 
@@ -173,7 +166,7 @@ public class KetaiSensorManager implements SensorEventListener {
 	public void start() {
 		PApplet.println("KSM: start()...");
 		findParentIntentions();
-		
+
 		if (accelerometerSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -227,13 +220,18 @@ public class KetaiSensorManager implements SensorEventListener {
 	}
 
 	public void onSensorChanged(SensorEvent arg0) {
+
 		Date date = new Date();
 		long now = date.getTime();
-//		PApplet.println("onSensorChanged: " + arg0.timestamp + ":" + arg0.sensor.getType());
-		if (now < timeOfLastUpdate + delayInterval )
+//		 PApplet.println("onSensorChanged: " + arg0.timestamp + ":" +
+//		 arg0.sensor.getType());
+
+		if (now < timeOfLastUpdate + delayInterval)
 			return;
 
 		timeOfLastUpdate = now;
+
+		broadcastSensorEvent(arg0);
 
 		if (onSensorEventMethod != null) {
 			try {
@@ -245,12 +243,18 @@ public class KetaiSensorManager implements SensorEventListener {
 				e.printStackTrace();
 				onSensorEventMethod = null;
 			}
-		}		
-		
-		if (arg0.sensor.getType() == Sensor.TYPE_ACCELEROMETER && accelerometerSensorEnabled && onAccelerometerSensorEventMethod != null ) {
+		}
+
+		if (arg0.sensor.getType() == Sensor.TYPE_ACCELEROMETER
+				&& accelerometerSensorEnabled
+				&& onAccelerometerSensorEventMethod != null) {
 			try {
-				onAccelerometerSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values[0], arg0.values[1], arg0.values[2] });
+				onAccelerometerSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0],
+						arg0.values[1], arg0.values[2] });
 				timeOfLastUpdate = now;
+				
+				broadcastData(arg0);
 				return;
 			} catch (Exception e) {
 				PApplet.println("Disabling onAccelerometerSensorEvent() because of an error:"
@@ -260,12 +264,16 @@ public class KetaiSensorManager implements SensorEventListener {
 			}
 		}
 
-		if (arg0.sensor.getType() == Sensor.TYPE_ORIENTATION && orientationSensorEnabled && onOrientationSensorEventMethod != null) {
+		if (arg0.sensor.getType() == Sensor.TYPE_ORIENTATION
+				&& orientationSensorEnabled
+				&& onOrientationSensorEventMethod != null) {
 			try {
-				onOrientationSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values[0], arg0.values[1], arg0.values[2] });
+				onOrientationSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0],
+						arg0.values[1], arg0.values[2] });
 				timeOfLastUpdate = now;
 				return;
-				} catch (Exception e) {
+			} catch (Exception e) {
 				PApplet.println("Disabling onOrientationSensorEvent() because of an error:"
 						+ e.getMessage());
 				e.printStackTrace();
@@ -273,9 +281,13 @@ public class KetaiSensorManager implements SensorEventListener {
 			}
 		}
 
-		if (arg0.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD && magneticFieldSensorEnabled && onMagneticFieldSensorEventMethod != null) {
+		if (arg0.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD
+				&& magneticFieldSensorEnabled
+				&& onMagneticFieldSensorEventMethod != null) {
 			try {
-				onMagneticFieldSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values[0], arg0.values[1], arg0.values[2] });
+				onMagneticFieldSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0],
+						arg0.values[1], arg0.values[2] });
 				timeOfLastUpdate = now;
 				return;
 			} catch (Exception e) {
@@ -285,10 +297,14 @@ public class KetaiSensorManager implements SensorEventListener {
 				onMagneticFieldSensorEventMethod = null;
 			}
 		}
-			
-		if (arg0.sensor.getType() == Sensor.TYPE_GYROSCOPE && gyroscopeSensorEnabled && onGyroscopeSensorEventMethod != null) {
+
+		if (arg0.sensor.getType() == Sensor.TYPE_GYROSCOPE
+				&& gyroscopeSensorEnabled
+				&& onGyroscopeSensorEventMethod != null) {
 			try {
-				onGyroscopeSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values[0], arg0.values[1], arg0.values[2] });
+				onGyroscopeSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0],
+						arg0.values[1], arg0.values[2] });
 				timeOfLastUpdate = now;
 				return;
 			} catch (Exception e) {
@@ -299,9 +315,11 @@ public class KetaiSensorManager implements SensorEventListener {
 			}
 		}
 
-		if (arg0.sensor.getType() == Sensor.TYPE_LIGHT && lightSensorEnabled && onLightSensorEventMethod != null) {
+		if (arg0.sensor.getType() == Sensor.TYPE_LIGHT && lightSensorEnabled
+				&& onLightSensorEventMethod != null) {
 			try {
-				onLightSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values[0] });
+				onLightSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0] });
 				timeOfLastUpdate = now;
 				return;
 			} catch (Exception e) {
@@ -312,9 +330,12 @@ public class KetaiSensorManager implements SensorEventListener {
 			}
 		}
 
-		if (arg0.sensor.getType() == Sensor.TYPE_PROXIMITY && proximitySensorEnabled && onProximitySensorEventMethod != null) {
+		if (arg0.sensor.getType() == Sensor.TYPE_PROXIMITY
+				&& proximitySensorEnabled
+				&& onProximitySensorEventMethod != null) {
 			try {
-				onProximitySensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values[0] });
+				onProximitySensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0] });
 				timeOfLastUpdate = now;
 				return;
 			} catch (Exception e) {
@@ -323,11 +344,13 @@ public class KetaiSensorManager implements SensorEventListener {
 				e.printStackTrace();
 				onProximitySensorEventMethod = null;
 			}
-		}		
-		
-		if (arg0.sensor.getType() == Sensor.TYPE_PRESSURE && pressureSensorEnabled && onPressureSensorEventMethod != null) {
+		}
+
+		if (arg0.sensor.getType() == Sensor.TYPE_PRESSURE
+				&& pressureSensorEnabled && onPressureSensorEventMethod != null) {
 			try {
-				onPressureSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values[0] });
+				onPressureSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0] });
 				timeOfLastUpdate = now;
 				return;
 			} catch (Exception e) {
@@ -337,10 +360,13 @@ public class KetaiSensorManager implements SensorEventListener {
 				onPressureSensorEventMethod = null;
 			}
 		}
-		
-		if (arg0.sensor.getType() == Sensor.TYPE_TEMPERATURE && temperatureSensorEnabled && onTemperatureSensorEventMethod != null) {
+
+		if (arg0.sensor.getType() == Sensor.TYPE_TEMPERATURE
+				&& temperatureSensorEnabled
+				&& onTemperatureSensorEventMethod != null) {
 			try {
-				onTemperatureSensorEventMethod.invoke(parent, new Object[] { arg0.timestamp, arg0.accuracy, arg0.values[0] });
+				onTemperatureSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0] });
 				timeOfLastUpdate = now;
 				return;
 			} catch (Exception e) {
@@ -350,6 +376,9 @@ public class KetaiSensorManager implements SensorEventListener {
 				onTemperatureSensorEventMethod = null;
 			}
 		}
+	}
+
+	private void broadcastSensorEvent(SensorEvent arg0) {
 	}
 
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -363,105 +392,94 @@ public class KetaiSensorManager implements SensorEventListener {
 		}
 		return false;
 	}
-	
-	private void findParentIntentions()
-	{
+
+	private void findParentIntentions() {
 		try {
-			// the following uses reflection to see if the parent
-			// exposes the call-back method. The first argument is the method
-			// name
-			// followed by what should match the method argument(s)
-			// in this case we will call parent.onSensorEvent(SensorEvent);
 			onSensorEventMethod = parent.getClass().getMethod("onSensorEvent",
 					new Class[] { SensorEvent.class });
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager did not find onSensorEvent Method: "
-					+ e.getMessage());
-		}
+		} catch (NoSuchMethodException e) {}
 
 		try {
-			onAccelerometerSensorEventMethod = parent.getClass().getMethod("onAccelerometerSensorEvent",
-					new Class[] { long.class , int.class, float.class, float.class, float.class });
+			onAccelerometerSensorEventMethod = parent.getClass().getMethod(
+					"onAccelerometerSensorEvent",
+					new Class[] { long.class, int.class, float.class,
+							float.class, float.class });
 			accelerometerSensorEnabled = true;
 			PApplet.println("Found onAccelerometerSensorEvenMethod...");
-			
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager failed to find onAccelerometerSensorEvent Method: "
-					+ e.getMessage());
-		}
+
+		} catch (NoSuchMethodException e) {}
 
 		try {
-			onOrientationSensorEventMethod = parent.getClass().getMethod("onOrientationSensorEvent",
-					new Class[] { long.class , int.class, float.class, float.class, float.class });
+			onOrientationSensorEventMethod = parent.getClass().getMethod(
+					"onOrientationSensorEvent",
+					new Class[] { long.class, int.class, float.class,
+							float.class, float.class });
 			orientationSensorEnabled = true;
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager failed to find onOrientationSensorEvent Method: "
-					+ e.getMessage());
-		}
-		
+		} catch (NoSuchMethodException e) {}
+
 		try {
-			onMagneticFieldSensorEventMethod = parent.getClass().getMethod("onMagneticFieldSensorEvent",
-					new Class[] { long.class , int.class, float.class, float.class, float.class });
+			onMagneticFieldSensorEventMethod = parent.getClass().getMethod(
+					"onMagneticFieldSensorEvent",
+					new Class[] { long.class, int.class, float.class,
+							float.class, float.class });
 			magneticFieldSensorEnabled = true;
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager failed to find onMagneticFieldSensorEvent Method: "
-					+ e.getMessage());
-		}			
-		
+		} catch (NoSuchMethodException e) {}
+
 		try {
-			onGyroscopeSensorEventMethod = parent.getClass().getMethod("onGyroscopeSensorEvent",
-					new Class[] { long.class , int.class, float.class, float.class, float.class });
+			onGyroscopeSensorEventMethod = parent.getClass().getMethod(
+					"onGyroscopeSensorEvent",
+					new Class[] { long.class, int.class, float.class,
+							float.class, float.class });
 			gyroscopeSensorEnabled = true;
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager failed to find onGyroscopeSensorEvent Method: "
-					+ e.getMessage());
-		}			
+		} catch (NoSuchMethodException e) {}
 
 		try {
-			onProximitySensorEventMethod = parent.getClass().getMethod("onProximitySensorEvent",
-					new Class[] { long.class , int.class, float.class });
+			onProximitySensorEventMethod = parent.getClass().getMethod(
+					"onProximitySensorEvent",
+					new Class[] { long.class, int.class, float.class });
 			proximitySensorEnabled = true;
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager failed to find onProximitySensorEvent Method: "
-					+ e.getMessage());
-		}			
+		} catch (NoSuchMethodException e) {}
 
 		try {
-			onLightSensorEventMethod = parent.getClass().getMethod("onLightSensorEvent",
-					new Class[] { long.class , int.class, float.class });
+			onLightSensorEventMethod = parent.getClass().getMethod(
+					"onLightSensorEvent",
+					new Class[] { long.class, int.class, float.class });
 			lightSensorEnabled = true;
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager failed to find onLightSensorEvent Method: "
-					+ e.getMessage());
-		}			
+		} catch (NoSuchMethodException e) {}
 
 		try {
-			onPressureSensorEventMethod = parent.getClass().getMethod("onPressureSensorEvent",
-					new Class[] { long.class , int.class, float.class });
+			onPressureSensorEventMethod = parent.getClass().getMethod(
+					"onPressureSensorEvent",
+					new Class[] { long.class, int.class, float.class });
 			pressureSensorEnabled = true;
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager failed to find onPressureSensorEvent Method: "
-					+ e.getMessage());
-		}			
-		
-		try {
-			onTemperatureSensorEventMethod = parent.getClass().getMethod("onTemperatureSensorEvent",
-					new Class[] { long.class , int.class, float.class });
-			temperatureSensorEnabled = true;
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			PApplet.println("KetaiSensorManager failed to find onTemperatureSensorEvent Method: "
-					+ e.getMessage());
-		}			
+		} catch (NoSuchMethodException e) {}
 
-		
+		try {
+			onTemperatureSensorEventMethod = parent.getClass().getMethod(
+					"onTemperatureSensorEvent",
+					new Class[] { long.class, int.class, float.class });
+			temperatureSensorEnabled = true;
+		} catch (NoSuchMethodException e) {}
+	}
+
+	@Override
+	public void startService() {
+		start();
+	}
+
+	@Override
+	public int getStatus() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void stopService() {
+		stop();
+	}
+
+	@Override
+	public String getServiceDescription() {
+		return SERVICE_DESCRIPTION;
 	}
 }
