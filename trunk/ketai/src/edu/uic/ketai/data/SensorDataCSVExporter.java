@@ -88,10 +88,9 @@ public class SensorDataCSVExporter {
 			} while (c.moveToNext());
 		}
 		this.writeToFile(output, exportFileNamePrefix + ".csv");
-		Log.i(LOG_TAG, "exporting database complete");
 	}
 
-	private void writeToFile(String xmlString, String exportFileName)
+	private void writeToFile(String data, String exportFileName)
 			throws IOException {
 		File dir = new File(Environment.getExternalStorageDirectory(),
 				DATASUBDIRECTORY);
@@ -101,7 +100,7 @@ public class SensorDataCSVExporter {
 		File file = new File(dir, exportFileName);
 		file.createNewFile();
 
-		ByteBuffer buff = ByteBuffer.wrap(xmlString.getBytes());
+		ByteBuffer buff = ByteBuffer.wrap(data.getBytes());
 		FileChannel channel = new FileOutputStream(file).getChannel();
 		try {
 			channel.write(buff);

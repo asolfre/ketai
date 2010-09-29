@@ -11,10 +11,10 @@ public interface IKetaiInputService {
 	public void stopService();
 
 	public String getServiceDescription();
-	
-	public Object[] getData();
-	
+		
 	public void registerAnalyzer(IKetaiAnalyzer _analyzer);
+
+	public void removeAnalyzer(IKetaiAnalyzer _analyzer);
 	
 	final static int STATE_STARTED = 0;
 	final static int STATE_STOPPED = 1;

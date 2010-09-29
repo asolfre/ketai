@@ -1,93 +1,64 @@
 package edu.uic.ketai;
 
 import processing.core.*;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Vector;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorManager;
-import android.content.Context;
-import edu.uic.ketai.data.DataManager;
-import edu.uic.ketai.inputService.*;
 
-public class Ketai {
+import java.io.IOException;
+
+import edu.uic.ketai.analyzer.SensorAnalyzer;
+import edu.uic.ketai.data.DataManager;
+import edu.uic.ketai.inputService.KetaiSensorManager;
+
+public class Ketai implements IKetai {
 	PApplet parent;
-	SensorManager sensormanager;
 	DataManager datamanager;
-	KetaiCamera camera;
-	Method onSensorEventMethod;
+	InputManager inputmanager;
+	boolean isCollecting = false;
 
 	public Ketai(PApplet pparent) {
 		parent = pparent;
-		sensormanager = (SensorManager) parent.getApplicationContext()
-				.getSystemService(Context.SENSOR_SERVICE);
-		if (sensormanager == null)
-			PApplet.println("KetaiSensorManager failed to initialize due to a failure to get the Sensor Service.");
-		else
-			PApplet.println("KetaiSensorManager instantiated...");
+		datamanager = new DataManager(parent.getApplicationContext());
+		inputmanager = new InputManager(parent, datamanager);
 
-		try {
-
-			// the following uses reflection to see if the parent
-			// exposes the call-back method. The first argument is the method
-			// name
-			// followed by what should match the method argument(s)
-			// in this case we will call parent.onSensorEvent(SensorEvent);
-			onSensorEventMethod = parent.getClass().getMethod("onSensorEvent",
-					new Class[] { SensorEvent.class });
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-		}
+		// Let's add the default services
+		inputmanager.addService(new KetaiSensorManager(parent));
 	}
 
-	/**
-	 * List. Returns a list of the available sensors.
-	 * 
-	 * @return the sensors available
-	 */
-	public String[] listAvailableSensors() {
-		Vector<String> list = new Vector<String>();
+	public long getDataCount() {
+		return datamanager.getDataCount();
+	}
 
-		List<Sensor> foo = sensormanager.getSensorList(Sensor.TYPE_ALL);
-		for (Sensor s : foo) {
-			list.add(s.getName());
-			PApplet.println("KetaiSensorManager sensor list: " + s.getName()
-					+ ":" + s.getType());
-		}
-		String returnList[] = new String[list.size()];
-		list.copyInto(returnList);
-		return returnList;
+	public void enableDefaultAnalyzer() {
+		// Let's add the default analyzers
+		inputmanager.addAnalyzer(new SensorAnalyzer(datamanager));
 	}
 
 	public boolean isCollectingData() {
-		return true;
+		return isCollecting;
 	}
 
 	public void startCollectingData() {
+		inputmanager.startServices();
+		isCollecting = true;
 	}
 
 	public void stopCollectingData() {
-	}
-
-	public void getSensorDataUsingTimeRange(long startTime, long endTime) {
-
-	}
-
-	public void exportDatabase(String filename) {
-
-	}
-
-	public void exportDatabaseUsingDataRange(String filename, long startTime,
-			long endTime) {
-
-	}
-
-	public void resume() {
-
+		inputmanager.stopServices();
+		isCollecting = false;
 	}
 
 	public void stop() {
+		inputmanager.stopServices();
+	}
+
+	public void exportData(String _destinationFilename) {
+		try {
+			datamanager.exportData(_destinationFilename);
+		} catch (IOException x) { x.printStackTrace();
+		}
+	}
+
+	public void clearAllData() {
+		datamanager.deleteAllData();
 	}
 
 }

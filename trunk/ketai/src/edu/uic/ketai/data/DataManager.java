@@ -3,44 +3,29 @@ package edu.uic.ketai.data;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDoneException;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
+import android.os.Environment;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+
+import processing.core.PApplet;
 
 public class DataManager {
 
 	private static final String DATABASE_NAME = "edu.uic.ketai.db";
-	private static final int DATABASE_VERSION = 2;
-	private static final String SENSOR_DATA_TABLE_NAME = "sensor_data";
-	private static final String SENSOR_RAW_DATA = "sensor_raw_data";
-	private static final String SENSOR_EVENT_TABLE = "sensor_events";
-	private static final String IMAGE_DATA_TABLE = "image_data";
-	private static final String RFID_TABLE_NAME = "rfid_data";
-	private static final String QRCODE_TABLE_NAME = "qrcode_data";
+	private static final int DATABASE_VERSION = 1;
+	private static final String DATA_ROOT_DIRECTORY = "ketai_data";
 
 	private Context context;
 	private SQLiteDatabase db;
 
-	private SQLiteStatement insertStmt, sqlStatement;
-	private static final String INSERT_SENSOR_DATA = "insert into "
-			+ SENSOR_DATA_TABLE_NAME + "(timestamp, sensor_type) values (?, ?)";
-	private static final String INSERT_SENSOR_RAW_DATA = "insert into "
-			+ SENSOR_RAW_DATA + "(sensorIndex, value, parent) values (?, ?, ?)";
-	// private static final String INSERT_IMAGE_DATA = "insert into " +
-	// IMAGE_DATA_TABLE + "(data, timestamp) values (?, ?)";
-	// private static final String INSERT_RFID_DATA = "insert into " +
-	// RFID_TABLE_NAME + "(data, timestamp) values (?, ?)";
-	private static final String INSERT_QRCODE = "insert into "
-			+ QRCODE_TABLE_NAME + "(data, timestamp) values (?, ?)";
-	private static final String INSERT_SENSOR_EVENT_DATA = "insert into "
-			+ SENSOR_EVENT_TABLE
-			+ "(timestamp, sensor_type, value0, value1, value2) values (?, ?, ?, ?, ?)";
+	private SQLiteStatement sqlStatement;
 
 	public DataManager(Context context) {
 		this.context = context;
@@ -52,72 +37,43 @@ public class DataManager {
 		return this.db;
 	}
 
-	public long insertQRCode(String name, Long timestamp) {
-		this.insertStmt = this.db.compileStatement(INSERT_QRCODE);
-		this.insertStmt.bindString(1, name);
-		this.insertStmt.bindLong(2, (new Date()).getTime());
-		return this.insertStmt.executeInsert();
+	public String getStats() {
+		return "";
 	}
 
-	public void insertSensorData(Long timestamp, int type, float vals[]) {
-		this.insertStmt = this.db.compileStatement(INSERT_SENSOR_DATA);
-		this.insertStmt.bindLong(1, timestamp);
-		this.insertStmt.bindLong(2, type);
-		long parent = this.insertStmt.executeInsert();
+	public void deleteAllTables() {
 
-		for (int i = 0; i < vals.length; i++) {
-			this.insertStmt = this.db.compileStatement(INSERT_SENSOR_RAW_DATA);
-			this.insertStmt.bindLong(1, i);
-			this.insertStmt.bindDouble(2, (double) vals[i]);
-			this.insertStmt.bindLong(3, parent);
-			this.insertStmt.executeInsert();
-		}
 	}
 
-	public void insertSensorEvent(Long timestamp, int type, float vals[]) {
-		this.insertStmt = this.db.compileStatement(INSERT_SENSOR_EVENT_DATA);
-		this.insertStmt.bindLong(1, timestamp);
-		this.insertStmt.bindLong(2, type);
-		for (int i = 0; i < vals.length && i < 3; i++)
-			this.insertStmt.bindDouble(3 + i, vals[i]);
-
-		this.insertStmt.executeInsert();
-	}
-
-	public void deleteAll() {
-		this.db.delete(SENSOR_DATA_TABLE_NAME, null, null);
-		this.db.delete(SENSOR_RAW_DATA, null, null);
-		this.db.delete(IMAGE_DATA_TABLE, null, null);
-		this.db.delete(RFID_TABLE_NAME, null, null);
-		this.db.delete(QRCODE_TABLE_NAME, null, null);
-		this.db.delete(SENSOR_EVENT_TABLE, null, null);
-	}
-
-	public List<String> selectAll() {
-		List<String> list = new ArrayList<String>();
-		Cursor cursor = this.db.query(QRCODE_TABLE_NAME, new String[] { "data",
-				"timestamp" }, null, null, null, null, "timestamp desc");
-		if (cursor.moveToFirst()) {
-			do {
-				list.add(cursor.getString(0) + ":" + cursor.getString(1));
-			} while (cursor.moveToNext());
-		}
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-		return list;
-	}
-
-	public long getRawSensorDataCount() {
+	public long getDataCount() {
+		long count = 0;
+		String tablename;
 		try {
-			// this.sqlStatement =
-			// this.db.compileStatement("SELECT COUNT(*) FROM sensor_raw_data");
-			this.sqlStatement = this.db
-					.compileStatement("SELECT COUNT(*) FROM sensor_events");
-			return this.sqlStatement.simpleQueryForLong();
-		} catch (SQLiteDoneException x) {
-			return 0;
+			Cursor cursor = this.db.rawQuery("select name from SQLite_Master",
+					null);
+			if (cursor.moveToFirst()) {
+				do {
+					tablename = cursor.getString(0);
+
+					// skip the android-specific table in our count
+					if (tablename.equals("android_metadata"))
+						continue;
+					this.sqlStatement = this.db
+							.compileStatement("SELECT COUNT(*) FROM "
+									+ tablename);
+					long c = this.sqlStatement.simpleQueryForLong();
+					count += c;
+
+				} while (cursor.moveToNext());
+			}
+
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
+		} catch (SQLiteException x) {
+			x.printStackTrace();
 		}
+		return count;
 	}
 
 	private static class OpenHelper extends SQLiteOpenHelper {
@@ -128,43 +84,122 @@ public class DataManager {
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
-			db.execSQL("CREATE TABLE "
-					+ SENSOR_DATA_TABLE_NAME
-					+ " (id INTEGER PRIMARY KEY, timestamp BIGINT, sensor_type INTEGER)");
-			db.execSQL("CREATE TABLE "
-					+ SENSOR_RAW_DATA
-					+ " (id INTEGER PRIMARY KEY, value FLOAT, sensorIndex INTEGER, parent INTEGER, FOREIGN KEY (parent) REFERENCES "
-					+ SENSOR_DATA_TABLE_NAME + ")");
-			db.execSQL("CREATE TABLE " + IMAGE_DATA_TABLE
-					+ " (id INTEGER PRIMARY KEY, timestamp BIGINT, name TEXT)");
-			db.execSQL("CREATE TABLE "
-					+ RFID_TABLE_NAME
-					+ " (id INTEGER PRIMARY KEY, timestamp BIGINT, value INTEGER, intensity INTEGER)");
-			db.execSQL("CREATE TABLE " + QRCODE_TABLE_NAME
-					+ " (id INTEGER PRIMARY KEY, timestamp BIGINT, data TEXT)");
-			db.execSQL("CREATE TABLE "
-					+ SENSOR_EVENT_TABLE
-					+ " (id INTEGER PRIMARY KEY, timestamp BIGINT, sensor_type INTEGER, value0 FLOAT, value1 FLOAT, value2 FLOAT)");
 		}
 
-		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			Log.w("Example",
-					"Upgrading database, this will drop tables and recreate.");
-			db.execSQL("DROP TABLE IF EXISTS " + SENSOR_DATA_TABLE_NAME);
-			db.execSQL("DROP TABLE IF EXISTS " + SENSOR_RAW_DATA);
-			db.execSQL("DROP TABLE IF EXISTS " + IMAGE_DATA_TABLE);
-			db.execSQL("DROP TABLE IF EXISTS " + RFID_TABLE_NAME);
-			db.execSQL("DROP TABLE IF EXISTS " + QRCODE_TABLE_NAME);
-			db.execSQL("DROP TABLE IF EXISTS " + SENSOR_EVENT_TABLE);
-
-			onCreate(db);
 		}
 	}
 
-	public void exportData(String filenameLabel) throws IOException {
-		SensorDataCSVExporter exporter = new SensorDataCSVExporter(db);
-		exporter.export(DATABASE_NAME, "KETAI_DB_" + filenameLabel + "_"
-				+ System.currentTimeMillis());
+	public boolean tableExists(String _table) {
+		Cursor cursor = this.db
+				.rawQuery("select name from SQLite_Master", null);
+		if (cursor.moveToFirst()) {
+			do {
+				PApplet.println("DataManager found this table: "
+						+ cursor.getString(0));
+				if (cursor.getString(0).equalsIgnoreCase(_table))
+					return true;
+			} while (cursor.moveToNext());
+		}
+
+		if (cursor != null && !cursor.isClosed()) {
+			cursor.close();
+		}
+		return false;
+	}
+
+	public void exportData(String _targetDirectory) throws IOException {
+
+		String directory = String.valueOf(System.currentTimeMillis());
+
+		// First make sure the target directory exists....
+		File dir = new File(Environment.getExternalStorageDirectory(),
+				DATA_ROOT_DIRECTORY + "/" + directory);
+		if (!dir.exists()) {
+			PApplet.println("Creating directory: " + dir.getAbsolutePath());
+			if(dir.mkdirs())
+				PApplet.println("success making dir");
+			else
+			{
+				PApplet.println("Failed making dir");
+				return;
+			}
+		}
+		String tablename;
+		try {
+			Cursor cursor = this.db.rawQuery("select name from SQLite_Master",
+					null);
+			if (cursor.moveToFirst()) {
+				String row = "";
+				do {
+					tablename = cursor.getString(0);
+
+					// skip the android-specific table in our count
+					if (tablename.equals("android_metadata"))
+						continue;
+					Cursor c = this.db.rawQuery("SELECT * FROM " + tablename,
+							null);
+
+					if (c.moveToFirst()) {
+						do {
+							int i = c.getColumnCount();
+							for (int j = 0; j < i; j++)
+								row += c.getString(j) + "\t";
+						} while (c.moveToNext());
+					}
+					if (row.length() > 0)
+						this.writeToFile(row, dir.getPath(), tablename);
+					row = "";
+				} while (cursor.moveToNext());
+			}
+
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
+			deleteAllData();
+		} catch (SQLiteException x) {
+			x.printStackTrace();
+		}
+	}
+
+	public void deleteAllData() {
+		String tablename;
+		try {
+			Cursor cursor = this.db.rawQuery("select name from SQLite_Master",
+					null);
+			if (cursor.moveToFirst()) {
+				do {
+					tablename = cursor.getString(0);
+
+					// skip the android-specific table in our count
+					if (tablename.equals("android_metadata"))
+						continue;
+					this.db.delete(tablename, null, null);
+				} while (cursor.moveToNext());
+			}
+
+			if (cursor != null && !cursor.isClosed()) {
+				cursor.close();
+			}
+		} catch (SQLiteException x) {
+			x.printStackTrace();
+		}
+	}
+
+	private void writeToFile(String data, String dir, String exportFileName)
+			throws IOException {
+
+		File file = new File(dir, exportFileName + ".csv");
+
+		file.createNewFile();
+
+		ByteBuffer buff = ByteBuffer.wrap(data.getBytes());
+		FileChannel channel = new FileOutputStream(file).getChannel();
+		try {
+			channel.write(buff);
+		} finally {
+			if (channel != null)
+				channel.close();
+		}
 	}
 }
