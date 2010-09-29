@@ -2,14 +2,12 @@ package edu.uic.ketai.analyzer;
 
 import edu.uic.ketai.data.DataManager;
 
+public abstract class AbstractKetaiAnalyzer implements IKetaiAnalyzer {
 
-public abstract class AbstractKetaiAnalyzer implements IKetaiAnalyzer{
+	DataManager datamanager;
 
-	DataManager datamanager; 
-	
-	public AbstractKetaiAnalyzer(DataManager _datamanager)
-	{
+	public AbstractKetaiAnalyzer(DataManager _datamanager) {
 		datamanager = _datamanager;
-	}	
+	}
 
 }

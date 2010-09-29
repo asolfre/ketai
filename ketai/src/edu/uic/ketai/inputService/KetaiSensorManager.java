@@ -223,8 +223,8 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 
 		Date date = new Date();
 		long now = date.getTime();
-//		 PApplet.println("onSensorChanged: " + arg0.timestamp + ":" +
-//		 arg0.sensor.getType());
+		// PApplet.println("onSensorChanged: " + arg0.timestamp + ":" +
+		// arg0.sensor.getType());
 
 		if (now < timeOfLastUpdate + delayInterval)
 			return;
@@ -253,7 +253,7 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 						arg0.timestamp, arg0.accuracy, arg0.values[0],
 						arg0.values[1], arg0.values[2] });
 				timeOfLastUpdate = now;
-				
+
 				broadcastData(arg0);
 				return;
 			} catch (Exception e) {
@@ -397,7 +397,8 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 		try {
 			onSensorEventMethod = parent.getClass().getMethod("onSensorEvent",
 					new Class[] { SensorEvent.class });
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 
 		try {
 			onAccelerometerSensorEventMethod = parent.getClass().getMethod(
@@ -407,7 +408,8 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 			accelerometerSensorEnabled = true;
 			PApplet.println("Found onAccelerometerSensorEvenMethod...");
 
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 
 		try {
 			onOrientationSensorEventMethod = parent.getClass().getMethod(
@@ -415,7 +417,8 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 					new Class[] { long.class, int.class, float.class,
 							float.class, float.class });
 			orientationSensorEnabled = true;
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 
 		try {
 			onMagneticFieldSensorEventMethod = parent.getClass().getMethod(
@@ -423,7 +426,8 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 					new Class[] { long.class, int.class, float.class,
 							float.class, float.class });
 			magneticFieldSensorEnabled = true;
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 
 		try {
 			onGyroscopeSensorEventMethod = parent.getClass().getMethod(
@@ -431,35 +435,40 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 					new Class[] { long.class, int.class, float.class,
 							float.class, float.class });
 			gyroscopeSensorEnabled = true;
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 
 		try {
 			onProximitySensorEventMethod = parent.getClass().getMethod(
 					"onProximitySensorEvent",
 					new Class[] { long.class, int.class, float.class });
 			proximitySensorEnabled = true;
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 
 		try {
 			onLightSensorEventMethod = parent.getClass().getMethod(
 					"onLightSensorEvent",
 					new Class[] { long.class, int.class, float.class });
 			lightSensorEnabled = true;
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 
 		try {
 			onPressureSensorEventMethod = parent.getClass().getMethod(
 					"onPressureSensorEvent",
 					new Class[] { long.class, int.class, float.class });
 			pressureSensorEnabled = true;
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 
 		try {
 			onTemperatureSensorEventMethod = parent.getClass().getMethod(
 					"onTemperatureSensorEvent",
 					new Class[] { long.class, int.class, float.class });
 			temperatureSensorEnabled = true;
-		} catch (NoSuchMethodException e) {}
+		} catch (NoSuchMethodException e) {
+		}
 	}
 
 	@Override
