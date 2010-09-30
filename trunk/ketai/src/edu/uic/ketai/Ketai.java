@@ -60,7 +60,9 @@ public class Ketai implements IKetaiEventListener, Runnable{
 
 	public void enableFaceAnalyzer()
 	{
-		inputmanager.addAnalyzer(new FaceAnalyzer(datamanager));
+		FaceAnalyzer _facer = new FaceAnalyzer(datamanager);
+		_facer.registerKetaiEventListener(this);
+		inputmanager.addAnalyzer(_facer);
 	}
 
 	public boolean isCollectingData() {
@@ -103,11 +105,23 @@ public class Ketai implements IKetaiEventListener, Runnable{
 
 
 	public static final int KETAI_EVENT_FACES_DETECTED = 1;
+	public static final int KETAI_EVENT_NO_FACES_DETECTED = 2;
 
-	@Override
-	public void receiveKetaiEvent(int _event, Object[] _payload) {
-		parent.background(0xFF0000);
+	public void receiveKetaiEvent(int _event, Object _payload) {
+		if(_event == KETAI_EVENT_FACES_DETECTED){
+			if(!(_payload instanceof PVector))
+				return;
+			PVector _where = (PVector)_payload;
+
+			parent.noFill();
+			parent.strokeWeight(3);
+			parent.stroke(255,0,0);
+			parent.ellipse(_where.x, _where.y, 20, 20);
+			parent.background(0, 255,0);
+		}
+		
+		if(_event == KETAI_EVENT_NO_FACES_DETECTED)
+			parent.background(0,0,0);
 		
 	}
-	
 }
