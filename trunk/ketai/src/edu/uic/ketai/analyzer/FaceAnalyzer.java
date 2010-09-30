@@ -57,8 +57,7 @@ public class FaceAnalyzer extends AbstractKetaiAnalyzer {
 		insertStatement.bindLong(1, timestamp);
 		insertStatement.bindLong(2, numberOfFaces);
 
-		insertStatement.executeInsert();
-				
+		insertStatement.executeInsert();			
 	}
 
 	public String getAnalyzerName() {

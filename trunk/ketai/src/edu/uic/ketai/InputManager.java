@@ -39,6 +39,12 @@ public class InputManager {
 	}
 
 	void addService(IKetaiInputService _service) {
+		for(IKetaiInputService s: services)
+		{
+			//only one service of each kind allowed
+			if(s.getClass().toString().equalsIgnoreCase(_service.getClass().toString()))
+				return;
+		}
 		services.add(_service);
 	}
 

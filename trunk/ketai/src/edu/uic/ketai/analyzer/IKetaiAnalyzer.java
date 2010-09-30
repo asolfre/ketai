@@ -1,5 +1,7 @@
 package edu.uic.ketai.analyzer;
 
+import edu.uic.ketai.IKetaiEventListener;
+
 public interface IKetaiAnalyzer {
 
 	public String getAnalyzerName();
@@ -11,5 +13,7 @@ public interface IKetaiAnalyzer {
 	public String getTableCreationString();
 
 	public Class<?> getServiceProviderClass();
+	
+	public void registerKetaiEventListener(IKetaiEventListener _ketaiEventListener);
 
 }

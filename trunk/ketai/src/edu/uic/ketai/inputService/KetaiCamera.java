@@ -82,7 +82,10 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	public void start() {
 		try {
 			PApplet.println("KetaiCamera: opening camera...");
-			camera = Camera.open();
+			if(camera == null)
+				camera = Camera.open();
+			else
+				camera.reconnect();
 			Parameters cameraParameters = camera.getParameters();
 			// too bad the following doesnt work yet..even on 2.2 :-/
 			// cameraParameters.setPreviewFormat(ImageFormat.RGB_565);
@@ -100,7 +103,7 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 			camera.startPreview();
 
 		} catch (Exception x) {
-			x.printStackTrace(System.out);
+			PApplet.println("Exception caught while trying to connect to camera service.  Please check your sketch permissions or that another application is not using the camera.");
 		}
 	}
 
@@ -110,10 +113,10 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	}
 
 	public void onResume() {
-		if (camera == null) {
-			camera = Camera.open();
-			camera.startPreview();
-		}
+//		if (camera == null) {
+//			camera = Camera.open();
+//			camera.startPreview();
+//		}
 	}
 
 	PictureCallback rawCallback = new PictureCallback() { // <7>
@@ -173,7 +176,6 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 			// + myPixels.length +"/"+onPreviewEventMethod);
 			if (onPreviewEventMethod != null && myPixels != null)
 				try {
-					PApplet.println("onCameraPreviewEvent() calling parent method");
 					onPreviewEventMethod.invoke(parent);
 				} catch (Exception e) {
 					PApplet.println("Disabling onCameraPreviewEvent() because of an error:"
@@ -184,7 +186,6 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 
 			if (onPreviewEventMethodPImage != null && myPixels != null)
 				try {
-					PApplet.println("onCameraPreviewEvent(KetaiCamera) calling parent method");
 					onPreviewEventMethodPImage.invoke(parent,
 							new Object[] { (KetaiCamera) self });
 				} catch (Exception e) {
@@ -239,7 +240,6 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 		if (camera != null && isStarted) {
 			camera.stopPreview();
 			camera.release();
-			camera = null;
 			isStarted = false;
 		}
 		runner = null; // unwind the thread
