@@ -1,12 +1,16 @@
 package edu.uic.ketai.analyzer;
 
 import processing.core.PApplet;
+import processing.core.PVector;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.media.FaceDetector;
 import android.media.FaceDetector.Face;
 
+import edu.uic.ketai.IKetaiEventListener;
+import edu.uic.ketai.Ketai;
 import edu.uic.ketai.data.DataManager;
 import edu.uic.ketai.inputService.KetaiCamera;
 
@@ -45,21 +49,38 @@ public class FaceAnalyzer extends AbstractKetaiAnalyzer {
 			PApplet.println("null bitmap in faceanalyzer");
 			return;
 		}
-		FaceDetector _detector = new FaceDetector(data.width, data.height, 5);
-		Face[] faces = new Face[5];
+		FaceDetector _detector = new FaceDetector(data.width, data.height, 2);
+		Face[] faces = new Face[2];
 		
 		int numberOfFaces = _detector.findFaces(_bitmap, faces);
 
 		if(numberOfFaces < 1)
+		{
+			broadcastKetaiEvent(Ketai.KETAI_EVENT_NO_FACES_DETECTED, null);			
 			return;
-		
+		}
 		insertStatement = datamanager.getDb().compileStatement(INSERT_SQL);
 		insertStatement.bindLong(1, timestamp);
 		insertStatement.bindLong(2, numberOfFaces);
 
-		insertStatement.executeInsert();			
+		insertStatement.executeInsert();
+		PVector _face = new PVector();
+		PointF p = new PointF();
+		faces[0].getMidPoint(p);
+		_face.set(p.x, p.y, 0);
+		broadcastKetaiEvent(Ketai.KETAI_EVENT_FACES_DETECTED, _face);
+		
+		//lets broadcast an event to tell people what we found!
+		
 	}
 
+	private void broadcastKetaiEvent(int _event, Object _data)
+	{
+		for(IKetaiEventListener l: ketaiEventListeners){
+			l.receiveKetaiEvent(_event, _data);
+		}
+	}
+	
 	public String getAnalyzerName() {
 		return NAME;
 	}
