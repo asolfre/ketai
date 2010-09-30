@@ -164,7 +164,7 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 	}
 
 	public void start() {
-		PApplet.println("KSM: start()...");
+		PApplet.println("KetaiSensorManager: start()...");
 		findParentIntentions();
 
 		if (accelerometerSensorEnabled) {
@@ -214,7 +214,7 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 	}
 
 	public void stop() {
-		PApplet.println("KSM: Stop()....");
+		PApplet.println("KetaiSensorManager: Stop()....");
 		sensorManager.unregisterListener(this);
 		isRegistered = false;
 	}
@@ -435,6 +435,7 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 					new Class[] { long.class, int.class, float.class,
 							float.class, float.class });
 			gyroscopeSensorEnabled = true;
+			PApplet.println("Found onGyroscopeSensorEvenMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
@@ -478,7 +479,6 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 
 	@Override
 	public int getStatus() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 

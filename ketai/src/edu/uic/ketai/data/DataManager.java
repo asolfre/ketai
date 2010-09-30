@@ -8,11 +8,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Environment;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 
 import processing.core.PApplet;
 
@@ -95,17 +94,20 @@ public class DataManager {
 				DATA_ROOT_DIRECTORY + "/" + directory);
 		if (!dir.exists()) {
 			if (dir.mkdirs())
-				PApplet.println("success making directory: " + dir.getAbsolutePath() );
+				PApplet.println("success making directory: "
+						+ dir.getAbsolutePath());
 			else {
 				PApplet.println("Failed making directory. Check your sketch permissions or that your device is not connected in disk mode.");
 				return;
 			}
 		}
 		String tablename;
+		int rowCount = 0;
+
 		try {
 			Cursor cursor = this.db.rawQuery("select name from SQLite_Master",
 					null);
-			if (cursor.moveToFirst()) {
+			if (cursor.moveToFirst() && cursor.getCount() > 0) {
 				String row = "";
 				do {
 					tablename = cursor.getString(0);
@@ -122,11 +124,19 @@ public class DataManager {
 							for (int j = 0; j < i; j++)
 								row += c.getString(j) + "\t";
 							row += "\n";
+							rowCount++;
+							if (rowCount > 100) {
+								if (row.length() > 0)
+									this.writeToFile(row,
+											dir.getAbsolutePath(), tablename);
+								row = "";
+								rowCount = 0;
+							}
 						} while (c.moveToNext());
+						writeToFile(row, dir.getAbsolutePath(), tablename);
+						row = "";
+						rowCount = 0;
 					}
-					if (row.length() > 0)
-						this.writeToFile(row, dir.getPath(), tablename);
-					row = "";
 				} while (cursor.moveToNext());
 			}
 
@@ -163,21 +173,33 @@ public class DataManager {
 		}
 	}
 
-	private void writeToFile(String data, String dir, String exportFileName)
-			throws IOException {
-
-		File file = new File(dir, exportFileName + ".csv");
-
-		file.createNewFile();
-
-		ByteBuffer buff = ByteBuffer.wrap(data.getBytes());
-		FileChannel channel = new FileOutputStream(file).getChannel();
+	private void writeToFile(String data, String _dir, String exportFileName) {
 		try {
-			channel.write(buff);
-		} finally {
-			if (channel != null)
-				channel.close();
+			PApplet.print(".");
+			String fileToWrite = _dir + "/" + exportFileName + ".csv";
+			FileWriter fw = new FileWriter(fileToWrite, true);
+			BufferedWriter out = new BufferedWriter(fw);
+			out.write(data);
+			out.close();
+			fw.close();
+		} catch (Exception x) {
+			PApplet.println("Error exporting data. ("
+					+ x.getMessage()
+					+ ") Check the sketch permissions or that the device is not connected in disk mode.");
 		}
+		//
+		// File file = new File(dir, exportFileName + ".csv");
+		//
+		// file.createNewFile();
+		//
+		// ByteBuffer buff = ByteBuffer.wrap(data.getBytes());
+		// FileChannel channel = new FileOutputStream(file).getChannel();
+		// try {
+		// channel.write(buff);
+		// } finally {
+		// if (channel != null)
+		// channel.close();
+		// }
 	}
 
 	private static class OpenHelper extends SQLiteOpenHelper {

@@ -10,29 +10,56 @@ import edu.uic.ketai.data.DataManager;
 import edu.uic.ketai.inputService.KetaiCamera;
 import edu.uic.ketai.inputService.KetaiSensorManager;
 
-public class Ketai {
+public class Ketai implements IKetaiEventListener, Runnable{
 	PApplet parent;
 	DataManager datamanager;
 	InputManager inputmanager;
 	boolean isCollecting = false;
+	int cameraWidth, cameraHeight, cameraFPS;
+	Thread runner;
 
 	public Ketai(PApplet pparent) {
 		parent = pparent;
 		datamanager = new DataManager(parent.getApplicationContext());
 		inputmanager = new InputManager(parent, datamanager);
 
-		// Let's add the default services
+		//setup defaults for camera
+		cameraWidth = 320;
+		cameraHeight = 240;
+		cameraFPS = 24;
+		
+		runner = new Thread(this);
+		runner.start();
+	}
+	
+	public void setCameraParameters(int _width, int _height, int _framesPerSecond)
+	{
+		cameraWidth = _width; 
+		cameraHeight = _height;
+		cameraFPS = _framesPerSecond;
+	}
+	
+	public void enableSensorManager()
+	{
 		inputmanager.addService(new KetaiSensorManager(parent));
-		inputmanager.addService(new KetaiCamera(parent, 640, 480, 10));
+	}
+	
+	public void enableCamera()
+	{
+		inputmanager.addService(new KetaiCamera(parent, cameraWidth, cameraHeight, cameraFPS));		
 	}
 	
 	public long getDataCount() {
 		return datamanager.getDataCount();
 	}
 
-	public void enableDefaultAnalyzer() {
-		// Let's add the default analyzers
-		inputmanager.addAnalyzer(new SensorAnalyzer(datamanager));
+	public void enableDefaultSensorAnalyzer()
+	{
+		inputmanager.addAnalyzer(new SensorAnalyzer(datamanager));		
+	}
+
+	public void enableFaceAnalyzer()
+	{
 		inputmanager.addAnalyzer(new FaceAnalyzer(datamanager));
 	}
 
@@ -56,7 +83,11 @@ public class Ketai {
 
 	public void exportData(String _destinationFilename) {
 		try {
+			if(isCollecting)
+				inputmanager.stopServices();
 			datamanager.exportData(_destinationFilename);
+			if(isCollecting)
+				inputmanager.startServices();
 		} catch (IOException x) {
 			x.printStackTrace();
 		}
@@ -66,4 +97,17 @@ public class Ketai {
 		datamanager.deleteAllData();
 	}
 
+	public void run() {
+		
+	}
+
+
+	public static final int KETAI_EVENT_FACES_DETECTED = 1;
+
+	@Override
+	public void receiveKetaiEvent(int _event, Object[] _payload) {
+		parent.background(0xFF0000);
+		
+	}
+	
 }
