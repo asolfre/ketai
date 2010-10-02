@@ -18,13 +18,11 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
-import android.util.Log;
 
-public class KetaiCamera extends PImage implements Runnable, IKetaiInputService {
+public class KetaiCamera extends PImage implements  IKetaiInputService {
 
 	private ArrayList<IKetaiAnalyzer> listeners;
 	private PApplet parent;
-	private static final String TAG = "ketaiCamera";
 	private Camera camera;
 	private int[] myPixels;
 	private Method onPreviewEventMethod, onPreviewEventMethodPImage;
@@ -75,17 +73,16 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 		}
 
 		PApplet.println("KetaiCamera completed instantiation... ");
-		runner = new Thread(this);
-		runner.run();
+//		runner = new Thread(this);
+//		runner.run();
 	}
 
 	public void start() {
 		try {
 			PApplet.println("KetaiCamera: opening camera...");
-			if(camera == null)
+			if (camera == null)
 				camera = Camera.open();
-			else
-				camera.reconnect();
+
 			Parameters cameraParameters = camera.getParameters();
 			// too bad the following doesnt work yet..even on 2.2 :-/
 			// cameraParameters.setPreviewFormat(ImageFormat.RGB_565);
@@ -103,6 +100,9 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 			camera.startPreview();
 
 		} catch (Exception x) {
+			x.printStackTrace();
+			if(camera != null)
+				camera.release();
 			PApplet.println("Exception caught while trying to connect to camera service.  Please check your sketch permissions or that another application is not using the camera.");
 		}
 	}
@@ -113,15 +113,14 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	}
 
 	public void onResume() {
-//		if (camera == null) {
-//			camera = Camera.open();
-//			camera.startPreview();
-//		}
+		// if (camera == null) {
+		// camera = Camera.open();
+		// camera.startPreview();
+		// }
 	}
 
 	PictureCallback rawCallback = new PictureCallback() { // <7>
 		public void onPictureTaken(byte[] data, Camera camera) {
-			Log.d(TAG, "onPictureTaken - raw");
 		}
 	};
 
@@ -140,8 +139,10 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 
 	PreviewCallback previewcallback = new PreviewCallback() {
 		public void onPreviewFrame(byte[] data, Camera camera) {
-			if (camera == null)
+
+			if (camera == null || !isStarted)
 				return;
+
 			// The camera does NOT return RGB even when set for it so we will
 			// just deal w/the NV21 format
 			//
@@ -238,16 +239,17 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 	public void stop() {
 		PApplet.println("Stopping Camera...");
 		if (camera != null && isStarted) {
+			isStarted = false;
 			camera.stopPreview();
 			camera.release();
-			isStarted = false;
+			camera = null;
 		}
-		runner = null; // unwind the thread
+		//runner = null; // unwind the thread
 	}
 
-	public void dispose() {
-		stop();
-	}
+	// public void dispose() {
+	// stop();
+	// }
 
 	static public void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width,
 			int height) {
@@ -288,7 +290,7 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 		}
 	}
 
-	public void run() {
+//	public void run() {
 		// while ((Thread.currentThread() == runner) && (camera != null)) {
 		// try {
 		// synchronized (camera) {
@@ -317,7 +319,7 @@ public class KetaiCamera extends PImage implements Runnable, IKetaiInputService 
 		//
 		// }
 
-	}
+//	}
 
 	public void startService() {
 		if (!isStarted || camera == null)
