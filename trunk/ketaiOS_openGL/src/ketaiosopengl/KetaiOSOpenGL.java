@@ -9,24 +9,25 @@ public class KetaiOSOpenGL extends PApplet {
 	int rowCount;
 	ArrayList<Integer> sensorTypes; // stores index of sensor types available
 	ArrayList<Sensor> sensors; // stores data for every sensor
-	long startTime;
 	String[] sensorName = new String[129];
 	int guiColor1 = color(204, 102, 0);
 	int guiColor2 = color(0, 102, 153);
 	int border = 50;
 	boolean playBack = true;
+	int realTimeBuffer = 40;
 
 	public void setup() {
-		size(1400, 768, OPENGL);
+		size(1024, 768, OPENGL);
 		//hint(DISABLE_OPENGL_2X_SMOOTH);
 		sensors = new ArrayList<Sensor>(); // create empty sensor Array
 		sensorTypes = new ArrayList<Integer>(); // create empty sensorTypes
 		guiSetup(); // make the GUI menu
-		int type = 5;
+		int type = 0;
 		sensorTypes.add(type);
-		println("sensor type [" + type + "] added");
 		sensors.add(new Sensor(type));
+		println("sensor type [" + type + "] added");
 		loadFile("KETAI_DB_THREEVALUES_1281638153946.csv");
+		//		noCursor();
 	}
 
 	public void draw() {
@@ -36,7 +37,7 @@ public class KetaiOSOpenGL extends PApplet {
 			sensors.get(i).display();
 		}
 		if (playBack)
-			sensors.get(0).captureData(5);
+			sensors.get(0).captureData(0, map(mouseY, 0, width, -50, 50), map(mouseX, 0, width, -50, 50), -10);
 	}
 
 	// LOAD FLATFILE
@@ -94,6 +95,7 @@ public class KetaiOSOpenGL extends PApplet {
 		Table sensorTable;
 		String dataStructure = "";
 		int numFields = 3; // default 3 values, needs to be changed to include raw
+		long startTime;
 
 		// CONSTRUCTOR ANALYSIS FLAT FILE
 		Sensor(int sensorType, Table _sensorTable) {
@@ -117,15 +119,17 @@ public class KetaiOSOpenGL extends PApplet {
 			type = sensorType; // int type, represents specific sensor id
 			dataStructure = "XYZ"; // default
 			src += sensorName[type] + "\n\n";
-			captureData(type);
+			//captureData(type);
 			// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
 			label[0] = controlP5.addTextlabel("label_" + type + "_" + 0, "index: " + 0, -100, -100);
 			label[1] = controlP5.addTextlabel("label_" + type + "_" + 1, "index: " + 1, -100, -100);
 			label[2] = controlP5.addTextlabel("label_" + type + "_" + 2, "index: " + 2, -100, -100);
+			if (type == 0)
+				plotVisible = true; // for Realtime Data
 		}
 
 		// REAL-TIME VISUALIZATION
-		void captureData(int type) {
+		void captureData(int type, float X, float Y, float Z) {
 			vector.add(new Vector(0, millis(), type));
 			//			long min=MAX_INT;
 			//			for (int row = 0; row < vector.size(); row++) {
@@ -133,15 +137,16 @@ public class KetaiOSOpenGL extends PApplet {
 			//			}
 			//			println(min);
 			// TODO spread buffer over screen width (subtract min timeStamp from duration)
-			myDuration = millis();
 			startTime = vector.get(0).timeStamp;
+			myDuration = millis();
+
 			// TODO make buffer flexible
-			if (vector.size() >= 100) {
+			if (vector.size() > realTimeBuffer) {
 				vector.remove(0);
 			}
-			float x = mouseX;
-			float y = mouseY;
-			float z = 0;
+			float x = X;
+			float y = Y;
+			float z = Z;
 			vector.get(vector.size() - 1).setValue(x, y, z);
 			// TODO consolidate min, max, sensorMin, sensorMax to method
 			if (myMin[0] > x)
@@ -162,11 +167,11 @@ public class KetaiOSOpenGL extends PApplet {
 			if (sensorMin > x)
 				sensorMin = x;
 			// center align all values
-			if (sensorMax > abs(sensorMin)) {
-				sensorMin = -abs(sensorMax);
-			} else {
-				sensorMax = abs(sensorMin);
-			}
+			//			if (sensorMax > abs(sensorMin)) {
+			//				sensorMin = -abs(sensorMax);
+			//			} else {
+			//				sensorMax = abs(sensorMin);
+			//			}
 		}
 
 		// LOADING FROM A FLAT FILE
@@ -310,7 +315,7 @@ public class KetaiOSOpenGL extends PApplet {
 			// sensor-specific gui
 			MultiListButton multi;
 			// add sensor to global navigation
-			multi = mlButton.add("" + type, 100 + type);
+			multi = mlButton.add("list" + type, 100 + type);
 			multi.setLabel(type + " : " + sensorName[type]);
 			// textarea for source data
 			myTextarea = controlP5.addTextarea("src_" + type, "", (width - 4 * border) / sensors.size() * (type - 1) + type * border, border,
@@ -353,9 +358,15 @@ public class KetaiOSOpenGL extends PApplet {
 			stroke(subColor(index));
 			noFill();
 			beginShape();
+			// TODO: Check Realtime vs Captured
+			if (type > 0)
+				startTime = 0;
 			for (int i = 1; i < vector.size(); i++) {
-				float plotX = -range.lowValue() * (width - 2 * border) / (range.highValue() - range.lowValue())
-						+ map(vector.get(i).timeStamp, 0, myDuration, border, (width - 2 * border) * 100 / (range.highValue() - range.lowValue()));
+				float plotX = -range.lowValue()
+						* (width - 2 * border)
+						/ (range.highValue() - range.lowValue())
+						+ map(vector.get(i).timeStamp, startTime, myDuration, border, (width - 2 * border) * 100
+								/ (range.highValue() - range.lowValue()));
 				float plotY = map(vector.get(i).getValue(index), myMin[index], myMax[index], -height / 2 + border, height / 2 - border * 2);
 				vector.get(i).setPosition(index, plotX, plotY, 0);
 				// check if value rolls over, don't connect the line then
@@ -396,14 +407,14 @@ public class KetaiOSOpenGL extends PApplet {
 						// plot the vector visuzlization over timeline
 						pushMatrix();
 						translate(vector.get(i).x[index], 0, 0);
-						vector.get(i).display(); // scale factor (10)
+						vector.get(i).display();
 						popMatrix();
 					}
 				} else {
 					// plot the vector visuzlization over timeline
 					pushMatrix();
 					translate(vector.get(i).x[index], 0, 0);
-					vector.get(i).display(); // scale factor (10)
+					vector.get(i).display();
 					popMatrix();
 				}
 			}
@@ -429,24 +440,28 @@ public class KetaiOSOpenGL extends PApplet {
 		// TOGGLE FOR GUI
 		void active(String name, float value) {
 			if ((int) (value - 100) == type && !name.equals("myNavigation")) {
-				if (myTextarea.isVisible()) {
-					myTextarea.hide();
-					myTextlabelMin.hide();
-					myTextlabelMax.hide();
-					myTextlabelZero.hide();
+				if (plotVisible) {
+					//					// myTextarea.hide();
+					if (!name.equals("label0")) {
+						myTextlabelMin.hide();
+						myTextlabelMax.hide();
+						myTextlabelZero.hide();
+//						for (int i = 0; i < sensorTable.data[0].length - 2; i++) {
+//							label[i].hide();
+//						}
+					}
 					plotVisible = false;
-					for (int i = 0; i < sensorTable.data[0].length - 2; i++) {
-						label[i].hide();
-					}
 				} else {
-					//					myTextarea.show();
-					myTextlabelMin.show();
-					myTextlabelMax.show();
-					myTextlabelZero.show();
-					plotVisible = true;
-					for (int i = 0; i < sensorTable.data[0].length - 2; i++) {
-						label[i].show();
+					//					// myTextarea.show();
+					if (!name.equals("label0")) {
+						myTextlabelMin.show();
+						myTextlabelMax.show();
+						myTextlabelZero.show();
+//						for (int i = 0; i < sensorTable.data[0].length - 2; i++) {
+//							label[i].show();
+//						}
 					}
+					plotVisible = true;
 				}
 			}
 		}
@@ -486,22 +501,22 @@ public class KetaiOSOpenGL extends PApplet {
 
 			// VERSION 1 correction
 			rotateX(HALF_PI); // turning y axis into z to match device
-			scale(height/8, -height/8, height/8); // flip y-axis
-			
+			scale(height / 12, -height / 12, height / 12); // flip y-axis
+
 			// ROTATION FOR ACCELEROMETER (MIN. -9.81, MAX. 9.81 DURING REST 
-			if (type == 1) {
-				
+			if (type == 1 || type == 0) {
+
 				// ROTATED MATRIX VERSION 1
-				//			rotateX(HALF_PI); // turning y axis into z to match device
-				//			rotateZ(PI);
-				//			scale(1, -1, 1); // flip y-axis
-				//			float r = sqrt(sq(delta.x) + sq(delta.y) + sq(delta.z));
-				//			float theta = atan2(delta.y, delta.x);
-				//			float phi = acos(delta.z / r);
-				//			rotateZ(theta);
-				//			rotateY(phi);
-				//			rotateX(-HALF_PI);
-				//		    ds added "correction rotation rotateY(-theta);			
+				//							rotateX(HALF_PI); // turning y axis into z to match device
+				//							rotateZ(PI);
+				//							scale(1, -1, 1); // flip y-axis
+				//							float r = sqrt(sq(delta.x) + sq(delta.y) + sq(delta.z));
+				//							float theta = atan2(delta.y, delta.x);
+				//							float phi = acos(delta.z / r);
+				//							rotateZ(theta);
+				//							rotateY(phi);
+				//							rotateX(-HALF_PI);
+				//						    ds added "correction rotation rotateY(-theta);			
 
 				// ROTATED MATRIX VERSION 2
 				PVector up = new PVector(0, 1, 0);
@@ -528,6 +543,7 @@ public class KetaiOSOpenGL extends PApplet {
 				}
 				applyMatrix(U.x, U.y, U.z, 0, V.x, V.y, V.z, 0, N.x, N.y, N.z, 0, 0, 0, 0, 1);
 			}
+
 			// ROTATION FOR ORIENTATION SENSOR (YAW, PITCH, ROLL DURING REST) 
 			if (type == 3) {
 				PVector N = new PVector(value.x, value.y, value.z);
