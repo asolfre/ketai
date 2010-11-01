@@ -17,7 +17,7 @@ public class KetaiOSOpenGL extends PApplet {
 	int realTimeBuffer = 40;
 
 	public void setup() {
-		size(1024, 768, OPENGL);
+		size(1920, 1080, OPENGL);
 		//hint(DISABLE_OPENGL_2X_SMOOTH);
 		sensors = new ArrayList<Sensor>(); // create empty sensor Array
 		sensorTypes = new ArrayList<Integer>(); // create empty sensorTypes
@@ -35,9 +35,11 @@ public class KetaiOSOpenGL extends PApplet {
 		fill(255);
 		for (int i = 0; i < sensors.size(); i++) {
 			sensors.get(i).display();
+			sensors.get(i).analyze(); // onset detection
 		}
-		if (playBack)
+		if (playBack) {
 			sensors.get(0).captureData(0, map(mouseY, 0, width, -50, 50), map(mouseX, 0, width, -50, 50), -10);
+		}
 	}
 
 	// LOAD FLATFILE
@@ -96,6 +98,7 @@ public class KetaiOSOpenGL extends PApplet {
 		String dataStructure = "";
 		int numFields = 3; // default 3 values, needs to be changed to include raw
 		long startTime;
+		int sensitivity = 10; // orientation delta threshold
 
 		// CONSTRUCTOR ANALYSIS FLAT FILE
 		Sensor(int sensorType, Table _sensorTable) {
@@ -176,6 +179,7 @@ public class KetaiOSOpenGL extends PApplet {
 
 		// LOADING FROM A FLAT FILE
 		void loadData(int type, String dataStructure) {
+			// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
 			if (dataStructure.equals("TTIV")) {
 				for (int row = 0; row < rowCount; row++) {
 					Long timeStamp = sensorTable.getLong(row, 0);
@@ -198,7 +202,6 @@ public class KetaiOSOpenGL extends PApplet {
 				for (int i = 0; i < len; i++) {
 					timeStamps[i] = fa[i];
 					vector.add(new Vector(i, timeStamps[i], type));
-
 				}
 				// parsing all rows
 				for (int row = 0; row < rowCount; row++) {
@@ -234,8 +237,8 @@ public class KetaiOSOpenGL extends PApplet {
 						}
 					}
 				}
+				// Parser for .csv data format [timeStamp | type | X | Y | Z ] -> TTXYZ
 			} else if (dataStructure.equals("TTXYZ")) {
-				// Parser for .csv data format [timeStamp | type | index | value] -> TTIV
 				label[0] = controlP5.addTextlabel("label_" + type + "_" + 0, "index: " + 0, -100, -100);
 				label[1] = controlP5.addTextlabel("label_" + type + "_" + 1, "index: " + 1, -100, -100);
 				label[2] = controlP5.addTextlabel("label_" + type + "_" + 2, "index: " + 2, -100, -100);
@@ -261,13 +264,11 @@ public class KetaiOSOpenGL extends PApplet {
 				for (int i = 0; i < len; i++) {
 					timeStamps[i] = fa[i];
 					vector.add(new Vector(i, timeStamps[i], type));
-
 				}
 				// parsing all rows
 				for (int row = 0; row < rowCount; row++) {
 					long timeStamp = sensorTable.getLong(row, 0);
-					timeStamp /= 1000000; // converts nanoseconds into
-					// milliseconds
+					timeStamp /= 1000000; // converts nanoseconds into milliseconds
 					int typeVal = sensorTable.getInt(row, 1);
 					float x = sensorTable.getInt(row, 2);
 					float y = sensorTable.getFloat(row, 3);
@@ -305,6 +306,33 @@ public class KetaiOSOpenGL extends PApplet {
 							}
 						}
 					}
+				}
+			}
+		}
+
+		// ONSET DETECTION
+		void onSetDetection() {
+			float deltaAverage = 0;
+			float delta = 0;
+
+			for (int i = 1; i < vector.size(); i++) {
+				delta = degrees(PVector.angleBetween(vector.get(i).value, vector.get(i - 1).value)); // TODO: check second vector (size - 2)
+				println(delta);
+
+				PVector temp = vector.get(i).value;
+				if (i > 10) {
+					for (int k = i - 1; k > i - 10; k--) {
+						 temp = PVector.mult(vector.get(k).value, temp);
+					}
+					deltaAverage = degrees(PVector.angleBetween(temp, vector.get(i).value));
+				}
+				// Check change from average of past 10 values to current value, i.e. new direction, intentional gesture
+				if (deltaAverage > 10*sensitivity) {
+					vector.get(i).significant = 2;
+				}
+				// Check Threshold: Check degree of orientation change in degrees, dependent on sample and frame rate., i.e. shake, shock, significant change TODO: Fix bug (see real-time)
+				if (delta > sensitivity) {
+					vector.get(i).significant = 1;
 				}
 			}
 		}
@@ -352,6 +380,10 @@ public class KetaiOSOpenGL extends PApplet {
 			popMatrix();
 		}
 
+		void analyze() {
+			onSetDetection();
+		}
+
 		// PLOT TIMELINE // ROLLOVER
 		void plotNormalized(int index) {
 			// graph
@@ -379,8 +411,11 @@ public class KetaiOSOpenGL extends PApplet {
 			endShape();
 			// rollover graphics
 			for (int i = 0; i < vector.size(); i++) {
-				if (abs(mouseX - vector.get(i).x[index]) < 100 / (range.highValue() - range.lowValue())) {
-					// on timeScale
+				float spacing = 0;
+				if (spacing == 0 && i > 1) {
+					spacing = vector.get(vector.size() - 1).getX() - vector.get(vector.size() - 2).getX();
+				}
+				if (abs(mouseX - vector.get(i).x[index]) < 3 * spacing) {
 					noStroke();
 					if (index == 0 || index == 3) {
 						fill(255, 0, 0);
@@ -446,9 +481,9 @@ public class KetaiOSOpenGL extends PApplet {
 						myTextlabelMin.hide();
 						myTextlabelMax.hide();
 						myTextlabelZero.hide();
-//						for (int i = 0; i < sensorTable.data[0].length - 2; i++) {
-//							label[i].hide();
-//						}
+						//						for (int i = 0; i < sensorTable.data[0].length - 2; i++) {
+						//							label[i].hide();
+						//						}
 					}
 					plotVisible = false;
 				} else {
@@ -457,9 +492,9 @@ public class KetaiOSOpenGL extends PApplet {
 						myTextlabelMin.show();
 						myTextlabelMax.show();
 						myTextlabelZero.show();
-//						for (int i = 0; i < sensorTable.data[0].length - 2; i++) {
-//							label[i].show();
-//						}
+						//						for (int i = 0; i < sensorTable.data[0].length - 2; i++) {
+						//							label[i].show();
+						//						}
 					}
 					plotVisible = true;
 				}
@@ -483,6 +518,7 @@ public class KetaiOSOpenGL extends PApplet {
 		float x[] = new float[6];
 		float y[] = new float[6];
 		float z[] = new float[6];
+		int significant = 0;
 
 		Vector(int _id, long _timeStamp, int _type) {
 			id = _id;
@@ -568,12 +604,13 @@ public class KetaiOSOpenGL extends PApplet {
 			line(0, 0, 0, 0, 0, 1); // draw y axis in new Marix orientation
 			noStroke();
 			// display
-			if (rollOver()) {
-				fill(255);
-			} else {
-				fill(255, 70);
-			}
+			int displayColor = color(200, 200);
+			if (significant == 1)
+				displayColor = color(255, 0, 0, 200);
+			if (significant == 2)
+				displayColor = color(0, 255, 0, 200);
 			// display
+			fill(displayColor);
 			beginShape();
 			vertex(-.4f, -.8f, .001f);
 			vertex(.4f, -.8f, .001f);
@@ -581,14 +618,13 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-.4f, .8f, .001f);
 			endShape();
 			// top
-			fill(127, 100);
+			fill(displayColor, 100);
 			beginShape();
 			vertex(-.5f, -1f, 0);
 			vertex(.5f, -1f, 0);
 			vertex(.5f, 1f, 0);
 			vertex(-.5f, 1f, 0);
 			endShape();
-			fill(127, 255);
 			// bottom
 			beginShape();
 			vertex(-.5f, -1f, -.1f);
@@ -597,7 +633,6 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-.5f, 1f, -.1f);
 			endShape();
 			// front
-			fill(127, 100);
 			beginShape();
 			vertex(-.5f, -1f, 0);
 			vertex(.5f, -1f, 0);
@@ -605,7 +640,6 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-.5f, -1f, -.1f);
 			endShape();
 			// back
-			fill(127, 100);
 			beginShape();
 			vertex(-.5f, 1f, 0);
 			vertex(.5f, 1f, 0);
@@ -613,7 +647,6 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-.5f, 1f, -.1f);
 			endShape();
 			// left
-			fill(127, 100);
 			beginShape();
 			vertex(-.5f, 1f, 0);
 			vertex(-.5f, 1f, -.1f);
@@ -621,14 +654,12 @@ public class KetaiOSOpenGL extends PApplet {
 			vertex(-.5f, -1f, 0);
 			endShape();
 			// right
-			fill(127, 100);
 			beginShape();
 			vertex(.5f, 1, 0);
 			vertex(.5f, 1, -.1f);
 			vertex(.5f, -1f, -.1f);
 			vertex(.5f, -1f, 0);
 			endShape();
-
 			popMatrix();
 		}
 
