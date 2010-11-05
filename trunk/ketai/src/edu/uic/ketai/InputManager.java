@@ -33,8 +33,10 @@ public class InputManager {
 	void stopServices() {
 		Iterator<IKetaiInputService> it = services.iterator();
 		while (it.hasNext()) {
+			try{
 			IKetaiInputService item = (IKetaiInputService) it.next();
 			item.stopService();
+			}catch (RuntimeException x){x.printStackTrace();}
 		}
 	}
 

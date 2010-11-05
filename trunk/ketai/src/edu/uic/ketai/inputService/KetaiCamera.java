@@ -241,6 +241,7 @@ public class KetaiCamera extends PImage implements  IKetaiInputService {
 		if (camera != null && isStarted) {
 			isStarted = false;
 			camera.stopPreview();
+			camera.setPreviewCallback(null);
 			camera.release();
 			camera = null;
 		}
