@@ -472,22 +472,18 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 		}
 	}
 
-	@Override
 	public void startService() {
 		start();
 	}
 
-	@Override
 	public int getStatus() {
 		return 0;
 	}
 
-	@Override
 	public void stopService() {
 		stop();
 	}
 
-	@Override
 	public String getServiceDescription() {
 		return SERVICE_DESCRIPTION;
 	}

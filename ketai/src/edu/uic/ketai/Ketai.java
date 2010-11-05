@@ -5,6 +5,7 @@ import processing.core.*;
 import java.io.IOException;
 
 import edu.uic.ketai.analyzer.FaceAnalyzer;
+import edu.uic.ketai.analyzer.MotionAnalyzer;
 import edu.uic.ketai.analyzer.SensorAnalyzer;
 import edu.uic.ketai.data.DataManager;
 import edu.uic.ketai.inputService.KetaiCamera;
@@ -63,6 +64,10 @@ public class Ketai implements IKetaiEventListener, Runnable{
 		FaceAnalyzer _facer = new FaceAnalyzer(datamanager);
 		_facer.registerKetaiEventListener(this);
 		inputmanager.addAnalyzer(_facer);
+	}
+	
+	public void enableMotionAnalyzer(){
+		inputmanager.addAnalyzer(new MotionAnalyzer(datamanager));			
 	}
 
 	public boolean isCollectingData() {
