@@ -2,7 +2,7 @@ package com.KetaiLibraryProcessingSketch;
 
 import android.hardware.SensorEvent;
 import processing.core.PApplet;
-import edu.uic.innovationcenter.ketai.sensor.KetaiSensorManager;
+import edu.uic.ketai.inputService.KetaiSensorManager;
 
 public class KetaiLibraryProcessingSketch extends PApplet {
 	KetaiSensorManager sm;
