@@ -67,12 +67,12 @@ public class MotionAnalyzer extends AbstractKetaiAnalyzer{
 	}
 	
 	
-	private void broadcastKetaiEvent(int _event, Object _data)
-	{
-		for(IKetaiEventListener l: ketaiEventListeners){
-			l.receiveKetaiEvent(_event, _data);
-		}
-	}
+//	private void broadcastKetaiEvent(String _event, Object _data)
+//	{
+//		for(IKetaiEventListener l: ketaiEventListeners){
+//			l.receiveKetaiEvent(_event, _data);
+//		}
+//	}
 	
 	public String getAnalyzerName() {
 		return NAME;

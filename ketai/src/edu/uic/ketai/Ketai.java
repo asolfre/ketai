@@ -3,71 +3,81 @@ package edu.uic.ketai;
 import processing.core.*;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import edu.uic.ketai.analyzer.FaceAnalyzer;
+import edu.uic.ketai.analyzer.IKetaiAnalyzer;
 import edu.uic.ketai.analyzer.MotionAnalyzer;
 import edu.uic.ketai.analyzer.SensorAnalyzer;
 import edu.uic.ketai.data.DataManager;
 import edu.uic.ketai.inputService.KetaiCamera;
 import edu.uic.ketai.inputService.KetaiSensorManager;
 
-public class Ketai implements IKetaiEventListener, Runnable{
+public class Ketai implements IKetaiEventListener, Runnable {
 	PApplet parent;
 	DataManager datamanager;
 	InputManager inputmanager;
 	boolean isCollecting = false;
 	int cameraWidth, cameraHeight, cameraFPS;
 	Thread runner;
+	private Method eventListener = null;
 
 	public Ketai(PApplet pparent) {
 		parent = pparent;
 		datamanager = new DataManager(parent.getApplicationContext());
 		inputmanager = new InputManager(parent, datamanager);
 
-		//setup defaults for camera
+		// setup defaults for camera
 		cameraWidth = 320;
 		cameraHeight = 240;
 		cameraFPS = 24;
-		
+
 		runner = new Thread(this);
 		runner.start();
+
+		try {
+			eventListener = parent.getClass().getMethod("onKetaiEvent",
+					new Class[] { String.class, Object.class });
+
+			PApplet.println("Adding parent to event notifier...");
+
+		} catch (NoSuchMethodException e) {
+		}
+
 	}
-	
-	public void setCameraParameters(int _width, int _height, int _framesPerSecond)
-	{
-		cameraWidth = _width; 
+
+	public void setCameraParameters(int _width, int _height,
+			int _framesPerSecond) {
+		cameraWidth = _width;
 		cameraHeight = _height;
 		cameraFPS = _framesPerSecond;
 	}
-	
-	public void enableSensorManager()
-	{
+
+	public void enableSensorManager() {
 		inputmanager.addService(new KetaiSensorManager(parent));
 	}
-	
-	public void enableCamera()
-	{
-		inputmanager.addService(new KetaiCamera(parent, cameraWidth, cameraHeight, cameraFPS));		
+
+	public void enableCamera() {
+		inputmanager.addService(new KetaiCamera(parent, cameraWidth,
+				cameraHeight, cameraFPS));
 	}
-	
+
 	public long getDataCount() {
 		return datamanager.getDataCount();
 	}
 
-	public void enableDefaultSensorAnalyzer()
-	{
-		inputmanager.addAnalyzer(new SensorAnalyzer(datamanager));		
+	public void enableDefaultSensorAnalyzer() {
+		inputmanager.addAnalyzer(new SensorAnalyzer(datamanager));
 	}
 
-	public void enableFaceAnalyzer()
-	{
+	public void enableFaceAnalyzer() {
 		FaceAnalyzer _facer = new FaceAnalyzer(datamanager);
 		_facer.registerKetaiEventListener(this);
 		inputmanager.addAnalyzer(_facer);
 	}
-	
-	public void enableMotionAnalyzer(){
-		inputmanager.addAnalyzer(new MotionAnalyzer(datamanager));			
+
+	public void enableMotionAnalyzer() {
+		inputmanager.addAnalyzer(new MotionAnalyzer(datamanager));
 	}
 
 	public boolean isCollectingData() {
@@ -90,10 +100,10 @@ public class Ketai implements IKetaiEventListener, Runnable{
 
 	public void exportData(String _destinationFilename) {
 		try {
-			if(isCollecting)
+			if (isCollecting)
 				inputmanager.stopServices();
 			datamanager.exportData(_destinationFilename);
-			if(isCollecting)
+			if (isCollecting)
 				inputmanager.startServices();
 		} catch (IOException x) {
 			x.printStackTrace();
@@ -105,28 +115,28 @@ public class Ketai implements IKetaiEventListener, Runnable{
 	}
 
 	public void run() {
-		
-	}
 
+	}
 
 	public static final int KETAI_EVENT_FACES_DETECTED = 1;
 	public static final int KETAI_EVENT_NO_FACES_DETECTED = 2;
 
-	public void receiveKetaiEvent(int _event, Object _payload) {
-		if(_event == KETAI_EVENT_FACES_DETECTED){
-			if(!(_payload instanceof PVector))
+	public void receiveKetaiEvent(String _event, Object _data) {
+		if (eventListener != null) {
+			try {
+				eventListener.invoke(parent,
+						new Object[] { _event, _data });
 				return;
-			PVector _where = (PVector)_payload;
-
-			parent.noFill();
-			parent.strokeWeight(3);
-			parent.stroke(255,0,0);
-			parent.ellipse(_where.x, _where.y, 20, 20);
-			parent.background(0, 255,0);
+			} catch (Exception e) {
+				PApplet.println("Ketai->onKetaiEvent() because of an error:"
+						+ e.getMessage());
+				e.printStackTrace();
+			}
 		}
-		
-		if(_event == KETAI_EVENT_NO_FACES_DETECTED)
-			parent.background(0,0,0);
-		
+	}
+
+	public void addAnalyzer(IKetaiAnalyzer _analyzer) {
+		_analyzer.registerKetaiEventListener(this);
+		inputmanager.addAnalyzer(_analyzer);
 	}
 }
