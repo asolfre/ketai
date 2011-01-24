@@ -1,6 +1,5 @@
 import edu.uic.ketai.*;
 import edu.uic.ketai.inputService.KetaiCamera;
-
 Ketai ketai;
 PFont font;
 long dataCount;
@@ -10,16 +9,9 @@ void setup()
 {
   //Create Ketai object
   ketai = new Ketai(this);
-
   //Get the current data count
   dataCount = ketai.getDataCount();
-
-  //Let's lock the orientation so we dont restart on orientation changes
   orientation(PORTRAIT); 
-  font = loadFont("font.vlw");
-  textFont(font, 22);
-  frameRate(10);
-  background(0);
   ca = new CustomAnalyzer();
   ketai.enableSensorManager();
   ketai.addAnalyzer(ca);
@@ -27,7 +19,6 @@ void setup()
 
 void draw() {
 }
-
 
 //  We will toggle collection by touching the screen
 void mousePressed()
@@ -57,10 +48,8 @@ void keyPressed() {
   if (key == CODED) {
     if (keyCode == MENU) {
       println("Exporting data...");
-
       //Export all data (this will delete all data in DB)
       ketai.exportData("test");
-
       //update the data count
       dataCount = ketai.getDataCount();
       background(0);
