@@ -12,39 +12,23 @@ void setup()
   ketai = new Ketai(this);
   ketai.setCameraParameters(320, 240, 10);
   backgroundColor = color(255,255,255);
-
   ketai.enableCamera();
   ketai.enableFaceAnalyzer();
-
   //Get the current data count
   dataCount = ketai.getDataCount();
-
-  //Let's lock the orientation so we dont restart on orientation changes
   orientation(LANDSCAPE);
-
-  font = loadFont("font.vlw");
-  textFont(font, 22);
-  frameRate(10);
-  noFill();
-  strokeWeight(3);
-  stroke(255, 0, 0);
-
-  background(0);
 }
 
 void draw() {
-
-  //We will simply display the ketai status and data count
+  background(0);
+  // Ketai status
   if(ketai.isCollectingData())
     text("Collecting Data...", 20,20);
   else
     text("Not Collecting Data...", 20,20);
-
   text("Current Data count: " + dataCount, 20, 60);
 }
 
-
-//  We will toggle collection by touching the screen
 void mousePressed()
 {
   if(ketai.isCollectingData())
@@ -58,26 +42,23 @@ void mousePressed()
 
 void keyPressed() {
   background(backgroundColor);
-
   if (key == CODED) {
     if (keyCode == MENU) {
       println("Exporting data...");
-
-      //Export all data (this will delete all data in DB)
+      //Export all data and delete all data in DB
       ketai.exportData("test");
-
-      //update the data count
+      //Update data count
       dataCount = ketai.getDataCount();
       background(0);
     }
   }
 }
 
-
 /*
-     The KetaiFaceAnalyzer is simply a wrapper for the android face detector.  We will get a "face" event with a PVector
-       of the x/y coordinates of the point between the eyes and the z variable in our PVector will be the distance between
-       the eyes.
+     The KetaiFaceAnalyzer is a wrapper for the android face detector.  
+     If a face is detected, we receive a "face" event including a 
+     PVector, containing PVector.x and PVector.y coordinates of the point between the eyes 
+     PVector.z variable stores the distance between the eyes.
 */
 void onKetaiEvent(String _eventName, Object _data)
 {
@@ -101,12 +82,9 @@ void onKetaiEvent(String _eventName, Object _data)
   }
 }
 
-void onCameraPreviewEvent(KetaiCamera video)
+void onCameraPreviewEvent(KetaiCamera cam)
 {
-  video.read();
-
-  //We can stretch the camera preview to fill the screen
-  imageMode(CENTER);
-  image(video, screenWidth/2,screenHeight/2);
+  cam.read();
+  image(cam, width/2,height/2);
 }  
 
