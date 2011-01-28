@@ -23,7 +23,7 @@ public abstract class AbstractKetaiAnalyzer implements IKetaiAnalyzer {
 			return;
 		ketaiEventListeners.add(_listener);
 	}
-	
+
 	public void broadcastKetaiEvent(String _event, Object _data) {
 		for (IKetaiEventListener l : ketaiEventListeners) {
 			l.receiveKetaiEvent(_event, _data);

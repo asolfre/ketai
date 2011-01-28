@@ -13,7 +13,8 @@ public interface IKetaiAnalyzer {
 	public String getTableCreationString();
 
 	public Class<?> getServiceProviderClass();
-	
-	public void registerKetaiEventListener(IKetaiEventListener _ketaiEventListener);
+
+	public void registerKetaiEventListener(
+			IKetaiEventListener _ketaiEventListener);
 
 }
