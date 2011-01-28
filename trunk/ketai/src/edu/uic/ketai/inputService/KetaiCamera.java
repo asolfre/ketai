@@ -19,7 +19,7 @@ import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
 
-public class KetaiCamera extends PImage implements  IKetaiInputService {
+public class KetaiCamera extends PImage implements IKetaiInputService {
 
 	private ArrayList<IKetaiAnalyzer> listeners;
 	private PApplet parent;
@@ -73,8 +73,8 @@ public class KetaiCamera extends PImage implements  IKetaiInputService {
 		}
 
 		PApplet.println("KetaiCamera completed instantiation... ");
-//		runner = new Thread(this);
-//		runner.run();
+		// runner = new Thread(this);
+		// runner.run();
 	}
 
 	public void start() {
@@ -101,7 +101,7 @@ public class KetaiCamera extends PImage implements  IKetaiInputService {
 
 		} catch (Exception x) {
 			x.printStackTrace();
-			if(camera != null)
+			if (camera != null)
 				camera.release();
 			PApplet.println("Exception caught while trying to connect to camera service.  Please check your sketch permissions or that another application is not using the camera.");
 		}
@@ -245,7 +245,7 @@ public class KetaiCamera extends PImage implements  IKetaiInputService {
 			camera.release();
 			camera = null;
 		}
-		//runner = null; // unwind the thread
+		// runner = null; // unwind the thread
 	}
 
 	// public void dispose() {
@@ -291,36 +291,36 @@ public class KetaiCamera extends PImage implements  IKetaiInputService {
 		}
 	}
 
-//	public void run() {
-		// while ((Thread.currentThread() == runner) && (camera != null)) {
-		// try {
-		// synchronized (camera) {
-		// available = true;
-		//
-		// // if (this.captureEventMethod != null) {
-		// // try {
-		// // captureEventMethod.invoke(parent, new Object[] { this });
-		// // } catch (Exception e) {
-		// // System.err.println("Disabling captureEvent() for " + name +
-		// // " because of an error.");
-		// // e.printStackTrace();
-		// // captureEventMethod = null;
-		// // }
-		// }
-		// }
-		//
-		// } catch (Exception e) {
-		// PApplet.println("KetaiCamera: run() Exception: " + e.getMessage());
-		// }
-		//
-		// try {
-		// Thread.sleep(1000 / cameraFPS);
-		// } catch (InterruptedException e) { }
-		// }
-		//
-		// }
+	// public void run() {
+	// while ((Thread.currentThread() == runner) && (camera != null)) {
+	// try {
+	// synchronized (camera) {
+	// available = true;
+	//
+	// // if (this.captureEventMethod != null) {
+	// // try {
+	// // captureEventMethod.invoke(parent, new Object[] { this });
+	// // } catch (Exception e) {
+	// // System.err.println("Disabling captureEvent() for " + name +
+	// // " because of an error.");
+	// // e.printStackTrace();
+	// // captureEventMethod = null;
+	// // }
+	// }
+	// }
+	//
+	// } catch (Exception e) {
+	// PApplet.println("KetaiCamera: run() Exception: " + e.getMessage());
+	// }
+	//
+	// try {
+	// Thread.sleep(1000 / cameraFPS);
+	// } catch (InterruptedException e) { }
+	// }
+	//
+	// }
 
-//	}
+	// }
 
 	public void startService() {
 		if (!isStarted || camera == null)

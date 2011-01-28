@@ -124,8 +124,7 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	public void receiveKetaiEvent(String _event, Object _data) {
 		if (eventListener != null) {
 			try {
-				eventListener.invoke(parent,
-						new Object[] { _event, _data });
+				eventListener.invoke(parent, new Object[] { _event, _data });
 				return;
 			} catch (Exception e) {
 				PApplet.println("Ketai->onKetaiEvent() because of an error:"
