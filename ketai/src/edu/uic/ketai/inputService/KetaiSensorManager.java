@@ -23,11 +23,13 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 			onMagneticFieldSensorEventMethod, onOrientationSensorEventMethod,
 			onLightSensorEventMethod, onProximitySensorEventMethod,
 			onGyroscopeSensorEventMethod, onPressureSensorEventMethod,
-			onTemperatureSensorEventMethod;
+			onTemperatureSensorEventMethod, onRotationVectorSensorEventMethod,
+			onLinearAccelerationSensorEventMethod;
 	private boolean accelerometerSensorEnabled, magneticFieldSensorEnabled,
 			orientationSensorEnabled, proximitySensorEnabled;
 	private boolean lightSensorEnabled, pressureSensorEnabled,
-			temperatureSensorEnabled, gyroscopeSensorEnabled;
+			temperatureSensorEnabled, gyroscopeSensorEnabled,
+			rotationVectorSensorEnabled, linearAccelerationSensorEnabled;
 	private long delayInterval, timeOfLastUpdate;
 	final static String SERVICE_DESCRIPTION = "Android Sensors.";
 
@@ -47,6 +49,14 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 
 	public void enableAccelerometerSensor() {
 		accelerometerSensorEnabled = true;
+	}
+
+	public void enableRotationVectorSensor() {
+		rotationVectorSensorEnabled = true;
+	}
+
+	public void enableLinearAccelerationSensor() {
+		linearAccelerationSensorEnabled = true;
 	}
 
 	public void disableAccelerometerSensor() {
@@ -75,6 +85,14 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 
 	public void disableProximitySensor() {
 		proximitySensorEnabled = false;
+	}
+
+	public void disablelinearAccelerationSensor() {
+		linearAccelerationSensorEnabled = false;
+	}
+
+	public void disableRotationVectorSensor() {
+		rotationVectorSensorEnabled = false;
 	}
 
 	public void enableLightSensor() {
@@ -110,11 +128,19 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 	}
 
 	public void enableAllSensors() {
-		accelerometerSensorEnabled = magneticFieldSensorEnabled = orientationSensorEnabled = proximitySensorEnabled = lightSensorEnabled = pressureSensorEnabled = temperatureSensorEnabled = gyroscopeSensorEnabled = true;
+		accelerometerSensorEnabled = magneticFieldSensorEnabled = orientationSensorEnabled = proximitySensorEnabled = lightSensorEnabled = pressureSensorEnabled = temperatureSensorEnabled = gyroscopeSensorEnabled = linearAccelerationSensorEnabled = rotationVectorSensorEnabled = true;
 	}
 
 	public boolean isAccelerometerSensorAvailable() {
 		return isSensorSupported(Sensor.TYPE_ACCELEROMETER);
+	}
+
+	public boolean isLinearAccelerationSensorAvailable() {
+		return isSensorSupported(Sensor.TYPE_LINEAR_ACCELERATION);
+	}
+
+	public boolean isRotationVectorSensorAvailable() {
+		return isSensorSupported(Sensor.TYPE_ROTATION_VECTOR);
 	}
 
 	public boolean isMagenticFieldSensorAvailable() {
@@ -204,7 +230,16 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 			sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_FASTEST);
 		}
-
+		if (rotationVectorSensorEnabled) {
+			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+			sensorManager.registerListener(this, s,
+					SensorManager.SENSOR_DELAY_FASTEST);
+		}		
+		if (linearAccelerationSensorEnabled) {
+			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+			sensorManager.registerListener(this, s,
+					SensorManager.SENSOR_DELAY_FASTEST);
+		}
 		if (lightSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 			sensorManager.registerListener(this, s,
@@ -376,6 +411,39 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 				onTemperatureSensorEventMethod = null;
 			}
 		}
+
+		if (arg0.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION
+				&& linearAccelerationSensorEnabled
+				&& onLinearAccelerationSensorEventMethod != null) {
+			try {
+				onLinearAccelerationSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0], arg0.values[1], arg0.values[2] });
+				timeOfLastUpdate = now;
+				return;
+			} catch (Exception e) {
+				PApplet.println("Disabling onLinearAccelerationSensorEvent() because of an error:"
+						+ e.getMessage());
+				e.printStackTrace();
+				onLinearAccelerationSensorEventMethod = null;
+			}
+		}
+
+		if (arg0.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR
+				&& rotationVectorSensorEnabled
+				&& onRotationVectorSensorEventMethod != null) {
+			try {
+				onRotationVectorSensorEventMethod.invoke(parent, new Object[] {
+						arg0.timestamp, arg0.accuracy, arg0.values[0], arg0.values[1], arg0.values[2] });
+				timeOfLastUpdate = now;
+				return;
+			} catch (Exception e) {
+				PApplet.println("Disabling onRotationVectorSensorEvent() because of an error:"
+						+ e.getMessage());
+				e.printStackTrace();
+				onRotationVectorSensorEventMethod = null;
+			}
+		}
+		
 	}
 
 	private void broadcastSensorEvent(SensorEvent arg0) {
@@ -470,6 +538,29 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 			temperatureSensorEnabled = true;
 		} catch (NoSuchMethodException e) {
 		}
+		
+		try {
+			onLinearAccelerationSensorEventMethod = parent.getClass().getMethod(
+					"onLinearAccelerationSensorEvent",
+					new Class[] { long.class, int.class, float.class,
+							float.class, float.class });
+			linearAccelerationSensorEnabled = true;
+			PApplet.println("Found onLinearAccelerationSensorEventMethod...");
+
+		} catch (NoSuchMethodException e) {
+		}
+
+		try {
+			onRotationVectorSensorEventMethod = parent.getClass().getMethod(
+					"onRotationVectorSensorEvent",
+					new Class[] { long.class, int.class, float.class,
+							float.class, float.class });
+			rotationVectorSensorEnabled = true;
+			PApplet.println("Found onRotationVectorSensorEvenMethod...");
+
+		} catch (NoSuchMethodException e) {
+		}
+
 	}
 
 	public void startService() {
