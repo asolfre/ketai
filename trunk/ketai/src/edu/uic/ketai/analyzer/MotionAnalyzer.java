@@ -1,23 +1,21 @@
 package edu.uic.ketai.analyzer;
 
-
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.hardware.SensorEvent;
-import edu.uic.ketai.IKetaiEventListener;
 import edu.uic.ketai.data.DataManager;
 
-public class MotionAnalyzer extends AbstractKetaiAnalyzer{
+public class MotionAnalyzer extends AbstractKetaiAnalyzer {
 	final static String NAME = "MotionAnalyzer";
 	final static String DESCRIPTION = "Saves motion events triggered by onset detection";
 	final static String[] servicesubscription = { "edu.uic.ketai.inputService.KetaiSensorManager" };
 	private static String TABLE_NAME = "motionanalyzer";
-	
-	
-	private static String CREATE_TABLE_SQL = "CREATE TABLE "+TABLE_NAME+"  (id INTEGER PRIMARY KEY, starttime BIGINT,  endtime BIGINT, startx REAL, starty REAL, startz REAL," +
-												"endx REAL, endy REAL, endz REAL, sumofchange REAL, movementstring TEXT )";
 
-	
+	private static String CREATE_TABLE_SQL = "CREATE TABLE "
+			+ TABLE_NAME
+			+ "  (id INTEGER PRIMARY KEY, starttime BIGINT,  endtime BIGINT, startx REAL, starty REAL, startz REAL,"
+			+ "endx REAL, endy REAL, endz REAL, sumofchange REAL, movementstring TEXT )";
+
 	private static String INSERT_SQL = "insert into "
 			+ TABLE_NAME
 			+ " (starttime, endtime, startx, starty, startz, endx, endy, endz, sumofchange, movementstring) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -31,7 +29,6 @@ public class MotionAnalyzer extends AbstractKetaiAnalyzer{
 		return DESCRIPTION;
 	}
 
-	
 	/*
 	 * Where all the magic happens.....
 	 */
@@ -39,16 +36,19 @@ public class MotionAnalyzer extends AbstractKetaiAnalyzer{
 
 		if (!(_data instanceof SensorEvent))
 			return;
-		
+
 		SensorEvent data = (SensorEvent) _data;
 
-		if(data.values[0] > 10)
-			saveData(data.timestamp, data.timestamp, data.values[0], data.values[1], data.values[2], data.values[0], data.values[1], data.values[2], 0, "test" );
-		
+		if (data.values[0] > 10)
+			saveData(data.timestamp, data.timestamp, data.values[0],
+					data.values[1], data.values[2], data.values[0],
+					data.values[1], data.values[2], 0, "test");
+
 	}
 
-	private void saveData(long starttime, long endtime, float startx, float starty, float startz, float endx, float endy, float endz, long someofchange, String movementstring)
-	{
+	private void saveData(long starttime, long endtime, float startx,
+			float starty, float startz, float endx, float endy, float endz,
+			long someofchange, String movementstring) {
 		SQLiteStatement insertStatement;
 		insertStatement = datamanager.getDb().compileStatement(INSERT_SQL);
 		insertStatement.bindLong(1, starttime);
@@ -61,19 +61,11 @@ public class MotionAnalyzer extends AbstractKetaiAnalyzer{
 		insertStatement.bindDouble(8, endz);
 		insertStatement.bindLong(9, someofchange);
 		insertStatement.bindString(10, movementstring);
-		
+
 		insertStatement.executeInsert();
-		
+
 	}
-	
-	
-//	private void broadcastKetaiEvent(String _event, Object _data)
-//	{
-//		for(IKetaiEventListener l: ketaiEventListeners){
-//			l.receiveKetaiEvent(_event, _data);
-//		}
-//	}
-	
+
 	public String getAnalyzerName() {
 		return NAME;
 	}
