@@ -2,7 +2,7 @@
 import edu.uic.ketai.*;
 import edu.uic.ketai.inputService.*;
 
-// Delacre sensor and accelerometer variables
+// Declare sensor and accelerometer variables
 KetaiSensorManager sensorManager;
 float accelerometerX, accelerometerY, accelerometerZ;
 
