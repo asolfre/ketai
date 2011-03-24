@@ -3,15 +3,15 @@ KetaiCamera cam;
 
 void setup() {
   orientation(LANDSCAPE);
-  cam = new KetaiCamera(this, 320, 240, 30);
+  cam = new KetaiCamera(this, 320, 240, 24);
   cam.start();
 }
 
 void draw() {
-  image(cam, 0,0, screenWidth, screenHeight);
+  image(cam, 0, 0, screenWidth, screenHeight);
 }
 
-void onCameraPreviewEvent(int[] _pixels)
+void onCameraPreviewEvent()
 {
   cam.read();
 }
@@ -22,7 +22,7 @@ void exit() {
 
 void mousePressed()
 {
-  if(cam.isStarted())
+  if (cam.isStarted())
   {
     cam.stop();
   }
