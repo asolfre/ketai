@@ -4,7 +4,6 @@ KetaiCamera cam;
 void setup() {
   orientation(LANDSCAPE);
   cam = new KetaiCamera(this, 320, 240, 24);
-  cam.start();
 }
 
 void draw() {
@@ -20,6 +19,7 @@ void exit() {
   cam.stop();
 }
 
+// start/stop camera preview by tapping the screen
 void mousePressed()
 {
   if (cam.isStarted())
