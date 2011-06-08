@@ -2,6 +2,7 @@ package edu.uic.ketai.inputService;
 
 import processing.core.*;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
@@ -171,18 +172,19 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 		return isSensorSupported(Sensor.TYPE_GYROSCOPE);
 	}
 
-	public String[] list() {
+	public Collection<? extends String> list() {
 		Vector<String> list = new Vector<String>();
 
 		List<Sensor> foo = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		for (Sensor s : foo) {
 			list.add(s.getName());
-			PApplet.println("KetaiSensorManager sensor list: " + s.getName()
-					+ ":" + s.getType());
+			PApplet.println("\tKetaiSensorManager sensor: " + s.getName() + ":"
+					+ s.getType());
 		}
-		String returnList[] = new String[list.size()];
-		list.copyInto(returnList);
-		return returnList;
+		return list;
+		// String returnList[] = new String[list.size()];
+		// list.copyInto(returnList);
+		// return returnList;
 	}
 
 	public boolean isStarted() {
@@ -231,12 +233,14 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 					SensorManager.SENSOR_DELAY_FASTEST);
 		}
 		if (rotationVectorSensorEnabled) {
-			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+			Sensor s = sensorManager
+					.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 			sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_FASTEST);
-		}		
+		}
 		if (linearAccelerationSensorEnabled) {
-			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
+			Sensor s = sensorManager
+					.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 			sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_FASTEST);
 		}
@@ -416,8 +420,10 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 				&& linearAccelerationSensorEnabled
 				&& onLinearAccelerationSensorEventMethod != null) {
 			try {
-				onLinearAccelerationSensorEventMethod.invoke(parent, new Object[] {
-						arg0.timestamp, arg0.accuracy, arg0.values[0], arg0.values[1], arg0.values[2] });
+				onLinearAccelerationSensorEventMethod
+						.invoke(parent, new Object[] { arg0.timestamp,
+								arg0.accuracy, arg0.values[0], arg0.values[1],
+								arg0.values[2] });
 				timeOfLastUpdate = now;
 				return;
 			} catch (Exception e) {
@@ -433,7 +439,8 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 				&& onRotationVectorSensorEventMethod != null) {
 			try {
 				onRotationVectorSensorEventMethod.invoke(parent, new Object[] {
-						arg0.timestamp, arg0.accuracy, arg0.values[0], arg0.values[1], arg0.values[2] });
+						arg0.timestamp, arg0.accuracy, arg0.values[0],
+						arg0.values[1], arg0.values[2] });
 				timeOfLastUpdate = now;
 				return;
 			} catch (Exception e) {
@@ -443,7 +450,7 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 				onRotationVectorSensorEventMethod = null;
 			}
 		}
-		
+
 	}
 
 	private void broadcastSensorEvent(SensorEvent arg0) {
@@ -538,12 +545,13 @@ public class KetaiSensorManager extends AbstractKetaiInputService implements
 			temperatureSensorEnabled = true;
 		} catch (NoSuchMethodException e) {
 		}
-		
+
 		try {
-			onLinearAccelerationSensorEventMethod = parent.getClass().getMethod(
-					"onLinearAccelerationSensorEvent",
-					new Class[] { long.class, int.class, float.class,
-							float.class, float.class });
+			onLinearAccelerationSensorEventMethod = parent.getClass()
+					.getMethod(
+							"onLinearAccelerationSensorEvent",
+							new Class[] { long.class, int.class, float.class,
+									float.class, float.class });
 			linearAccelerationSensorEnabled = true;
 			PApplet.println("Found onLinearAccelerationSensorEventMethod...");
 

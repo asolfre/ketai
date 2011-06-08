@@ -1,5 +1,7 @@
 package edu.uic.ketai.inputService;
 
+import java.util.Collection;
+
 import edu.uic.ketai.analyzer.IKetaiAnalyzer;
 
 public interface IKetaiInputService {
@@ -16,6 +18,8 @@ public interface IKetaiInputService {
 
 	public void removeAnalyzer(IKetaiAnalyzer _analyzer);
 
+	public Collection<? extends String> list();
+	
 	final static int STATE_STARTED = 0;
 	final static int STATE_STOPPED = 1;
 	final static int STATE_STARTED_WITH_ERRORS = 2;
