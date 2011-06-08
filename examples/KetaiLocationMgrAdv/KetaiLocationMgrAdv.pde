@@ -18,7 +18,7 @@ void setup() {
   orientation(PORTRAIT);
 
   //creates a location object that refers to UIC
-  Location uic = new Location("uic");
+  uic = new Location("uic");
   uic.setLatitude(41.87426641155081);
   uic.setLongitude(-87.64921545982361);
 }
