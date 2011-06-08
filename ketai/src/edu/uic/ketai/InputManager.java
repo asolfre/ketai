@@ -2,6 +2,8 @@ package edu.uic.ketai;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 import processing.core.PApplet;
 
@@ -75,6 +77,16 @@ public class InputManager {
 				return item;
 		}
 		return null;
+	}
+
+	public List<String> list() {
+		Vector<String> list = new Vector<String>();
+		Iterator<IKetaiInputService> it = services.iterator();
+		while (it.hasNext()) {
+			IKetaiInputService item = (IKetaiInputService) it.next();
+			list.addAll(item.list());
+		}
+		return list;
 	}
 
 	private void registerAnalyzerWithService(IKetaiAnalyzer _analyzer) {

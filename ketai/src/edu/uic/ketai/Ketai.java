@@ -11,6 +11,8 @@ import edu.uic.ketai.analyzer.MotionAnalyzer;
 import edu.uic.ketai.analyzer.SensorAnalyzer;
 import edu.uic.ketai.data.DataManager;
 import edu.uic.ketai.inputService.KetaiCamera;
+import edu.uic.ketai.inputService.KetaiLocationManager;
+import edu.uic.ketai.inputService.KetaiNFCManager;
 import edu.uic.ketai.inputService.KetaiSensorManager;
 
 public class Ketai implements IKetaiEventListener, Runnable {
@@ -21,12 +23,13 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	int cameraWidth, cameraHeight, cameraFPS;
 	Thread runner;
 	private Method eventListener = null;
+	final private static String VERSION = "0.3";
 
 	public Ketai(PApplet pparent) {
 		parent = pparent;
 		datamanager = new DataManager(parent.getApplicationContext());
 		inputmanager = new InputManager(parent, datamanager);
-
+		PApplet.println("Ketai version: " + VERSION);
 		// setup defaults for camera
 		cameraWidth = 320;
 		cameraHeight = 240;
@@ -62,6 +65,15 @@ public class Ketai implements IKetaiEventListener, Runnable {
 				cameraHeight, cameraFPS));
 	}
 
+	public void enableLocationManager() {
+		inputmanager.addService(new KetaiLocationManager(parent));
+	}
+	
+	public void enableNFCManager()
+	{
+		inputmanager.addService(new KetaiNFCManager(parent));
+	}
+	
 	public long getDataCount() {
 		return datamanager.getDataCount();
 	}
@@ -115,7 +127,7 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	}
 
 	public void run() {
-
+		//eventually do stuff...
 	}
 
 	public static final int KETAI_EVENT_FACES_DETECTED = 1;
@@ -137,5 +149,9 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	public void addAnalyzer(IKetaiAnalyzer _analyzer) {
 		_analyzer.registerKetaiEventListener(this);
 		inputmanager.addAnalyzer(_analyzer);
+	}
+
+	public Object[] list() {
+		return inputmanager.list().toArray();
 	}
 }

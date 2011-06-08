@@ -3,7 +3,9 @@ package edu.uic.ketai.inputService;
 import processing.core.*;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
+import java.util.Vector;
 
 import android.content.Context;
 import android.location.Criteria;
@@ -11,15 +13,14 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Looper;
 
 public class KetaiLocationManager extends AbstractKetaiInputService implements
 		LocationListener {
 	private LocationManager locationManager = null;
-	private boolean isRegistered = false;
 	private PApplet parent;
-	private Method onLocationEventMethod;
+	private Method onLocationEventMethod, onLocationEventMethod_adv;
 	private String provider;
+	private Location location;
 
 	final static String SERVICE_DESCRIPTION = "Android Location.";
 
@@ -27,81 +28,80 @@ public class KetaiLocationManager extends AbstractKetaiInputService implements
 		parent = pParent;
 		locationManager = (LocationManager) parent.getApplicationContext()
 				.getSystemService(Context.LOCATION_SERVICE);
-		Looper.prepare();
 		PApplet.println("KetaiLocationManager instantiated...");
 		findParentIntentions();
+		start();
 	}
 
-	public void onLocationChanged(Location location) {
-		PApplet.println("Location changed in ketaiLocationManager...");
-		if(location == null)
-			return;
-		
-		try {
-			onLocationEventMethod.invoke(
-					parent,
-					new Object[] { location.getLatitude(),
-							location.getLongitude(), location.getAltitude(),
-							location.getBearing(), location.getSpeed() });
+	public void onLocationChanged(Location _location) {
+		location = _location;
+		if (onLocationEventMethod != null)
+			try {
+				onLocationEventMethod
+						.invoke(parent,
+								new Object[] { location.getLatitude(),
+										location.getLongitude(),
+										location.getAltitude() });
 
-			broadcastData(location);
-			return;
-		} catch (Exception e) {
-			PApplet.println("Disabling onLocationEvent() because of an error:"
-					+ e.getMessage());
-			e.printStackTrace();
-			onLocationEventMethod = null;
-		}
+				broadcastData(location);
+				return;
+			} catch (Exception e) {
+				PApplet.println("Disabling onLocationEvent() because of an error:"
+						+ e.getMessage());
+				e.printStackTrace();
+				onLocationEventMethod = null;
+			}
+
+		if (onLocationEventMethod_adv != null)
+			try {
+				onLocationEventMethod_adv.invoke(parent,
+						new Object[] { location });
+
+				broadcastData(location);
+				return;
+			} catch (Exception e) {
+				PApplet.println("Disabling onLocationEvent() because of an error:"
+						+ e.getMessage());
+				e.printStackTrace();
+				onLocationEventMethod_adv = null;
+			}
+	}
+
+	public Location getLocation() {
+		return location;
 	}
 
 	public boolean isStarted() {
-		return isRegistered;
+		return (onLocationEventMethod != null);
 	}
 
 	public void start() {
 		PApplet.println("KetaiLocationManager: start()...");
-		Criteria criteria = new Criteria();
 
-		List<String> foo = locationManager.getAllProviders ();
+		List<String> foo = locationManager.getAllProviders();
+		PApplet.println("KetaiLocationManager All Provider(s) list: ");
+
 		for (String s : foo) {
-			PApplet.println("KetaiLocationManager All Provider list: " + s);
+			PApplet.println("\t" + s);
 		}
 
-		foo = locationManager.getProviders (true);
+		foo = locationManager.getProviders(true);
+		PApplet.println("KetaiLocationManager Enabled Provider(s) list: ");
 		for (String s : foo) {
-			PApplet.println("KetaiLocationManager Enabled Provider list: " + s);
+			PApplet.println("\t" + s);
 		}
-		
-		provider = locationManager.getBestProvider(criteria, true);
-		PApplet.println("Best provider: " + provider);
-		Location location = locationManager.getLastKnownLocation(provider);
 
-		if(location != null)
-			PApplet.println("Provider " + provider + " has been selected.");
-		else
-			PApplet.println("Last known location returned was null");
+		determineProvider();
 
-		locationManager.requestLocationUpdates(provider, 0, 0, this);
-		onLocationChanged(location);				
+		location = locationManager.getLastKnownLocation(provider);
+
+		if (location != null)
+			onLocationChanged(location);
 	}
 
 	public void stop() {
 		PApplet.println("KetaiLocationManager: Stop()....");
 		locationManager.removeUpdates(this);
-		isRegistered = false;
-	}
-
-	private void findParentIntentions() {
-
-		try {
-			onLocationEventMethod = parent.getClass().getMethod(
-					"onLocationEvent",
-					new Class[] { long.class, int.class, float.class,
-							float.class, float.class });
-			PApplet.println("Found onLocationEvenMethod...");
-
-		} catch (NoSuchMethodException e) {
-		}
 	}
 
 	public void startService() {
@@ -121,17 +121,56 @@ public class KetaiLocationManager extends AbstractKetaiInputService implements
 	}
 
 	public void onProviderDisabled(String arg0) {
-		// TODO Auto-generated method stub
-
+		PApplet.println("LocationManager onDisabledEnabled: " + arg0);
+		determineProvider();
 	}
 
 	public void onProviderEnabled(String arg0) {
-		// TODO Auto-generated method stub
-
+		PApplet.println("LocationManager onProviderEnabled: " + arg0);
+		determineProvider();
 	}
 
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
-		// TODO Auto-generated method stub
+		PApplet.println("LocationManager onStatusChanged: " + arg0 + ":" + arg1
+				+ ":" + arg2.toString());
+		determineProvider();
+	}
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public Collection<? extends String> list() {
+		Vector<String> list = new Vector<String>();
+		list.add("Location");
+		return list;
+	}
+
+	private void determineProvider() {
+		if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+			provider = LocationManager.GPS_PROVIDER;
+		else
+			provider = locationManager.getBestProvider(new Criteria(), true);
+		locationManager.requestLocationUpdates(provider, 10000, 1, this);
+	}
+
+	private void findParentIntentions() {
+		try {
+			onLocationEventMethod = parent.getClass().getMethod(
+					"onLocationEvent",
+					new Class[] { double.class, double.class, double.class });
+			PApplet.println("Found basic onLocationEvenMethod...");
+
+		} catch (NoSuchMethodException e) {
+		}
+
+		try {
+			onLocationEventMethod_adv = parent.getClass().getMethod(
+					"onLocationEvent", new Class[] { Location.class });
+			PApplet.println("Found Advanced onLocationEvenMethod...");
+
+		} catch (NoSuchMethodException e) {
+		}
 
 	}
 

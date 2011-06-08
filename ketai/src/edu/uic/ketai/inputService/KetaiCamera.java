@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Vector;
 
 import edu.uic.ketai.analyzer.IKetaiAnalyzer;
 
@@ -321,6 +323,12 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 	// }
 
 	// }
+
+	public Collection<? extends String> list() {
+		Vector<String> list = new Vector<String>();
+		list.add("Camera");
+		return list;
+	}
 
 	public void startService() {
 		if (!isStarted || camera == null)
