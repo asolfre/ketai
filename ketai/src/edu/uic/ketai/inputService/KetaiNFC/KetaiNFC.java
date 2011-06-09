@@ -5,32 +5,73 @@ import java.util.Collection;
 import java.util.Vector;
 
 import processing.core.PApplet;
-import android.content.Context;
+import android.content.Intent;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.NfcManager;
+import android.os.Parcelable;
 
-import edu.uic.ketai.analyzer.IKetaiAnalyzer;
 import edu.uic.ketai.inputService.AbstractKetaiInputService;
 
 public class KetaiNFC extends AbstractKetaiInputService {
 	private PApplet parent;
-	private NfcManager manager;
-	private NfcAdapter adapter;
 	private Method onNFCEventMethod;
 
-	public KetaiNFC(PApplet pParent){
+	public KetaiNFC(PApplet pParent) {
 		parent = pParent;
-		manager = (NfcManager) parent.getApplicationContext().getSystemService(
-				Context.NFC_SERVICE);
-		adapter = manager.getDefaultAdapter();
 		PApplet.println("KetaiNFCManager instantiated...");
 		findParentIntentions();
 
 	}
-	
-	public void start()
-	{
+
+	public void handleIntent(Intent intent) {
+		String action = intent.getAction();
+		String thingToReturn="";
+
+		if (!NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
+			return;
+		}
+
+		Parcelable[] rawMsgs = intent
+				.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+		NdefMessage[] msgs;
 		
+		if (rawMsgs != null) {
+			msgs = new NdefMessage[rawMsgs.length];
+			for (int i = 0; i < rawMsgs.length; i++) {
+				msgs[i] = (NdefMessage) rawMsgs[i];
+			}
+		} else {
+			// Unknown tag type
+			byte[] empty = new byte[] {};
+			NdefRecord record = new NdefRecord(NdefRecord.TNF_UNKNOWN, empty,
+					empty, empty);
+			NdefMessage msg = new NdefMessage(new NdefRecord[] { record });
+			msgs = new NdefMessage[] { msg };
+		}
+		
+        for (NdefMessage m : msgs)
+        {
+        	thingToReturn += "\n" + m.toString();
+        }
+        	
+		if (onNFCEventMethod != null)
+			try {
+				onNFCEventMethod.invoke(parent,
+						new Object[] { thingToReturn });
+
+				return;
+			} catch (Exception e) {
+				PApplet.println("Disabling onLocationEvent() because of an error:"
+						+ e.getMessage());
+				e.printStackTrace();
+				onNFCEventMethod = null;
+			}
+
+	}
+
+	public void start() {
+
 	}
 
 	public void startService() {
@@ -62,10 +103,8 @@ public class KetaiNFC extends AbstractKetaiInputService {
 	private void findParentIntentions() {
 
 		try {
-			onNFCEventMethod = parent.getClass().getMethod(
-					"onNFCEvent",
-					new Class[] { long.class, int.class, float.class,
-							float.class, float.class });
+			onNFCEventMethod = parent.getClass().getMethod("onNFCEvent",
+					new Class[] { String.class });
 			PApplet.println("Found onNFCEvenMethod...");
 		} catch (NoSuchMethodException e) {
 		}
