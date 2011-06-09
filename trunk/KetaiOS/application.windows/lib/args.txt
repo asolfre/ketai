@@ -1,3 +1,0 @@
-
-ketaios.KetaiOS
-KetaiOS.jar
