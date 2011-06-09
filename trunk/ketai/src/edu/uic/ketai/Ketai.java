@@ -11,9 +11,9 @@ import edu.uic.ketai.analyzer.MotionAnalyzer;
 import edu.uic.ketai.analyzer.SensorAnalyzer;
 import edu.uic.ketai.data.DataManager;
 import edu.uic.ketai.inputService.KetaiCamera;
-import edu.uic.ketai.inputService.KetaiLocationManager;
-import edu.uic.ketai.inputService.KetaiNFCManager;
-import edu.uic.ketai.inputService.KetaiSensorManager;
+import edu.uic.ketai.inputService.KetaiLocation;
+import edu.uic.ketai.inputService.KetaiSensor;
+import edu.uic.ketai.inputService.KetaiNFC.KetaiNFC;
 
 public class Ketai implements IKetaiEventListener, Runnable {
 	PApplet parent;
@@ -57,7 +57,7 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	}
 
 	public void enableSensorManager() {
-		inputmanager.addService(new KetaiSensorManager(parent));
+		inputmanager.addService(new KetaiSensor(parent));
 	}
 
 	public void enableCamera() {
@@ -66,12 +66,12 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	}
 
 	public void enableLocationManager() {
-		inputmanager.addService(new KetaiLocationManager(parent));
+		inputmanager.addService(new KetaiLocation(parent));
 	}
 	
 	public void enableNFCManager()
 	{
-		inputmanager.addService(new KetaiNFCManager(parent));
+		inputmanager.addService(new KetaiNFC(parent));
 	}
 	
 	public long getDataCount() {
