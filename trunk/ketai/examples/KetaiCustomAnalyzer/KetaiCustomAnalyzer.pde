@@ -1,5 +1,16 @@
+/**
+ * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
+ *
+ * <p>Ketai Custom Analyzer Features:
+ * <ul>
+ * <li>Allows development of custom motion analyzers</li>
+ * <li>Refer to Ketai Face Analyzer for a more basic analyzer example</li>
+ * </ul>
+ * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ */
+ 
 import edu.uic.ketai.*;
-import edu.uic.ketai.inputService.KetaiCamera;
+
 Ketai ketai;
 PFont font;
 long dataCount;
@@ -7,7 +18,6 @@ CustomAnalyzer ca;
 
 void setup()
 {
-  //Create Ketai object
   ketai = new Ketai(this);
   //Get the current data count
   dataCount = ketai.getDataCount();
@@ -20,7 +30,7 @@ void setup()
 void draw() {
 }
 
-//  We will toggle collection by touching the screen
+// Toggle collection by touching the screen
 void mousePressed()
 {
   if(ketai.isCollectingData())
