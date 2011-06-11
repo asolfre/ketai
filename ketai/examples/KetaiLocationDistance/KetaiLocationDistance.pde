@@ -16,7 +16,7 @@ import edu.uic.ketai.*;
 import android.location.Location;
 
 double longitude, latitude, altitude, accuracy;
-KetaiLocationManager locationManager;
+KetaiLocation location;
 Location uic;
 
 void setup() {
@@ -32,13 +32,13 @@ void draw() {
   text("Location data:\nlatitude: " + latitude + "\nlongitude: " + 
     longitude + "\naltitude: " + altitude + "\nacurracy: " + 
     accuracy + "\ndistance to uic: "+ 
-    locationManager.getLocation().distanceTo(uic) + 
-    "\nprovider: " + locationManager.getProvider(), 30, 50);
+    location.getLocation().distanceTo(uic) + 
+    "\nprovider: " + location.getProvider(), 30, 50);
 }
 
 void onResume()
 {
-  locationManager = new KetaiLocationManager(this);
+  location = new KetaiLocation(this);
   super.onResume();
 }
 
