@@ -1,9 +1,16 @@
-/*
-  KetaiLocationMgrAdv - An example of using the KetaiLocationManager 
- to return a raw android Location object.
- 
- Detailed information of the android location object can be found here:
- http://developer.android.com/reference/android/location/Location.html
+/**
+ * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
+ *
+ * <p>KetaiLocation Features:
+ * <ul>
+ * <li>handles the Android Location Object</li>
+ * <li>defaults to GPS location Provider</li>
+ * <li>if GPS is unavailable, uses Android default:</li>
+ * <li>network (cell tower), or passive (WiFI MAC Address)</li>
+ * </ul>
+ * More information:
+ * http://developer.android.com/reference/android/location/Location.html</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
  */
 
 import edu.uic.ketai.*; 
@@ -14,9 +21,7 @@ KetaiLocationManager locationManager;
 Location uic;
 
 void setup() {
-  //Lets lock the orientation so we do not restart on orientation changes
   orientation(PORTRAIT);
-
   //creates a location object that refers to UIC
   uic = new Location("uic");
   uic.setLatitude(41.87426641155081);
@@ -25,8 +30,6 @@ void setup() {
 
 void draw() {
   background(0); 
-  float distance = 0;
-
   text("Location data:\nlatitude: " + latitude + "\nlongitude: " + 
     longitude + "\naltitude: " + altitude + "\nacurracy: " + 
     accuracy + "\ndistance to uic: "+ 
@@ -44,7 +47,6 @@ void onLocationEvent(Location _location)
 {
   //print out the location object
   println("onLocation event: " + _location.toString());
-
   longitude = _location.getLongitude();
   latitude = _location.getLatitude();
   altitude = _location.getAltitude();
