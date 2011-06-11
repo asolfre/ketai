@@ -1,4 +1,15 @@
-import edu.uic.ketai.inputService.KetaiCamera; 
+/**
+ * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
+ *
+ * <p>Ketai Camera Features:
+ * <ul>
+ * <li>Interface for built-in camera</li>
+ * <li></li>
+ * </ul>
+ * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ */
+ 
+import edu.uic.ketai.*;
 KetaiCamera cam;
 
 void setup() {
