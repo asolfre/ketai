@@ -1,5 +1,16 @@
+/**
+ * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
+ *
+ * <p>Ketai Face Analyzer Features:
+ * <ul>
+ * <li>Wrapper for the Android face detector</li>
+ * <li>Returns a PVector containing PVector.x and PVector.y coordinates of 
+ * point between detected eyes, as well as eye distace PVector.z</li>
+ * </ul>
+ * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ */
+ 
 import edu.uic.ketai.*;
-import edu.uic.ketai.inputService.KetaiCamera;
 
 Ketai ketai;
 PFont font;
@@ -8,7 +19,6 @@ color backgroundColor;
 
 void setup()
 {
-  //Create Ketai object
   ketai = new Ketai(this);
   ketai.setCameraParameters(320, 240, 10);
   backgroundColor = color(255,255,255);
@@ -54,12 +64,6 @@ void keyPressed() {
   }
 }
 
-/*
-     The KetaiFaceAnalyzer is a wrapper for the android face detector.  
-     If a face is detected, we receive a "face" event including a 
-     PVector, containing PVector.x and PVector.y coordinates of the point between the eyes 
-     PVector.z variable stores the distance between the eyes.
-*/
 void onKetaiEvent(String _eventName, Object _data)
 {
   if (_eventName.equals("face"))
