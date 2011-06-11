@@ -1,31 +1,37 @@
-// Import sensor libary
+/**
+ * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
+ *
+ * <p>KetaiSensor Features:
+ * <ul>
+ * <li>handles incoming Sensor Events</li>
+ * <li>Includes Accelerometer, Magnetometer, Gyroscope, GPS, Light, Proximity</li>
+ * <li>Use KetaiNFC for Near Field Communication</li>
+ * </ul>
+ * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ */
+ 
 import edu.uic.ketai.*;
-import edu.uic.ketai.inputService.*;
 
-// Declare sensor and accelerometer variables
-KetaiSensorManager sensorManager;
+KetaiSensor sensor;
 float accelerometerX, accelerometerY, accelerometerZ;
 
 void setup()
 {
-  sensorManager = new KetaiSensorManager(this);
-  sensorManager.start();
-  // Lock sketch in portrait mode
+  sensor = new KetaiSensor(this);
+  sensor.start();
   orientation(PORTRAIT);
 }
 
 void draw()
 {
   background(0);
-  // Show accelerometer values
-  text("Accelerometer data:", 5, 50); 
-  text(nfp(accelerometerX, 2, 3), 5, 70); 
-  text(nfp(accelerometerY, 2, 3), 5, 90); 
-  text(nfp(accelerometerZ, 2, 3), 5, 110);
+  text("Accelerometer:", 5, 50); 
+  text("x:" + nfp(accelerometerX, 3, 3), 5, 70); 
+  text("y:" + nfp(accelerometerY, 3, 3), 5, 90); 
+  text("z:" + nfp(accelerometerZ, 3, 3), 5, 110);
 }
 
-// Listen to new values from the sensor
-void onAccelerometerSensorEvent(long time, int accuracy, float x, float y, float z)
+void onAccelerometerSensorEvent(float x, float y, float z)
 {
   accelerometerX = x;
   accelerometerY = y;
