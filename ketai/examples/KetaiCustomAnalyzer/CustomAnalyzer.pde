@@ -1,4 +1,3 @@
-import edu.uic.ketai.analyzer.AbstractKetaiAnalyzer;
 import android.hardware.SensorEvent;
 
 class CustomAnalyzer extends AbstractKetaiAnalyzer
@@ -44,7 +43,7 @@ class CustomAnalyzer extends AbstractKetaiAnalyzer
   Class<?> getServiceProviderClass() { 
     try {
       return Class
-        .forName("edu.uic.ketai.inputService.KetaiSensorManager");
+        .forName("edu.uic.ketai.inputService.KetaiSensor");
     } 
     catch (ClassNotFoundException e) {
       e.printStackTrace();
