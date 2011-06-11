@@ -3,10 +3,9 @@
  *
  * <p>KetaiLocation Features:
  * <ul>
- * <li>handles the Android Location Object</li>
- * <li>defaults to GPS location Provider</li>
- * <li>if GPS is unavailable, uses Android default:</li>
- * <li>network (cell tower), or passive (WiFI MAC Address)</li>
+ * <li>Uses GPS location data (latitude, longitude, altitude (if available)</li>
+ * <li>Updates if location changes by 1 meter, or every 10 seconds</li>
+ * <li>If unavailable, defaults to system provider (cell tower or WiFi network location)</li>
  * </ul>
  * More information:
  * http://developer.android.com/reference/android/location/Location.html</p>
