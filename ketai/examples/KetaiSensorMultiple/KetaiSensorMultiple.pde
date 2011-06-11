@@ -1,13 +1,25 @@
-import edu.uic.ketai.inputService.*;
+/**
+ * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
+ *
+ * <p>KetaiSensor Features:
+ * <ul>
+ * <li>handles incoming Sensor Events</li>
+ * <li>Includes Accelerometer, Magnetometer, Gyroscope, GPS, Light, Proximity</li>
+ * <li>Use KetaiNFC for Near Field Communication</li>
+ * </ul>
+ * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ */
+ 
+import edu.uic.ketai.*;
 import android.content.pm.ActivityInfo;
-KetaiSensorManager sensorManager;
+KetaiSensor sensor;
 PVector orientation, magneticField, accelerometer;
 
 void setup()
 {
   orientation(PORTRAIT);
-  sensorManager = new KetaiSensorManager(this);
-  sensorManager.start();
+  sensor = new KetaiSensor(this);
+  sensor.start();
   orientation = new PVector();
   accelerometer = new PVector();
   magneticField = new PVector();
@@ -17,30 +29,30 @@ void draw()
 {
   background(0);
   text("Orientation data:" 
-  + nf(orientation.x, 2, 2) + "/" 
-  + nf(orientation.y, 2, 2) + "/" 
-  + nf(orientation.z, 2, 2), 5, 20); 
+  + nf(orientation.x, 3, 2) + "/" 
+  + nf(orientation.y, 3, 2) + "/" 
+  + nf(orientation.z, 3, 2), 5, 20); 
   text("Accelerometer data:" 
-  + nf(accelerometer.x, 2, 2) + "/" 
-  + nf(accelerometer.y, 2, 2) + "/" 
-  + nf(accelerometer.z, 2, 2), 5, 50); 
+  + nf(accelerometer.x, 3, 2) + "/" 
+  + nf(accelerometer.y, 3, 2) + "/" 
+  + nf(accelerometer.z, 3, 2), 5, 50); 
   text("MagneticField data:" 
-  + nf(magneticField.x, 2, 2) + "/" 
-  + nf(magneticField.y, 2, 2) + "/" 
-  + nf(magneticField.z, 2, 2), 5, 80);
+  + nf(magneticField.x, 3, 2) + "/" 
+  + nf(magneticField.y, 3, 2) + "/" 
+  + nf(magneticField.z, 3, 2), 5, 80);
 }
 
-void onOrientationSensorEvent(long time, int accuracy, float x, float y, float z)
+void onOrientationSensorEvent(float x, float y, float z, long time, int accuracy)
 {
   orientation.set(x,y,z);
 }
 
-void onAccelerometerSensorEvent(long time, int accuracy, float x, float y, float z)
+void onAccelerometerSensorEvent(float x, float y, float z, long time, int accuracy)
 {
   accelerometer.set(x,y,z);
 }
 
-void onMagneticFieldSensorEvent(long time, int accuracy, float x, float y, float z)
+void onMagneticFieldSensorEvent(float x, float y, float z, long time, int accuracy)
 {
   magneticField.set(x,y,z);
 }
