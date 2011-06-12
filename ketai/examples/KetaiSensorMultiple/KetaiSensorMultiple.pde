@@ -11,7 +11,7 @@
  */
  
 import edu.uic.ketai.*;
-import android.content.pm.ActivityInfo;
+
 KetaiSensor sensor;
 PVector orientation, magneticField, accelerometer;
 
