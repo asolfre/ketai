@@ -29,11 +29,13 @@ void setup() {
 
 void draw() {
   background(0); 
-  text("Location data:\nlatitude: " + latitude + "\nlongitude: " + 
-    longitude + "\naltitude: " + altitude + "\nacurracy: " + 
-    accuracy + "\ndistance to uic: "+ 
-    location.getLocation().distanceTo(uic) + 
-    "\nprovider: " + location.getProvider(), 30, 50);
+  text("Location data:\n" + 
+    "latitude: " + latitude + "\n" + 
+    "longitude: " + longitude + "\n" + 
+    "altitude: " + altitude + "\n" +
+    "acurracy: " + accuracy + "\n" +
+    "distance to uic: "+ location.getLocation().distanceTo(uic) + "\n" + 
+    "provider: " + location.getProvider(), 30, 50);
 }
 
 void onResume()
