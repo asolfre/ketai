@@ -18,12 +18,12 @@
 import edu.uic.ketai.*;
 
 String stuff = "";
-KetaiNFC   ketaiNFC = new KetaiNFC(this);
+KetaiNFC   ketaiNFC;
 
 void setup()
 {   
   orientation(PORTRAIT);
-  ketaiNFC.handleIntent(getIntent());
+  KetaiNFC   ketaiNFC = new KetaiNFC(this);
 }
 
 void draw()
@@ -37,3 +37,4 @@ void onNFCEvent(String s)
   stuff = s;
   println("Sketch received NFCEvent: " + s);
 }
+
