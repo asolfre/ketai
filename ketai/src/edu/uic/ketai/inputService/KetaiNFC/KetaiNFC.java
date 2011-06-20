@@ -21,12 +21,13 @@ public class KetaiNFC extends AbstractKetaiInputService {
 		parent = pParent;
 		PApplet.println("KetaiNFCManager instantiated...");
 		findParentIntentions();
+		handleIntent(parent.getIntent());
 
 	}
 
 	public void handleIntent(Intent intent) {
 		String action = intent.getAction();
-		String thingToReturn="";
+		String thingToReturn = "";
 
 		if (!NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
 			return;
@@ -35,7 +36,7 @@ public class KetaiNFC extends AbstractKetaiInputService {
 		Parcelable[] rawMsgs = intent
 				.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
 		NdefMessage[] msgs;
-		
+
 		if (rawMsgs != null) {
 			msgs = new NdefMessage[rawMsgs.length];
 			for (int i = 0; i < rawMsgs.length; i++) {
@@ -49,16 +50,14 @@ public class KetaiNFC extends AbstractKetaiInputService {
 			NdefMessage msg = new NdefMessage(new NdefRecord[] { record });
 			msgs = new NdefMessage[] { msg };
 		}
-		
-        for (NdefMessage m : msgs)
-        {
-        	thingToReturn += "\n" + m.toString();
-        }
-        	
+
+		for (NdefMessage m : msgs) {
+			thingToReturn += "\n" + m.toString();
+		}
+
 		if (onNFCEventMethod != null)
 			try {
-				onNFCEventMethod.invoke(parent,
-						new Object[] { thingToReturn });
+				onNFCEventMethod.invoke(parent, new Object[] { thingToReturn });
 
 				return;
 			} catch (Exception e) {
