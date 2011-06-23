@@ -6,7 +6,7 @@
  * <li>handles incoming Near Field Communication Events</li>
  * </ul>
  * <p>Note:
- * Add the following within the sketch activity  to the AndroidManifest.xml: 
+ * Add the following within the sketch activity to the AndroidManifest.xml: 
  * <intent-filter>
  * <action android:name="android.nfc.action.TAG_DISCOVERED"/>
  * <category android:name="android.intent.category.DEFAULT"/>
@@ -18,12 +18,13 @@
 import edu.uic.ketai.*;
 
 String stuff = "";
-KetaiNFC   ketaiNFC;
+KetaiNFC ketaiNFC;
+Ketai k;
 
 void setup()
 {   
   orientation(PORTRAIT);
-  KetaiNFC   ketaiNFC = new KetaiNFC(this);
+  ketaiNFC = new KetaiNFC(this);
 }
 
 void draw()

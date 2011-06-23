@@ -19,10 +19,9 @@ public class KetaiNFC extends AbstractKetaiInputService {
 
 	public KetaiNFC(PApplet pParent) {
 		parent = pParent;
-		PApplet.println("KetaiNFCManager instantiated...");
+		PApplet.println("KetaiNFC instantiated...");
 		findParentIntentions();
 		handleIntent(parent.getIntent());
-
 	}
 
 	public void handleIntent(Intent intent) {
@@ -85,7 +84,6 @@ public class KetaiNFC extends AbstractKetaiInputService {
 
 	public void stopService() {
 		// TODO Auto-generated method stub
-
 	}
 
 	public String getServiceDescription() {
