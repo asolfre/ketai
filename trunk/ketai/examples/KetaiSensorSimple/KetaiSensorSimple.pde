@@ -9,7 +9,7 @@
  * </ul>
  * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
  */
- 
+
 import edu.uic.ketai.*;
 
 KetaiSensor sensor;
@@ -17,9 +17,9 @@ float accelerometerX, accelerometerY, accelerometerZ;
 
 void setup()
 {
+  orientation(PORTRAIT);
   sensor = new KetaiSensor(this);
   sensor.start();
-  orientation(PORTRAIT);
 }
 
 void draw()
@@ -31,7 +31,7 @@ void draw()
   text("z:" + nfp(accelerometerZ, 3, 3), 5, 110);
 }
 
-void onAccelerometerSensorEvent(float x, float y, float z)
+void onAccelerometerEvent(float x, float y, float z)
 {
   accelerometerX = x;
   accelerometerY = y;

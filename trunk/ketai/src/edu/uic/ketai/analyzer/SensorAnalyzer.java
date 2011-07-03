@@ -54,7 +54,7 @@ public class SensorAnalyzer extends AbstractKetaiAnalyzer {
 	public Class<?> getServiceProviderClass() {
 		try {
 			return Class
-					.forName("edu.uic.ketai.inputService.KetaiSensorManager");
+					.forName("edu.uic.ketai.inputService.KetaiSensor");
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}

@@ -19,6 +19,7 @@ void setup()
 {
   orientation(PORTRAIT);
   sensor = new KetaiSensor(this);
+  sensor.list();
   sensor.start();
   orientation = new PVector();
   accelerometer = new PVector();
@@ -42,25 +43,25 @@ void draw()
   + nf(magneticField.z, 3, 2), 5, 80);
 }
 
-void onOrientationSensorEvent(float x, float y, float z, long time, int accuracy)
+void onOrientationEvent(float x, float y, float z, long time, int accuracy)
 {
   orientation.set(x,y,z);
 }
 
-void onAccelerometerSensorEvent(float x, float y, float z, long time, int accuracy)
+void onAccelerometerEvent(float x, float y, float z, long time, int accuracy)
 {
   accelerometer.set(x,y,z);
 }
 
-void onMagneticFieldSensorEvent(float x, float y, float z, long time, int accuracy)
+void onMagneticFieldEvent(float x, float y, float z, long time, int accuracy)
 {
   magneticField.set(x,y,z);
 }
 
 public void mousePressed() { 
-  if(sensorManager.isStarted())
-    sensorManager.stop(); 
+  if(sensor.isStarted())
+    sensor.stop(); 
   else
-    sensorManager.start(); 
-  println("SensorManager isStarted: " + sensorManager.isStarted());
+    sensor.start(); 
+  println("KetaiSensor isStarted: " + sensor.isStarted());
 }
