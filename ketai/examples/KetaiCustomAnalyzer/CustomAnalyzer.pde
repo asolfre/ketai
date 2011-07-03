@@ -9,12 +9,12 @@ class CustomAnalyzer extends AbstractKetaiAnalyzer
   }
 
   String getAnalyzerName() {
-    return "";
+    return "Sample Custom Analyzer";
   }
 
   String getAnalysisDescription()
   {
-    return "";
+    return "Checks to see if the device is laying flat based on accelerometer data";
   }     
 
   void analyzeData(Object dataSet)
@@ -22,6 +22,8 @@ class CustomAnalyzer extends AbstractKetaiAnalyzer
     if(dataSet instanceof SensorEvent)
     {
       SensorEvent e = (SensorEvent)dataSet;
+      //parse the Sensor Event object and check
+      //  the 'z' axis data
       if(e.values[2] > 9 && e.values[2] < 11)
       {
         println("broadcasting flatness..");
@@ -35,6 +37,7 @@ class CustomAnalyzer extends AbstractKetaiAnalyzer
     }
   }
 
+  //We're not collecting data
   String getTableCreationString()
   {
     return "";

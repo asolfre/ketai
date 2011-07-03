@@ -26,9 +26,8 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 	// and the non-simple methods take values of v1,v2,v3, time, accuracy.
 	// see:
 	// http://developer.android.com/reference/android/hardware/SensorEvent.html#values
-	private Method onAccelerometerSensorEventMethod,
-			onAccelerometerSensorEventMethodSimple,
-			onOrientationSensorEventMethod,
+	private Method onAccelerometerEventMethod,
+			onAccelerometerEventMethodSimple, onOrientationSensorEventMethod,
 			onOrientationSensorEventMethodSimple, onGyroscopeSensorEventMethod,
 			onGyroscopeSensorEventMethodSimple,
 
@@ -57,7 +56,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 		parent = pParent;
 		sensorManager = (SensorManager) parent.getApplicationContext()
 				.getSystemService(Context.SENSOR_SERVICE);
-		PApplet.println("KetaiSensorManager instantiated...");
+		PApplet.println("KetaiSensor instantiated...");
 		findParentIntentions();
 
 		delayInterval = timeOfLastUpdate = 0;
@@ -197,7 +196,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 		List<Sensor> foo = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		for (Sensor s : foo) {
 			list.add(s.getName());
-			PApplet.println("\tKetaiSensorManager sensor: " + s.getName() + ":"
+			PApplet.println("\tKetaiSensor sensor: " + s.getName() + ":"
 					+ s.getType());
 		}
 		return list;
@@ -211,7 +210,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 	}
 
 	public void start() {
-		PApplet.println("KetaiSensorManager: start()...");
+		PApplet.println("KetaiSensor: start()...");
 		findParentIntentions();
 
 		if (accelerometerSensorEnabled) {
@@ -277,7 +276,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 	}
 
 	public void stop() {
-		PApplet.println("KetaiSensorManager: Stop()....");
+		PApplet.println("KetaiSensor: Stop()....");
 		sensorManager.unregisterListener(this);
 		isRegistered = false;
 	}
@@ -293,7 +292,6 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 			return;
 
 		timeOfLastUpdate = now;
-
 		broadcastSensorEvent(arg0);
 
 		if (onSensorEventMethod != null) {
@@ -310,36 +308,35 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 
 		if (arg0.sensor.getType() == Sensor.TYPE_ACCELEROMETER
 				&& accelerometerSensorEnabled) {
-			if (onAccelerometerSensorEventMethod != null) {
+			if (onAccelerometerEventMethod != null) {
 				try {
-					onAccelerometerSensorEventMethod.invoke(parent,
-							new Object[] { arg0.values[0], arg0.values[1],
-									arg0.values[2], arg0.timestamp,
-									arg0.accuracy });
+					onAccelerometerEventMethod.invoke(parent, new Object[] {
+							arg0.values[0], arg0.values[1], arg0.values[2],
+							arg0.timestamp, arg0.accuracy });
 					timeOfLastUpdate = now;
 					broadcastData(arg0);
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onAccelerometerSensorEvent() because of an error:"
+					PApplet.println("Disabling onAccelerometerEvent() because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onAccelerometerSensorEventMethod = null;
+					onAccelerometerEventMethod = null;
 				}
 			}
 
-			if (onAccelerometerSensorEventMethodSimple != null) {
+			if (onAccelerometerEventMethodSimple != null) {
 				try {
-					onAccelerometerSensorEventMethod.invoke(parent,
+					onAccelerometerEventMethodSimple.invoke(parent,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2] });
 					timeOfLastUpdate = now;
 					broadcastData(arg0);
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onAccelerometerSensorEvent() because of an error:"
+					PApplet.println("Disabling onAccelerometerEvent() [simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onAccelerometerSensorEventMethodSimple = null;
+					onAccelerometerEventMethodSimple = null;
 				}
 			}
 		}
@@ -364,13 +361,14 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 
 			if (onGravitySensorEventMethodSimple != null) {
 				try {
-					onGravitySensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.values[1], arg0.values[2] });
+					onGravitySensorEventMethodSimple.invoke(parent,
+							new Object[] { arg0.values[0], arg0.values[1],
+									arg0.values[2] });
 					timeOfLastUpdate = now;
 					broadcastData(arg0);
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onGravitySensorEvent() because of an error:"
+					PApplet.println("Disabling onGravitySensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onGravitySensorEventMethodSimple = null;
@@ -396,12 +394,13 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 			}
 			if (onOrientationSensorEventMethodSimple != null) {
 				try {
-					onOrientationSensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.values[1], arg0.values[2] });
+					onOrientationSensorEventMethodSimple.invoke(parent,
+							new Object[] { arg0.values[0], arg0.values[1],
+									arg0.values[2] });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onOrientationSensorEvent() because of an error:"
+					PApplet.println("Disabling onOrientationSensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onOrientationSensorEventMethodSimple = null;
@@ -428,13 +427,13 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 			}
 			if (onMagneticFieldSensorEventMethodSimple != null) {
 				try {
-					onMagneticFieldSensorEventMethod.invoke(parent,
+					onMagneticFieldSensorEventMethodSimple.invoke(parent,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2] });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onMagneticFieldSensorEvent() because of an error:"
+					PApplet.println("Disabling onMagneticFieldSensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onMagneticFieldSensorEventMethodSimple = null;
@@ -460,12 +459,13 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 			}
 			if (onGyroscopeSensorEventMethodSimple != null) {
 				try {
-					onGyroscopeSensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.values[1], arg0.values[2] });
+					onGyroscopeSensorEventMethodSimple.invoke(parent,
+							new Object[] { arg0.values[0], arg0.values[1],
+									arg0.values[2] });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onGyroscopeSensorEvent() because of an error:"
+					PApplet.println("Disabling onGyroscopeSensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onGyroscopeSensorEventMethodSimple = null;
@@ -496,7 +496,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onLightSensorEvent() because of an error:"
+					PApplet.println("Disabling onLightSensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onLightSensorEventMethodSimple = null;
@@ -526,7 +526,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onProximitySensorEvent() because of an error:"
+					PApplet.println("Disabling onProximitySensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onProximitySensorEventMethodSimple = null;
@@ -556,7 +556,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onPressureSensorEvent() because of an error:"
+					PApplet.println("Disabling onPressureSensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onPressureSensorEventMethodSimple = null;
@@ -586,7 +586,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onTemperatureSensorEvent() because of an error:"
+					PApplet.println("Disabling onTemperatureSensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onTemperatureSensorEventMethodSimple = null;
@@ -620,7 +620,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onLinearAccelerationSensorEvent() because of an error:"
+					PApplet.println("Disabling onLinearAccelerationSensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onLinearAccelerationSensorEventMethodSimple = null;
@@ -653,7 +653,7 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onRotationVectorSensorEvent() because of an error:"
+					PApplet.println("Disabling onRotationVectorSensorEvent()[simple] because of an error:"
 							+ e.getMessage());
 					e.printStackTrace();
 					onRotationVectorSensorEventMethodSimple = null;
@@ -685,51 +685,52 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 		}
 
 		try {
-			onAccelerometerSensorEventMethod = parent.getClass().getMethod(
-					"onAccelerometerSensorEvent",
+			onAccelerometerEventMethod = parent.getClass().getMethod(
+					"onAccelerometerEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
 			accelerometerSensorEnabled = true;
-			PApplet.println("Found onAccelerometerSensorEvenMethod...");
+			PApplet.println("Found onAccelerometerEventMethod...");
 
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
-			onAccelerometerSensorEventMethodSimple = parent
-					.getClass()
-					.getMethod(
-							"onAccelerometerSensorEvent",
-							new Class[] { float.class, float.class, float.class });
+			onAccelerometerEventMethodSimple = parent.getClass().getMethod(
+					"onAccelerometerEvent",
+					new Class[] { float.class, float.class, float.class });
 			accelerometerSensorEnabled = true;
-			PApplet.println("Found onAccelerometerSensorEvenMethodSimple...");
+			PApplet.println("Found onAccelerometerEvenMethod(simple)...");
 
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onOrientationSensorEventMethod = parent.getClass().getMethod(
-					"onOrientationSensorEvent",
+					"onOrientationEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
 			orientationSensorEnabled = true;
+			PApplet.println("Found onOrientationEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onOrientationSensorEventMethodSimple = parent.getClass().getMethod(
-					"onOrientationSensorEvent",
+					"onOrientationEvent",
 					new Class[] { float.class, float.class, float.class });
 			orientationSensorEnabled = true;
+			PApplet.println("Found onOrientationEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onMagneticFieldSensorEventMethod = parent.getClass().getMethod(
-					"onMagneticFieldSensorEvent",
+					"onMagneticFieldEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class });
 			magneticFieldSensorEnabled = true;
+			PApplet.println("Found onMagneticFieldEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
@@ -737,120 +738,129 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 			onMagneticFieldSensorEventMethodSimple = parent
 					.getClass()
 					.getMethod(
-							"onMagneticFieldSensorEvent",
+							"onMagneticFieldEvent",
 							new Class[] { float.class, float.class, float.class });
 			magneticFieldSensorEnabled = true;
+			PApplet.println("Found onMagneticFieldEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onGyroscopeSensorEventMethod = parent.getClass().getMethod(
-					"onGyroscopeSensorEvent",
+					"onGyroscopeEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
 			gyroscopeSensorEnabled = true;
-			PApplet.println("Found onGyroscopeSensorEvenMethod...");
+			PApplet.println("Found onGyroscopeEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onGyroscopeSensorEventMethodSimple = parent.getClass().getMethod(
-					"onGyroscopeSensorEvent",
+					"onGyroscopeEvent",
 					new Class[] { float.class, float.class, float.class });
 			gyroscopeSensorEnabled = true;
-			PApplet.println("Found onGyroscopeSensorEvenMethod...");
+			PApplet.println("Found onGyroscopeEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onGravitySensorEventMethod = parent.getClass().getMethod(
-					"onAccelerometerSensorEvent",
+					"onGravityEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
 			gravitySensorEnabled = true;
-			PApplet.println("Found onGravitySensorEvenMethod...");
+			PApplet.println("Found onGravityEvenMethod...");
 
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onGravitySensorEventMethodSimple = parent.getClass().getMethod(
-					"onGravitySensorEvent",
+					"onGravityEvent",
 					new Class[] { float.class, float.class, float.class });
 			gravitySensorEnabled = true;
-			PApplet.println("Found onGravitySensorEvenMethodSimple...");
+			PApplet.println("Found onGravityEvenMethod(simple)...");
 
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onProximitySensorEventMethod = parent.getClass().getMethod(
-					"onProximitySensorEvent",
+					"onProximityEvent",
 					new Class[] { float.class, long.class, int.class });
 			proximitySensorEnabled = true;
+			PApplet.println("Found onLightEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onProximitySensorEventMethodSimple = parent.getClass().getMethod(
-					"onProximitySensorEvent", new Class[] { float.class });
+					"onProximityEvent", new Class[] { float.class });
 			proximitySensorEnabled = true;
+			PApplet.println("Found onProximityEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onLightSensorEventMethod = parent.getClass().getMethod(
-					"onLightSensorEvent",
+					"onLightEvent",
 					new Class[] { float.class, long.class, int.class });
 			lightSensorEnabled = true;
+			PApplet.println("Found onLightEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onLightSensorEventMethodSimple = parent.getClass().getMethod(
-					"onLightSensorEvent", new Class[] { float.class });
+					"onLightEvent", new Class[] { float.class });
 			lightSensorEnabled = true;
+			PApplet.println("Found onLightEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onPressureSensorEventMethod = parent.getClass().getMethod(
-					"onPressureSensorEvent",
+					"onPressureEvent",
 					new Class[] { float.class, long.class, int.class });
 			pressureSensorEnabled = true;
+			PApplet.println("Found onPressureEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onPressureSensorEventMethodSimple = parent.getClass().getMethod(
-					"onPressureSensorEvent", new Class[] { float.class });
+					"onPressureEvent", new Class[] { float.class });
 			pressureSensorEnabled = true;
+			PApplet.println("Found onPressureEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onTemperatureSensorEventMethod = parent.getClass().getMethod(
-					"onTemperatureSensorEvent",
+					"onTemperatureEvent",
 					new Class[] { float.class, long.class, int.class });
 			temperatureSensorEnabled = true;
+			PApplet.println("Found onTemperatureEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onTemperatureSensorEventMethodSimple = parent.getClass().getMethod(
-					"onTemperatureSensorEvent", new Class[] { float.class });
+					"onTemperatureEvent", new Class[] { float.class });
 			temperatureSensorEnabled = true;
+			PApplet.println("Found onTemperatureEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onLinearAccelerationSensorEventMethod = parent.getClass()
 					.getMethod(
-							"onLinearAccelerationSensorEvent",
+							"onLinearAccelerationEvent",
 							new Class[] { float.class, float.class,
 									float.class, long.class, int.class });
 			linearAccelerationSensorEnabled = true;
-			PApplet.println("Found onLinearAccelerationSensorEventMethod...");
+			PApplet.println("Found onLinearAccelerationEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
@@ -858,20 +868,20 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 			onLinearAccelerationSensorEventMethodSimple = parent
 					.getClass()
 					.getMethod(
-							"onLinearAccelerationSensorEvent",
+							"onLinearAccelerationEvent",
 							new Class[] { float.class, float.class, float.class });
 			linearAccelerationSensorEnabled = true;
-			PApplet.println("Found onLinearAccelerationSensorEventMethod...");
+			PApplet.println("Found onLinearAccelerationEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
 			onRotationVectorSensorEventMethod = parent.getClass().getMethod(
-					"onRotationVectorSensorEvent",
+					"onRotationVectorEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class });
 			rotationVectorSensorEnabled = true;
-			PApplet.println("Found onRotationVectorSensorEvenMethod...");
+			PApplet.println("Found onRotationVectorEvenMethod...");
 
 		} catch (NoSuchMethodException e) {
 		}
@@ -880,10 +890,10 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 			onRotationVectorSensorEventMethodSimple = parent
 					.getClass()
 					.getMethod(
-							"onRotationVectorSensorEvent",
+							"onRotationVectorEvent",
 							new Class[] { float.class, float.class, float.class });
 			rotationVectorSensorEnabled = true;
-			PApplet.println("Found onRotationVectorSensorEvenMethod...");
+			PApplet.println("Found onRotationVectorEventMethod(simple)...");
 
 		} catch (NoSuchMethodException e) {
 		}

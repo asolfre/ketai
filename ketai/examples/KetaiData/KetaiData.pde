@@ -61,7 +61,7 @@ void keyPressed() {
 
 // Capturing accelerometer data 
 // (you can capture multiple sensors by adding SensorEvent methods for other sensors)
-void onAccelerometerSensorEvent(long time, int accuracy, float x, float y, float z)
+void onAccelerometerEvent(float x, float y, float z, long time, int accuracy)
 {
   // The analyzer will handle the data this time
 }

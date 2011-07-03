@@ -9,7 +9,7 @@
  * </ul>
  * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
  */
- 
+
 import edu.uic.ketai.*;
 
 Ketai ketai;
@@ -19,29 +19,29 @@ color backgroundColor;
 
 void setup()
 {
+  orientation(LANDSCAPE);
   ketai = new Ketai(this);
   ketai.setCameraParameters(320, 240, 10);
-  backgroundColor = color(255,255,255);
+  backgroundColor = color(255, 255, 255);
   ketai.enableCamera();
   ketai.enableFaceAnalyzer();
   //Get the current data count
   dataCount = ketai.getDataCount();
-  orientation(LANDSCAPE);
 }
 
 void draw() {
   background(0);
   // Ketai status
-  if(ketai.isCollectingData())
-    text("Collecting Data...", 20,20);
+  if (ketai.isCollectingData())
+    text("Collecting Data...", 20, 20);
   else
-    text("Not Collecting Data...", 20,20);
+    text("Not Collecting Data...", 20, 20);
   text("Current Data count: " + dataCount, 20, 60);
 }
 
 void mousePressed()
 {
-  if(ketai.isCollectingData())
+  if (ketai.isCollectingData())
   {
     ketai.stopCollectingData();
     dataCount = ketai.getDataCount();
@@ -68,20 +68,20 @@ void onKetaiEvent(String _eventName, Object _data)
 {
   if (_eventName.equals("face"))
   {
-    if(_data == null || !(_data instanceof PVector))
+    if (_data == null || !(_data instanceof PVector))
       return;
 
     PVector _where = (PVector)_data;
-    backgroundColor = color(0,255,0);
+    backgroundColor = color(0, 255, 0);
     background(backgroundColor);
     pushMatrix();
     translate(screenWidth/2 - 320/2, screenHeight/2 - 240/2);
     ellipse(_where.x, _where.y, _where.z, 20);
     popMatrix();
   }
-  else if(_eventName.equals("noface"))
+  else if (_eventName.equals("noface"))
   {
-    backgroundColor = color(0,0,0);    
+    backgroundColor = color(0, 0, 0);    
     background(backgroundColor);
   }
 }
@@ -89,6 +89,6 @@ void onKetaiEvent(String _eventName, Object _data)
 void onCameraPreviewEvent(KetaiCamera cam)
 {
   cam.read();
-  image(cam, width/2,height/2);
+  image(cam, width/2, height/2);
 }  
 
