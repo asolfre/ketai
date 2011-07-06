@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 
 import edu.uic.ketai.analyzer.IKetaiAnalyzer;
@@ -16,10 +17,12 @@ import processing.core.PApplet;
 //import android.graphics.Bitmap;
 //import android.graphics.BitmapFactory;
 //import android.graphics.ImageFormat;
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
+import android.view.SurfaceView;
 
 public class KetaiCamera extends PImage implements IKetaiInputService {
 
@@ -29,10 +32,11 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 	private int[] myPixels;
 	private Method onPreviewEventMethod, onPreviewEventMethodPImage;
 	private int frameWidth, frameHeight, cameraFPS;
-	public boolean isStarted;
+	public boolean isStarted, enableFlash, isRGBPreviewSupported;
 	PImage self;
 	Thread runner;
 	boolean available = false;
+	SurfaceView sView;
 
 	public KetaiCamera(PApplet pParent, int _width, int _height,
 			int _framesPerSecond) {
@@ -45,6 +49,9 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 		myPixels = new int[_width * _height];
 		listeners = new ArrayList<IKetaiAnalyzer>();
 		self = this;
+		isRGBPreviewSupported = false;
+		enableFlash = false;
+		//sView = new SurfaceView();
 
 		try {
 			// the following uses reflection to see if the parent
@@ -79,27 +86,79 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 		// runner.run();
 	}
 
+	public void enableFlash() {
+		enableFlash = true;
+		if (camera == null)
+			return;
+
+		Parameters cameraParameters = camera.getParameters();
+		cameraParameters.setFlashMode(Parameters.FLASH_MODE_TORCH);
+		camera.setParameters(cameraParameters);
+	}
+
+	public void disableFlash() {
+		enableFlash = false;
+		if (camera == null)
+			return;
+
+		Parameters cameraParameters = camera.getParameters();
+		cameraParameters.setFlashMode(Parameters.FLASH_MODE_OFF);
+		camera.setParameters(cameraParameters);
+	}
+
 	public void start() {
 		try {
+			boolean isNV21Supported = false;
+			
 			PApplet.println("KetaiCamera: opening camera...");
 			if (camera == null)
 				camera = Camera.open();
 
 			Parameters cameraParameters = camera.getParameters();
+			List<Integer> list = cameraParameters.getSupportedPreviewFormats();
+			
+			PApplet.println("Supported preview modes...");
+			for (Integer i : list) {
+
+					if (i == ImageFormat.RGB_565) {
+					PApplet.println("RGB Image preview supported!!!!(try better resolutions/fps combos)");
+					isRGBPreviewSupported = true;
+				}
+				
+				if (i == ImageFormat.NV21)
+					isNV21Supported = true;
+				
+				PApplet.println("\t" + i);
+			}
+
+			if(isRGBPreviewSupported)
+				cameraParameters.setPreviewFormat(ImageFormat.RGB_565);
+			else if (isNV21Supported)
+				cameraParameters.setPreviewFormat(ImageFormat.NV21);
+			else
+				PApplet.println("Camera does not appear to provide data in a format we can convert. Sorry.");
+			
+			if (enableFlash)
+				cameraParameters.setFlashMode(Parameters.FLASH_MODE_TORCH);
+			else
+				cameraParameters.setFlashMode(Parameters.FLASH_MODE_OFF);
+
 			// too bad the following doesnt work yet..even on 2.2 :-/
-			// cameraParameters.setPreviewFormat(ImageFormat.RGB_565);
 
 			// /We should probably verify that the numbers passed in are
 			// suppported by the camera....sure...eventually we will
 			// cameraParameters.setPreviewFormat(ImageFormat.NV21);
 			cameraParameters.setPreviewFrameRate(cameraFPS);
 			cameraParameters.setPreviewSize(frameWidth, frameHeight);
-
+			cameraParameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
+			camera.setPreviewDisplay(null);
 			camera.setParameters(cameraParameters);
 			isStarted = true;
 			PApplet.println("KetaiCamera: Set camera parameters...");
 			camera.setPreviewCallback(previewcallback);
 			camera.startPreview();
+			
+			PApplet.println("Using preview format: " + camera.getParameters().getPreviewFormat());
 
 		} catch (Exception x) {
 			x.printStackTrace();
@@ -107,6 +166,10 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 				camera.release();
 			PApplet.println("Exception caught while trying to connect to camera service.  Please check your sketch permissions or that another application is not using the camera.");
 		}
+	}
+
+	public boolean isFlashEnabled() {
+		return enableFlash;
 	}
 
 	public void takePicture() {
@@ -154,7 +217,7 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 			// data.length, null);
 			// if(bitmap == null)
 			// {
-			// //PApplet.println("KetaiCamera:  Unable to convert cameraPreview data to bitmap...Data has lenght: "
+			// //PApplet.println("KetaiCamera:  Unable to convert cameraPreview data to bitmap...Data has length: "
 			// + data.length);
 			// myPixels = new int[width * height];
 			// KetaiCamera.decodeYUV420SP(myPixels, data, width, height);
@@ -170,6 +233,7 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 				myPixels = new int[frameWidth * frameHeight];
 
 			// camera.getParameters().getPreviewSize().width;
+
 			KetaiCamera.decodeYUV420SP(myPixels, data, frameWidth, frameHeight);
 
 			if (myPixels == null)
