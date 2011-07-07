@@ -19,8 +19,8 @@ void setup()
 {
   sensor = new KetaiSensor(this);
   sensor.start();
-    orientation(PORTRAIT);
-    textAlign(LEFT, CENTER);
+  orientation(PORTRAIT);
+  textAlign(LEFT, CENTER);
   textSize(24);
 }
 
@@ -28,9 +28,9 @@ void draw()
 {
   background(0);
   text("Accelerometer: \n" + 
-  "x: " + nfp(accelerometerX, 1, 3) + "\n" +
-  "y: " + nfp(accelerometerY, 1, 3) + "\n" +
-  "z: " + nfp(accelerometerZ, 1, 3), 20, 0, width, height);
+    "x: " + nfp(accelerometerX, 1, 3) + "\n" +
+    "y: " + nfp(accelerometerY, 1, 3) + "\n" +
+    "z: " + nfp(accelerometerZ, 1, 3), 20, 0, width, height);
 }
 
 void onAccelerometerEvent(float x, float y, float z)
@@ -39,4 +39,3 @@ void onAccelerometerEvent(float x, float y, float z)
   accelerometerY = y;
   accelerometerZ = z;
 }
-
