@@ -1,4 +1,16 @@
-
+/**
+ * <p>Ketai Sensor Library for Android: http://KetaiProject.org</p>
+ *
+ * <p>Ketai Data SQL Features:
+ * <ul>
+ * <li>Captures Sensor data into SQLite database</li>
+ * <li>Writes data into .csv flat file</li>
+ * <li>Sends query to SQLight database </li>
+ * <li>Retrieves entries and maps them on the screen</li>
+ * </ul>
+ * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ */
+ 
 import edu.uic.ketai.*;
 import android.database.Cursor;
 
