@@ -48,7 +48,7 @@ void keyPressed() {
         cam.disableFlash();
       else
         cam.enableFlash();
-        }
-      }
     }
+  }
+}
 
