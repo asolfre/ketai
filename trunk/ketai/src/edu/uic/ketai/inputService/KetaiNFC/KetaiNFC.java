@@ -2,6 +2,7 @@ package edu.uic.ketai.inputService.KetaiNFC;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.List;
 import java.util.Vector;
 
 import processing.core.PApplet;
@@ -12,6 +13,7 @@ import android.nfc.NfcAdapter;
 import android.os.Parcelable;
 
 import edu.uic.ketai.inputService.AbstractKetaiInputService;
+import edu.uic.ketai.inputService.KetaiNFC.record.ParsedNdefRecord;
 
 public class KetaiNFC extends AbstractKetaiInputService {
 	private PApplet parent;
@@ -50,8 +52,14 @@ public class KetaiNFC extends AbstractKetaiInputService {
 			msgs = new NdefMessage[] { msg };
 		}
 
-		for (NdefMessage m : msgs) {
-			thingToReturn += "\n" + m.toString();
+		if (msgs == null || msgs.length == 0) {
+			return;
+		}
+		List<ParsedNdefRecord> records = NdefMessageParser.parse(msgs[0]);
+		final int size = records.size();
+		for (int i = 0; i < size; i++) {
+			ParsedNdefRecord record = records.get(i);
+			thingToReturn += "\n" + record.getTag();
 		}
 
 		if (onNFCEventMethod != null)

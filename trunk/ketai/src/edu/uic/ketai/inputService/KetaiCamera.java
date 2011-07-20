@@ -22,6 +22,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
+import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class KetaiCamera extends PImage implements IKetaiInputService {
@@ -37,6 +38,7 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 	Thread runner;
 	boolean available = false;
 	SurfaceView sView;
+	SurfaceHolder mHolder;
 
 	public KetaiCamera(PApplet pParent, int _width, int _height,
 			int _framesPerSecond) {
@@ -51,11 +53,12 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 		self = this;
 		isRGBPreviewSupported = false;
 		enableFlash = false;
-		//sView = new SurfaceView();
+		sView = new SurfaceView(parent);
+		mHolder = sView.getHolder();
 
 		try {
 			// the following uses reflection to see if the parent
-			// exposes the call-back method. The first argument is the method
+			// exposes the callback method. The first argument is the method
 			// name followed by what should match the method argument(s)
 			onPreviewEventMethod = parent.getClass().getMethod(
 					"onCameraPreviewEvent");
@@ -68,9 +71,6 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 		}
 
 		try {
-			// the following uses reflection to see if the parent
-			// exposes the call-back method. The first argument is the method
-			// name followed by what should match the method argument(s)
 			onPreviewEventMethodPImage = parent.getClass().getMethod(
 					"onCameraPreviewEvent", new Class[] { KetaiCamera.class });
 			PApplet.println("KetaiCamera found onCameraPreviewEvent for PImage in parent... ");
@@ -82,8 +82,6 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 		}
 
 		PApplet.println("KetaiCamera completed instantiation... ");
-		// runner = new Thread(this);
-		// runner.run();
 	}
 
 	public void enableFlash() {
@@ -109,35 +107,35 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 	public void start() {
 		try {
 			boolean isNV21Supported = false;
-			
+
 			PApplet.println("KetaiCamera: opening camera...");
 			if (camera == null)
 				camera = Camera.open();
 
 			Parameters cameraParameters = camera.getParameters();
 			List<Integer> list = cameraParameters.getSupportedPreviewFormats();
-			
+
 			PApplet.println("Supported preview modes...");
 			for (Integer i : list) {
 
-					if (i == ImageFormat.RGB_565) {
+				if (i == ImageFormat.RGB_565) {
 					PApplet.println("RGB Image preview supported!!!!(try better resolutions/fps combos)");
 					isRGBPreviewSupported = true;
 				}
-				
+
 				if (i == ImageFormat.NV21)
 					isNV21Supported = true;
-				
+
 				PApplet.println("\t" + i);
 			}
 
-			if(isRGBPreviewSupported)
+			if (isRGBPreviewSupported)
 				cameraParameters.setPreviewFormat(ImageFormat.RGB_565);
 			else if (isNV21Supported)
 				cameraParameters.setPreviewFormat(ImageFormat.NV21);
 			else
 				PApplet.println("Camera does not appear to provide data in a format we can convert. Sorry.");
-			
+
 			if (enableFlash)
 				cameraParameters.setFlashMode(Parameters.FLASH_MODE_TORCH);
 			else
@@ -147,18 +145,19 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 
 			// /We should probably verify that the numbers passed in are
 			// suppported by the camera....sure...eventually we will
-			// cameraParameters.setPreviewFormat(ImageFormat.NV21);
 			cameraParameters.setPreviewFrameRate(cameraFPS);
 			cameraParameters.setPreviewSize(frameWidth, frameHeight);
 			cameraParameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
-			camera.setPreviewDisplay(null);
+			camera.setPreviewDisplay(mHolder);
+			
 			camera.setParameters(cameraParameters);
 			isStarted = true;
 			PApplet.println("KetaiCamera: Set camera parameters...");
 			camera.setPreviewCallback(previewcallback);
 			camera.startPreview();
-			
-			PApplet.println("Using preview format: " + camera.getParameters().getPreviewFormat());
+
+			PApplet.println("Using preview format: "
+					+ camera.getParameters().getPreviewFormat());
 
 		} catch (Exception x) {
 			x.printStackTrace();
@@ -232,9 +231,11 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 			if (myPixels == null)
 				myPixels = new int[frameWidth * frameHeight];
 
-			// camera.getParameters().getPreviewSize().width;
-
-			KetaiCamera.decodeYUV420SP(myPixels, data, frameWidth, frameHeight);
+			if (isRGBPreviewSupported)
+				System.arraycopy(myPixels, 0, data, 0, frameWidth * frameHeight);
+			else
+				KetaiCamera.decodeYUV420SP(myPixels, data, frameWidth,
+						frameHeight);
 
 			if (myPixels == null)
 				return;
@@ -311,12 +312,7 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 			camera.release();
 			camera = null;
 		}
-		// runner = null; // unwind the thread
 	}
-
-	// public void dispose() {
-	// stop();
-	// }
 
 	static public void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width,
 			int height) {
@@ -356,37 +352,6 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 			}
 		}
 	}
-
-	// public void run() {
-	// while ((Thread.currentThread() == runner) && (camera != null)) {
-	// try {
-	// synchronized (camera) {
-	// available = true;
-	//
-	// // if (this.captureEventMethod != null) {
-	// // try {
-	// // captureEventMethod.invoke(parent, new Object[] { this });
-	// // } catch (Exception e) {
-	// // System.err.println("Disabling captureEvent() for " + name +
-	// // " because of an error.");
-	// // e.printStackTrace();
-	// // captureEventMethod = null;
-	// // }
-	// }
-	// }
-	//
-	// } catch (Exception e) {
-	// PApplet.println("KetaiCamera: run() Exception: " + e.getMessage());
-	// }
-	//
-	// try {
-	// Thread.sleep(1000 / cameraFPS);
-	// } catch (InterruptedException e) { }
-	// }
-	//
-	// }
-
-	// }
 
 	public Collection<? extends String> list() {
 		Vector<String> list = new Vector<String>();

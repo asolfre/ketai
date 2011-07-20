@@ -12,6 +12,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import processing.core.PApplet;
 
@@ -34,6 +35,82 @@ public class DataManager {
 
 	public SQLiteDatabase getDb() {
 		return this.db;
+	}
+
+	public String[] getTables() {
+		String s = "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;";
+		ArrayList<String> tables = new ArrayList<String>();
+		try {
+			Cursor cursor = this.db.rawQuery(s, null);
+			if (cursor.moveToFirst()) {
+				do {
+					if (cursor.getString(0) != "android_metadata")
+						tables.add(cursor.getString(0));
+				} while (cursor.moveToNext());
+			}
+		} catch (SQLiteException x) {
+			x.printStackTrace();
+		}
+		String[] strArray = new String[tables.size()];
+		tables.toArray(strArray);
+
+		return strArray;
+	}
+
+	public Cursor executeSQL(String q) {
+		try {
+			Cursor cursor = this.db.rawQuery(q, null);
+			return cursor;
+		} catch (SQLiteException x) {
+			x.printStackTrace();
+		}
+		return null;
+
+	}
+
+	public String[] getFields(String table) {
+		String s = "PRAGMA table_info(" + table + ");";
+		ArrayList<String> fields = new ArrayList<String>();
+		try {
+			Cursor cursor = this.db.rawQuery(s, null);
+			if (cursor.moveToFirst()) {
+				do {
+					fields.add(cursor.getString(1));
+				} while (cursor.moveToNext());
+			}
+		} catch (SQLiteException x) {
+			x.printStackTrace();
+		}
+		String[] strArray = new String[fields.size()];
+		fields.toArray(strArray);
+
+		return strArray;
+	}
+
+	public String getFieldMin(String table, String field) {
+		String q = "SELECT MIN(" + field + ") FROM " + table;
+		this.sqlStatement = this.db.compileStatement(q);
+		String c = this.sqlStatement.simpleQueryForString();
+		if(c == null)
+			return "0";
+		return c;
+	}
+
+	public String getFieldMax(String table, String field) {
+
+		String q = "SELECT MAX(" + field + ") FROM " + table;
+		this.sqlStatement = this.db.compileStatement(q);
+		String c = this.sqlStatement.simpleQueryForString();
+		if(c == null)
+			return "0";
+		return c;
+	}
+
+	public long getRecordCountForTable(String table) {
+		this.sqlStatement = this.db.compileStatement("SELECT COUNT(*) FROM "
+				+ table);
+		long c = this.sqlStatement.simpleQueryForLong();
+		return c;
 	}
 
 	public long getDataCount() {

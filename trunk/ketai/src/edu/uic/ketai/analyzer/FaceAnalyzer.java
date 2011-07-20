@@ -51,7 +51,7 @@ public class FaceAnalyzer extends AbstractKetaiAnalyzer {
 		int numberOfFaces = _detector.findFaces(_bitmap, faces);
 
 		if (numberOfFaces < 1) {
-			broadcastKetaiEvent("noface", null);
+			//broadcastKetaiEvent("noface", null);
 			return;
 		}
 		insertStatement = datamanager.getDb().compileStatement(INSERT_SQL);

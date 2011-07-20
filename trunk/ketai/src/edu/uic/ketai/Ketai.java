@@ -17,7 +17,7 @@ import edu.uic.ketai.inputService.KetaiNFC.KetaiNFC;
 
 public class Ketai implements IKetaiEventListener, Runnable {
 	PApplet parent;
-	DataManager datamanager;
+	public DataManager datamanager;
 	InputManager inputmanager;
 	boolean isCollecting = false;
 	int cameraWidth, cameraHeight, cameraFPS;
