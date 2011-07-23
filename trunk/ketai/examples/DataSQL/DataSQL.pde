@@ -4,9 +4,8 @@
  * <p>Ketai Data SQL Features:
  * <ul>
  * <li>Captures Sensor data into SQLite database</li>
- * <li>Writes data into .csv flat file</li>
  * <li>Sends query to SQLight database </li>
- * <li>Retrieves entries and maps them on the screen</li>
+ * <li>Maps values onto the screen</li>
  * </ul>
  * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
  */
