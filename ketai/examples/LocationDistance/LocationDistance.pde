@@ -22,8 +22,8 @@ Location uic;
 void setup() {
   //creates a location object that refers to UIC
   uic = new Location("uic"); // Example location: the University of Illinois at Chicago
-  uic.setLatitude(41.87426641155081);
-  uic.setLongitude(-87.64921545982361);
+  uic.setLatitude(41.874698);
+  uic.setLongitude(-87.658777);
   orientation(PORTRAIT);
   textAlign(LEFT, CENTER);
   textSize(24);
