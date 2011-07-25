@@ -6,7 +6,7 @@
  * <li>Interface for built-in camera</li>
  * <li></li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
  */
 
 import edu.uic.ketai.*;
@@ -15,11 +15,21 @@ KetaiCamera cam;
 
 void setup() {
   orientation(LANDSCAPE);
+  imageMode(CENTER);
   cam = new KetaiCamera(this, 320, 240, 24);
 }
 
 void draw() {
-  image(cam, 0, 0, screenWidth, screenHeight);
+  image(cam, screenWidth/2, screenHeight/2);
+}
+
+void onPause()
+{
+  super.onPause();
+  //Make sure to releae the camera when we go
+  //  to sleep otherwise it stays locked
+  if (cam != null && cam.isStarted())
+    cam.stop();
 }
 
 void onCameraPreviewEvent()

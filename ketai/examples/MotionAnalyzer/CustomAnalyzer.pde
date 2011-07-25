@@ -2,7 +2,6 @@ import android.hardware.SensorEvent;
 
 class CustomAnalyzer extends AbstractKetaiAnalyzer
 {
-
   CustomAnalyzer()
   {
     println("CustomAnalyzer constructor");
@@ -19,12 +18,12 @@ class CustomAnalyzer extends AbstractKetaiAnalyzer
 
   void analyzeData(Object dataSet)
   {
-    if(dataSet instanceof SensorEvent)
+    if (dataSet instanceof SensorEvent)
     {
       SensorEvent e = (SensorEvent)dataSet;
       //parse the Sensor Event object and check
       //  the 'z' axis data
-      if(e.values[2] > 9 && e.values[2] < 11)
+      if (e.values[2] > 9 && e.values[2] < 11)
       {
         println("broadcasting flatness..");
         broadcastKetaiEvent("flat", null);

@@ -7,9 +7,9 @@
  * <li>Writes data into .csv flat file</li>
  * <li>Captures all sensors registered via SensorEvent into one db/file</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
  */
- 
+
 import edu.uic.ketai.*;
 
 Ketai ketai;
@@ -23,19 +23,19 @@ void setup()
   ketai.enableDefaultSensorAnalyzer();
   //Get the current data count
   dataCount = ketai.getDataCount();
-  orientation(PORTRAIT);
-  textSize(24);
-  textAlign(LEFT, CENTER);
+  orientation(LANDSCAPE);
+  textAlign(CENTER, CENTER);
+  textSize(36);
 }
 
 void draw() {
-  background(128);
+  background(78, 93, 75);
   // Status and data count
   if (ketai.isCollectingData())
-    text("Collecting Data...", 20, 20);
+    text("Collecting Data...", screenWidth/2, screenHeight/4);
   else
-    text("Not Collecting Data...", 20, 20);
-  text("Current Data count: " + dataCount, 20, 60);
+    text("Not Collecting Data...", screenWidth/2, screenHeight/4);
+  text("Current Data count: " + dataCount, screenWidth/2, screenHeight-screenHeight/4);
 }
 
 void mousePressed()

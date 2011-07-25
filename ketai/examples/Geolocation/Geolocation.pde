@@ -13,7 +13,7 @@
  * <li>onLocationEvent(latitude, longitude)</li>
  * <li>onLocationEvent(latitude, longitude, altitude)</li>
  * </p>
- * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
  */
 
 import edu.uic.ketai.*; 
@@ -22,17 +22,21 @@ double longitude, latitude, altitude;
 KetaiLocation location;
 
 void setup() {
-  orientation(PORTRAIT);
-  textSize(24);
-  textAlign(LEFT, CENTER);
+  orientation(LANDSCAPE);
+  textAlign(CENTER, CENTER);
+  textSize(36);
 }
 
 void draw() {
-  background(0); 
-  text("Lat: " + latitude + "\n" + 
-    "Lon: " + longitude + "\n" + 
-    "Alt: " + altitude + "\n" + 
-    "Provider: " + location.getProvider(), 20, 0, width, height);  
+  background(78, 93, 75);
+  if (location.getProvider() == "none")
+    text("Location data is unavailable. \n" +
+      "Please check your location settings.",  0, 0, width, height);
+  else
+    text("Latitude: " + latitude + "\n" + 
+      "Longitude: " + longitude + "\n" + 
+      "Altitude: " + altitude + "\n" + 
+      "Provider: " + location.getProvider(),  0, 0, width, height);  
   // getProvider() returns "gps" if GPS is available
   // otherwise "network" (cell network) or "passive" (WiFi MACID)
 }
