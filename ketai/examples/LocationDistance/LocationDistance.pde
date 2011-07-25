@@ -37,7 +37,7 @@ void draw() {
   else
     text("Location data:\n" + 
       "Latitude: " + latitude + "\n" + 
-      "Lonitude: " + longitude + "\n" + 
+      "Longitude: " + longitude + "\n" + 
       "Altitude: " + altitude + "\n" +
       "Accuracy: " + accuracy + "\n" +
       "Distance to UIC: "+ location.getLocation().distanceTo(uic) + " m\n" + 
