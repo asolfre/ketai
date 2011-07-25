@@ -19,7 +19,7 @@ void setup()
 {
   sensor = new KetaiSensor(this);
   sensor.start();
-  orientation(PORTRAIT);
+  orientation(LANDSCAPE);
   textAlign(CENTER, CENTER);
   textSize(36);
 }
