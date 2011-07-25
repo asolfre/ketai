@@ -6,7 +6,7 @@
  * <li>Allows development of custom motion analyzers</li>
  * <li>Refer to Ketai Face Analyzer for a more basic analyzer example</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
  */
 
 import edu.uic.ketai.*;
@@ -20,7 +20,11 @@ void setup()
   ketai.enableSensorManager();
   ca = new CustomAnalyzer();
   ketai.addAnalyzer(ca);
-  orientation(PORTRAIT); 
+  orientation(LANDSCAPE);
+  textAlign(CENTER, CENTER);
+  textSize(36);
+  background(78, 93, 75);
+  text("Tap to start.", 0, 0, width, height);
 }
 
 void draw() {
@@ -32,6 +36,8 @@ void mousePressed()
   if (ketai.isCollectingData())
   {
     ketai.stopCollectingData();
+    background(78, 93, 75);
+    text("Tap to start.", 0, 0, width, height);
   }
   else
     ketai.startCollectingData();
@@ -44,8 +50,14 @@ void onKetaiEvent(String _event, Object _data)
 {
   println("sketch onKetaiEvent called...");
   if (_event == "flat")
+  {
     background(0, 255, 0);
+    text("Device is laying Flat.", 0, 0, width, height);
+  }
   else if (_event == "notflat")
+  {    
     background(255, 0, 0);
+    text("Device is NOT laying Flat.", 0, 0, width, height);
+  }
 }
 

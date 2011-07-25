@@ -9,7 +9,7 @@
  * </ul>
  * More information:
  * http://developer.android.com/reference/android/location/Location.html</p>
- * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
  */
 
 import edu.uic.ketai.*; 
@@ -24,20 +24,24 @@ void setup() {
   uic = new Location("uic"); // Example location: the University of Illinois at Chicago
   uic.setLatitude(41.874698);
   uic.setLongitude(-87.658777);
-  orientation(PORTRAIT);
-  textAlign(LEFT, CENTER);
-  textSize(24);
+  orientation(LANDSCAPE);
+  textAlign(CENTER, CENTER);
+  textSize(36);
 }
 
 void draw() {
-  background(0); 
-  text("Location data:\n" + 
-    "Lat: " + latitude + "\n" + 
-    "Lon: " + longitude + "\n" + 
-    "Alt: " + altitude + "\n" +
-    "Accuracy: " + accuracy + "\n" +
-    "Distance to UIC: "+ location.getLocation().distanceTo(uic) + "\n" + 
-    "Provider: " + location.getProvider(), 20, 0, width, height);
+  background(78, 93, 75);
+  if (location.getProvider() == "none")
+    text("Location data is unavailable. \n" +
+      "Please check your location settings.", 0, 0, width, height);
+  else
+    text("Location data:\n" + 
+      "Latitude: " + latitude + "\n" + 
+      "Lonitude: " + longitude + "\n" + 
+      "Altitude: " + altitude + "\n" +
+      "Accuracy: " + accuracy + "\n" +
+      "Distance to UIC: "+ location.getLocation().distanceTo(uic) + " m\n" + 
+      "Provider: " + location.getProvider(), 20, 0, width, height);
 }
 
 void onResume()

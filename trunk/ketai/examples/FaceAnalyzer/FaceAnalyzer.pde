@@ -5,9 +5,9 @@
  * <ul>
  * <li>Wrapper for the Android face detector</li>
  * <li>Returns a PVector containing PVector.x and PVector.y coordinates of 
- * point between detected eyes, as well as eye distace PVector.z</li>
+ * point between detected eyes, as well as eye distance PVector.z</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
  */
 
 import edu.uic.ketai.*;
@@ -16,6 +16,7 @@ Ketai ketai;
 PFont font;
 long dataCount;
 color backgroundColor;
+PGraphics iOverlay;
 
 void setup()
 {
@@ -27,18 +28,16 @@ void setup()
   //Get the current data count
   dataCount = ketai.getDataCount();
   orientation(LANDSCAPE);
-  textSize(24);
-  textAlign(LEFT, CENTER);
+  textAlign(CENTER, CENTER);
+  textSize(36);
 }
 
 void draw() {
-  background(0);
-  // Ketai status
+
   if (ketai.isCollectingData())
-    text("Collecting Data...", 20, 20);
+    text("Looking for faces...", screenWidth/2, screenHeight/4);
   else
-    text("Not Collecting Data...", 20, 20);
-  text("Current Data count: " + dataCount, 20, 60);
+    text("Not Collecting Data\n(currently "+dataCount+" data points)", screenWidth/2, screenHeight/4);
 }
 
 void mousePressed()
@@ -50,6 +49,7 @@ void mousePressed()
   }
   else
     ketai.startCollectingData();
+  background(0);
 }
 
 void keyPressed() {
@@ -76,10 +76,7 @@ void onKetaiEvent(String _eventName, Object _data)
     PVector _where = (PVector)_data;
     backgroundColor = color(0, 255, 0);
     background(backgroundColor);
-    pushMatrix();
-    translate(screenWidth/2 - 320/2, screenHeight/2 - 240/2);
-    ellipse(_where.x, _where.y, _where.z, 20);
-    popMatrix();
+    println("iCoords:" + _where.x + "," + _where.y);
   }
   else if (_eventName.equals("noface"))
   {
@@ -91,6 +88,6 @@ void onKetaiEvent(String _eventName, Object _data)
 void onCameraPreviewEvent(KetaiCamera cam)
 {
   cam.read();
-  image(cam, width/2, height/2);
+  image(cam, screenWidth/2, screenHeight/2);
 }  
 
