@@ -21,7 +21,6 @@ void setup()
   sensor = new KetaiSensor(this);
   sensor.start();
   sensor.list();
-  orientation = new PVector();
   accelerometer = new PVector();
   magneticField = new PVector();
   orientation(LANDSCAPE);
