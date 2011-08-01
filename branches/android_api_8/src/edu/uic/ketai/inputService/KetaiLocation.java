@@ -91,10 +91,13 @@ public class KetaiLocation extends AbstractKetaiInputService implements
 			PApplet.println("\t" + s);
 		}
 
-		determineProvider();
-
-		location = locationManager.getLastKnownLocation(provider);
-
+		if (determineProvider())
+			location = locationManager.getLastKnownLocation(provider);
+		else {
+			PApplet.println("Error obtaining location provider.  Check your location settings.");
+			location = new Location("default");
+			provider = "none";
+		}
 		if (location != null)
 			onLocationChanged(location);
 		else
@@ -148,12 +151,15 @@ public class KetaiLocation extends AbstractKetaiInputService implements
 		return list;
 	}
 
-	private void determineProvider() {
+	private boolean determineProvider() {
 		if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
 			provider = LocationManager.GPS_PROVIDER;
 		else
 			provider = locationManager.getBestProvider(new Criteria(), true);
+		if (provider == null)
+			return false;
 		locationManager.requestLocationUpdates(provider, 10000, 1, this);
+		return true;
 	}
 
 	private void findParentIntentions() {

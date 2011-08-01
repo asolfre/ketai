@@ -7,7 +7,7 @@
  * <li>Sends query to SQLight database </li>
  * <li>Maps values onto the screen</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2011-08-01 Daniel Sauter/j.duran</p>
  */
 
 import edu.uic.ketai.*;
@@ -16,7 +16,7 @@ import android.database.Cursor;
 Ketai ketai;
 long dataCount;
 PVector touch = new PVector(0, 0, 0);
-boolean somethingchanged = false;
+boolean somethingchanged = true;
 int messageBoxSize = 35;  //in pixels
 
 void setup()
@@ -58,7 +58,7 @@ void drawInterface()
   else
   {
     text("Press to start collecting data. Currently " + dataCount + " data points.", screenWidth/2, screenHeight - messageBoxSize/2);
-    text("Press the menu key to clear data.", screenWidth/2, 30);
+    text("Press the menu key to clear data.\nTouch graph to navigate it.", screenWidth/2, 30);
   }
   popStyle();
 }
@@ -105,7 +105,7 @@ void renderVisualization()
     maxY = temp; 
 
   //lets grab a screenful of data
-  long val = (long)map(touch.x, 0, screenWidth, 0, count-screenWidth);
+  long val = (long)map(touch.x, 0, screenWidth, count-screenWidth, 0);
   String q = "SELECT * from sensor_events ORDER BY timestamp ASC LIMIT "+val + ", " + screenWidth;
 
   Cursor cursor = ketai.datamanager.executeSQL(q);
@@ -162,9 +162,12 @@ void mousePressed()
     {
       ketai.stopCollectingData();
       dataCount = ketai.getDataCount();
+      touch.set(0,0,0);
+      somethingchanged=true;
     }
     else
       ketai.startCollectingData();
+      
     drawInterface();
     return;
   }

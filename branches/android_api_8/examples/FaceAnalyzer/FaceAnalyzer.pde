@@ -30,14 +30,18 @@ void setup()
   orientation(LANDSCAPE);
   textAlign(CENTER, CENTER);
   textSize(36);
+  background(78, 93, 75);
 }
 
 void draw() {
 
   if (ketai.isCollectingData())
-    text("Looking for faces...", screenWidth/2, screenHeight/4);
+    text("Looking for faces.(tap to stop)", screenWidth/2, screenHeight/4);
   else
-    text("Not Collecting Data\n(currently "+dataCount+" data points)", screenWidth/2, screenHeight/4);
+  {
+    background(78, 93, 75);
+    text("Not Collecting Data\n(currently "+dataCount+" data points)\nTap to start.", screenWidth/2, screenHeight/4);
+  }
 }
 
 void mousePressed()
@@ -77,6 +81,7 @@ void onKetaiEvent(String _eventName, Object _data)
     backgroundColor = color(0, 255, 0);
     background(backgroundColor);
     println("iCoords:" + _where.x + "," + _where.y);
+    text("\n\nFace(s) found.", screenWidth/2, screenHeight/4);
   }
   else if (_eventName.equals("noface"))
   {
