@@ -7,9 +7,9 @@
  * <li>Sends query to SQLight database </li>
  * <li>Maps values onto the screen</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
  */
- 
+
 import edu.uic.ketai.*;
 import android.database.Cursor;
 
@@ -17,28 +17,50 @@ Ketai ketai;
 long dataCount;
 PVector touch = new PVector(0, 0, 0);
 boolean somethingchanged = false;
+int messageBoxSize = 35;  //in pixels
 
 void setup()
 {
   orientation(LANDSCAPE);
+  textAlign(CENTER, CENTER);
+  textSize(36);
   ketai = new Ketai(this);
   //Enable the default sensor manager & analyzer
   ketai.enableSensorManager();
   ketai.enableDefaultSensorAnalyzer();
   //Get the current data count
   dataCount = ketai.getDataCount();
-  background(0);
+  background(78, 93, 75);
+  fill(78, 93, 75);
 }
 
 void draw() {
-  // Status and data count
-  if (ketai.isCollectingData())
-    text("Collecting Data...", 20, 20);
-  else
-    text("Not Collecting Data...", 20, 20);
-  text("Current Data count: " + dataCount, 20, 60);
-  ellipse(touch.x, touch.y, 5, 5);
   renderVisualization();
+  drawInterface();
+  ellipse(touch.x, touch.y, 15, 15);
+}
+
+void drawInterface()
+{
+  //draw the bottom 'button'
+  line(0, screenHeight-messageBoxSize, screenWidth, screenHeight - messageBoxSize);
+  pushStyle();
+  fill(0);
+  stroke(0);
+  textSize(24);
+  rect(0, screenHeight-messageBoxSize, screenWidth, messageBoxSize);
+  fill(255);
+  if (ketai.isCollectingData())
+  {
+    background(78, 93, 75);  
+    text("Press to stop collecting data.", screenWidth/2, screenHeight - messageBoxSize/2);
+  }
+  else
+  {
+    text("Press to start collecting data. Currently " + dataCount + " data points.", screenWidth/2, screenHeight - messageBoxSize/2);
+    text("Press the menu key to clear data.", screenWidth/2, 30);
+  }
+  popStyle();
 }
 
 void renderVisualization()
@@ -46,22 +68,22 @@ void renderVisualization()
   //only render if something changed or not collecting data
   if (ketai.isCollectingData() || !somethingchanged )
     return;
+  background(78, 93, 75);  
 
   ArrayList points = new ArrayList();
   float temp;
 
-  background(0);
   long count = ketai.datamanager.getRecordCountForTable("sensor_events");  
-  if(count < 1)
+  if (count < 1)
   {
-    println("No data to plot!");
+    text("No data to plot!", screenWidth/2, screenHeight/2);
     return;
   }
-  
+
   float minY=0;
   float maxY = 0; 
 
-  //get max/min values for the y direction
+  //get max/min values for the y direction for mapping
   temp = Float.parseFloat(ketai.datamanager.getFieldMin("sensor_events", "value0"));
   if (temp < minY)
     minY = temp; 
@@ -82,9 +104,8 @@ void renderVisualization()
   if (temp > maxY)
     maxY = temp; 
 
-  //lets map 50 points
+  //lets grab a screenful of data
   long val = (long)map(touch.x, 0, screenWidth, 0, count-screenWidth);
-
   String q = "SELECT * from sensor_events ORDER BY timestamp ASC LIMIT "+val + ", " + screenWidth;
 
   Cursor cursor = ketai.datamanager.executeSQL(q);
@@ -94,11 +115,13 @@ void renderVisualization()
     println("nada returned");
     return;
   }
+
+  //iterate through data
   if (cursor.moveToFirst()) {
     do {
-      PVector v = new PVector(map(cursor.getLong(cursor.getColumnIndex("value0")), minY, maxY, 0, screenHeight), 
-      map(cursor.getLong(cursor.getColumnIndex("value1")), minY, maxY, 0, screenHeight), 
-      map(cursor.getLong(cursor.getColumnIndex("value2")), minY, maxY, 0, screenHeight));
+      PVector v = new PVector(map(cursor.getFloat(cursor.getColumnIndex("value0")), minY, maxY, 0, screenHeight-messageBoxSize), 
+      map(cursor.getFloat(cursor.getColumnIndex("value1")), minY, maxY, 0, screenHeight-messageBoxSize), 
+      map(cursor.getFloat(cursor.getColumnIndex("value2")), minY, maxY, 0, screenHeight-messageBoxSize));
       points.add(cursor.getPosition(), v);
     } 
     while (cursor.moveToNext ());
@@ -110,7 +133,7 @@ void renderVisualization()
     pushStyle();
     PVector p = (PVector)points.get(k);
     PVector n;
-    
+
     if ((k+1) < points.size())
       n= (PVector)points.get(k+1);
     else 
@@ -119,10 +142,12 @@ void renderVisualization()
     line(k, p.x, k, n.x);
     stroke(0, 255, 0);
     line(k, p.y, k, n.y);
-    fill(0, 0, 255);
-    stroke(k, p.z, k, n.z);
+    stroke(0, 0, 255);
+    line(k, p.z, k, n.z);
     popStyle();
   }
+
+  //lets draw relative zero
   int zero = (int)map(0, minY, maxY, 0, screenHeight);
   stroke(255);
   line(0, zero, screenWidth, zero);
@@ -131,51 +156,7 @@ void renderVisualization()
 
 void mousePressed()
 {
-  somethingchanged = true;
-
-  touch.set(mouseX, mouseY, 0);
-}
-
-void mouseDragged()
-{
-  somethingchanged = true;
-
-  touch.set(mouseX, mouseY, 0);
-}
-
-void keyPressed() {
-  if (key == CODED) {
-    if (keyCode == MENU) {
-      println("Exporting data...");
-      // Export all data into flat file "test" (and delete data from the database)
-      ketai.exportData("test");
-      // Update the data count
-      dataCount = ketai.getDataCount();
-    }
-    return;
-  }
-  if (key == 't')
-  {
-    String[] tables = ketai.datamanager.getTables();
-    println("Tables: "); 
-    for (int i=0; i < tables.length; i++)
-      println ("\t"+tables[i]);
-    return;
-  }
-  if (key == 'f')
-  {
-    String[] tables = ketai.datamanager.getTables();
-    for (int k=0; k < tables.length; k++)
-    {
-      println("Table: " + tables[k]);
-      String[] fields = ketai.datamanager.getFields(tables[k]);
-      println("\tFields: "); 
-      for (int i=0; i < fields.length; i++)
-        println ("\t\t"+fields[i] +" (min,max): "+ ketai.datamanager.getFieldMin(tables[k], fields[i]) + ", " + ketai.datamanager.getFieldMax(tables[k], fields[i]));
-    }
-    return;
-  }
-  if (key=='d')
+  if (mouseY > screenHeight-messageBoxSize)
   {
     if (ketai.isCollectingData())
     {
@@ -184,6 +165,28 @@ void keyPressed() {
     }
     else
       ketai.startCollectingData();
+    drawInterface();
+    return;
+  }
+  somethingchanged = true;
+  touch.set(mouseX, mouseY, 0);
+}
+
+void mouseDragged()
+{
+  somethingchanged = true;
+  touch.set(mouseX, mouseY, 0);
+}
+
+void keyPressed() {
+  if (key == CODED) {
+    if (keyCode == MENU) {
+      ketai.datamanager.deleteAllData();
+      dataCount = ketai.getDataCount();
+      somethingchanged = true;
+    }
+    drawInterface();
+    return;
   }
 }
 

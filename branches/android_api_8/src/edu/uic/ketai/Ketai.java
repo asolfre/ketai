@@ -13,7 +13,6 @@ import edu.uic.ketai.data.DataManager;
 import edu.uic.ketai.inputService.KetaiCamera;
 import edu.uic.ketai.inputService.KetaiLocation;
 import edu.uic.ketai.inputService.KetaiSensor;
-import edu.uic.ketai.inputService.KetaiNFC.KetaiNFC;
 
 public class Ketai implements IKetaiEventListener, Runnable {
 	PApplet parent;
@@ -68,12 +67,7 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	public void enableLocationManager() {
 		inputmanager.addService(new KetaiLocation(parent));
 	}
-	
-	public void enableNFCManager()
-	{
-		inputmanager.addService(new KetaiNFC(parent));
-	}
-	
+
 	public long getDataCount() {
 		return datamanager.getDataCount();
 	}
@@ -127,7 +121,7 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	}
 
 	public void run() {
-		//eventually do stuff...
+		// eventually do stuff...
 	}
 
 	public static final int KETAI_EVENT_FACES_DETECTED = 1;
