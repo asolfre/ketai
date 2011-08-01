@@ -7,7 +7,7 @@
  * <li>Returns a PVector containing PVector.x and PVector.y coordinates of 
  * point between detected eyes, as well as eye distance PVector.z</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2011-08-01 Daniel Sauter/j.duran</p>
  */
 
 import edu.uic.ketai.*;
