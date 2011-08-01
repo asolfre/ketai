@@ -1,7 +1,6 @@
-= Installation =
-<div id="selection">
+#labels Featured
 <p>
-Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&can=2&q=">Ketai.zip</a>. It includes a "library", "<a href="http://code.google.com/p/ketai/source/browse/branches/android_api_8/examples/">examples</a>" and a JavaDocs "<a href="">reference</a>" subfolder. 
+Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&can=2&q=">Ketai.zip</a>. It includes a "library", "<a href="http://code.google.com/p/ketai/source/browse/branches/android_api_8/examples/">examples</a>" and a JavaDocs "reference" subfolder. 
 </p>
 <p>Open the "library" subfolder and drag Ketai.jar onto your sketch. It will add Ketai.jar to your sketch folder under code/ (currently, Processing Android mode does not allow to place the Ketai library inside the Processing/libraries subfolder). 
 </p>
@@ -12,7 +11,6 @@ Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&ca
 </p><p>
 <a href="http://code.google.com/p/ketai/w/list">Ketai Wiki</a>
 </p>
-
 
 = Update log for v.03 = 
 <p>
