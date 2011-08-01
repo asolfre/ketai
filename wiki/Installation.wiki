@@ -1,0 +1,70 @@
+= Installation =
+<div id="selection">
+<p>
+Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&can=2&q=">Ketai.zip</a>. It includes a "library", "<a href="http://code.google.com/p/ketai/source/browse/branches/android_api_8/examples/">examples</a>" and a JavaDocs "<a href="">reference</a>" subfolder. 
+</p>
+<p>Open the "library" subfolder and drag Ketai.jar onto your sketch. It will add Ketai.jar to your sketch folder under code/ (currently, Processing Android mode does not allow to place the Ketai library inside the Processing/libraries subfolder). 
+</p>
+
+= FAQ = 
+<p>
+<a href="http://wiki.processing.org/w/Android">Processing Android Wiki</a>
+</p><p>
+<a href="http://code.google.com/p/ketai/w/list">Ketai Wiki</a>
+</p>
+
+
+= Update log for v.03 = 
+<p>
+- refactored method names for brevity<br />
+- enabling the flash for the camera<br />
+- Cleaned up examples<br />
+- Addition of Geolocation<br />
+- Changed sensor registration from FASTEST to UI (for better performance)<br />
+- Removed old code<br />
+- Added SQL example for exploring captured data<br />
+- jdocs included<br />
+- Cleaned up some camera code<br />
+- Framework updates for upcoming NFC work<br />
+</p>
+
+= Requirements = 
+<p>
+Ketai v.03<br />
+Android API version 8<br />
+Processing.Android 198+<br />
+Android device running Android 2.1 (API 8).
+</p>
+<p>
+Upcoming Ketai v.04<br />
+Android API version 9+<br />
+Processing 2.0<br />
+Android device running Android 2.3 or higher (API 10+).<br />
+</p>
+
+= Upcoming Features for v.04= 
+<p>
+- API Level 9 camera updates<br />
+- Near Field Communication (NFC)<br />
+- added methods for rotation matrices and quaternions<br />
+</p>
+
+= Follow =
+<p>
+<a href="http://twitter.com/KetaiMotion">@KetaiMotion</a> (<a href="http://twitter.com/#!/search?q=%23nfc">#KetaiMotion</a>) to receive version updates<br />
+</p>
+
+= Credits =
+<p>
+Principal Investigator: Daniel Sauter<br />
+Development with Jesus Duran<br />
+</p>
+
+= Source =
+<p>
+KETAI an open source Processing library (<a href="http://www.gnu.org/licenses/gpl.html">GNU General Public License v3)</a>. The source code is hosted by Google Code.
+</p>
+<p>
+THE Ketai library SOFTWARE IS PROVIDED TO YOU "AS IS," AND WE MAKE NO EXPRESS OR IMPLIED WARRANTIES WHATSOEVER WITH RESPECT TO ITS FUNCTIONALITY, OPERABILITY, OR USE, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR INFRINGEMENT. WE EXPRESSLY DISCLAIM ANY LIABILITY WHATSOEVER FOR ANY DIRECT, INDIRECT, CONSEQUENTIAL, INCIDENTAL OR SPECIAL DAMAGES, INCLUDING, WITHOUT LIMITATION, LOST REVENUES, LOST PROFITS, LOSSES RESULTING FROM BUSINESS INTERRUPTION OR LOSS OF DATA, REGARDLESS OF THE FORM OF ACTION OR LEGAL THEORY UNDER WHICH THE LIABILITY MAY BE ASSERTED, EVEN IF ADVISED OF THE POSSIBILITY OR LIKELIHOOD OF SUCH DAMAGES.
+</p><p>
+By downloading the software from this page, you agree to the specified terms.</p>
