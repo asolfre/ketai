@@ -22,8 +22,6 @@ import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 
 public class KetaiCamera extends PImage implements IKetaiInputService {
 
@@ -37,8 +35,6 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 	PImage self;
 	Thread runner;
 	boolean available = false;
-	SurfaceView sView;
-	SurfaceHolder mHolder;
 
 	public KetaiCamera(PApplet pParent, int _width, int _height,
 			int _framesPerSecond) {
@@ -53,8 +49,6 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 		self = this;
 		isRGBPreviewSupported = false;
 		enableFlash = false;
-		sView = new SurfaceView(parent);
-		mHolder = sView.getHolder();
 
 		try {
 			// the following uses reflection to see if the parent
@@ -148,7 +142,6 @@ public class KetaiCamera extends PImage implements IKetaiInputService {
 			cameraParameters.setPreviewFrameRate(cameraFPS);
 			cameraParameters.setPreviewSize(frameWidth, frameHeight);
 			cameraParameters.setFocusMode(Parameters.FOCUS_MODE_AUTO);
-			camera.setPreviewDisplay(mHolder);
 			
 			camera.setParameters(cameraParameters);
 			isStarted = true;

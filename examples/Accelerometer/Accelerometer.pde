@@ -7,7 +7,7 @@
  * <li>Includes Accelerometer, Magnetometer, Gyroscope, GPS, Light, Proximity</li>
  * <li>Use KetaiNFC for Near Field Communication</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/Jesus Duran</p>
+ * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
  */
 
 import edu.uic.ketai.*;
