@@ -1,6 +1,6 @@
 #labels Featured
 <p>
-Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&can=2&q=">Ketai.zip</a>. It includes a "library", "<a href="http://code.google.com/p/ketai/source/browse/branches/android_api_8/examples/">examples</a>" and a JavaDocs "reference" subfolder. 
+Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&can=2&q=">Ketai.zip</a>. It includes a "library", "<a href="http://code.google.com/p/ketai/source/browse/branches/android_api_8/examples/">examples</a>" and a JavaDocs "<a href="http://ketai.googlecode.com/svn/branches/android_api_8/reference/index.html">reference</a>" subfolder. 
 </p>
 <p>Open the "library" subfolder and drag Ketai.jar onto your sketch. It will add Ketai.jar to your sketch folder under code/ (currently, Processing Android mode does not allow to place the Ketai library inside the Processing/libraries subfolder). 
 </p>
@@ -49,7 +49,7 @@ Android device running Android 2.3 or higher (API 10+).<br />
 
 = Follow =
 <p>
-<a href="http://twitter.com/KetaiMotion">@KetaiMotion</a> (<a href="http://twitter.com/#!/search?q=%23nfc">#KetaiMotion</a>) to receive version updates<br />
+<a href="http://twitter.com/KetaiMotion">@KetaiMotion</a> (<a href="http://twitter.com/#!/search?q=%23nfc">#ketaimotion</a>) to receive version updates<br />
 </p>
 
 = Credits =
