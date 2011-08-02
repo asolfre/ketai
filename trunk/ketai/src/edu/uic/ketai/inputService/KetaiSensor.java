@@ -13,7 +13,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.content.Context;
 
-
 public class KetaiSensor extends AbstractKetaiInputService implements
 		SensorEventListener {
 
@@ -58,6 +57,8 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 		parent = pParent;
 		findParentIntentions();
 		useSimulator = false;
+		sensorManager = (SensorManager) parent.getApplicationContext()
+				.getSystemService(Context.SENSOR_SERVICE);
 
 		delayInterval = timeOfLastUpdate = 0;
 	}
@@ -221,67 +222,64 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 		PApplet.println("KetaiSensor: start()...");
 		findParentIntentions();
 
-		sensorManager = (SensorManager) parent.getApplicationContext()
-		.getSystemService(Context.SENSOR_SERVICE);
-
 		if (accelerometerSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (magneticFieldSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (pressureSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (orientationSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (proximitySensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (temperatureSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (gyroscopeSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (rotationVectorSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (linearAccelerationSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (lightSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (gravitySensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
 			sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_FASTEST);
+					SensorManager.SENSOR_DELAY_UI);
 		}
 		isRegistered = true;
 	}
@@ -924,5 +922,13 @@ public class KetaiSensor extends AbstractKetaiInputService implements
 
 	public String getServiceDescription() {
 		return SERVICE_DESCRIPTION;
+	}
+
+	public void getRotationMatrixFromVector(float[] R, float[] rotationVector) {
+		SensorManager.getRotationMatrixFromVector(R, rotationVector);
+	}
+
+	public void getQuaternionFromVector(float[] Q, float[] rv) {
+		SensorManager.getQuaternionFromVector(Q, rv);
 	}
 }
