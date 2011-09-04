@@ -19,6 +19,8 @@ import android.nfc.NdefRecord;
 
 import java.io.UnsupportedEncodingException;
 
+import processing.core.PApplet;
+
 /**
  * An NFC Text Record
  */
@@ -69,6 +71,9 @@ public class TextRecord implements ParsedNdefRecord {
 					"US-ASCII");
 			String text = new String(payload, languageCodeLength + 1,
 					payload.length - languageCodeLength - 1, textEncoding);
+
+			PApplet.println("TextRecord parsing: " + payload);
+			PApplet.println("\t parsed text:" + text);
 			return new TextRecord(languageCode, text);
 		} catch (UnsupportedEncodingException e) {
 			// should never happen unless we get a malformed tag.
@@ -79,6 +84,7 @@ public class TextRecord implements ParsedNdefRecord {
 	public static boolean isText(NdefRecord record) {
 		try {
 			parse(record);
+			PApplet.println("TextRecord.isText is true!");
 			return true;
 		} catch (IllegalArgumentException e) {
 			return false;

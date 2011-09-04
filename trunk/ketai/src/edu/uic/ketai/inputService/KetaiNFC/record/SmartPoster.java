@@ -63,7 +63,7 @@ public class SmartPoster implements ParsedNdefRecord {
 	 * the UI designer may ignore it, but doing so will induce a different user
 	 * experience from device to device."
 	 */
-	private final RecommendedAction mAction;
+//	private final RecommendedAction mAction;
 
 	/**
 	 * NFC Forum Smart Poster Record Type Definition section 3.2.1.
@@ -73,14 +73,14 @@ public class SmartPoster implements ParsedNdefRecord {
 	 * This can be used to tell the mobile device what kind of an object it can
 	 * expect before it opens the connection. The Type record is optional."
 	 */
-	private final String mType;
+//	private final String mType;
 
 	private SmartPoster(UriRecord uri, TextRecord title,
 			RecommendedAction action, String type) {
 		mUriRecord = uri;
 		mTitleRecord = title;
-		mAction = action;
-		mType = type;
+//		mAction = action;
+//		mType = type;
 	}
 
 	public UriRecord getUriRecord() {
