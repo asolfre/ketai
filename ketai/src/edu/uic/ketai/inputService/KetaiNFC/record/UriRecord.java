@@ -27,7 +27,6 @@ import java.util.HashMap;
  */
 public class UriRecord implements ParsedNdefRecord {
 
-	private static final String TAG = "UriRecord";
 
 	public static final String RECORD_TYPE = "UriRecord";
 
@@ -153,8 +152,6 @@ public class UriRecord implements ParsedNdefRecord {
 			return false;
 		}
 	}
-
-	private static final byte[] EMPTY = new byte[0];
 
 	public String getTag() {
 		return mUri.toString();
