@@ -12,12 +12,13 @@ Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai_v5.zip
 
 = v5 Update log = 
 <ul>
+<li> official move to Gingerbread Android API 10, platform 2.3<li>
 <li> repackaging of the data analysis/capture framework</li>
 <li> flash support for cameras</li>
 <li> support for multiple cameras</li>
 <li> camera will now fallback to nearest requested resolution</li>
 <li> save camera picture to media store</li>
-<li> updates to location object to provide faster location value</li>
+<li> location object to provides initial location value more quickly</li>
 </ul>
 
 = Follow =
