@@ -11,7 +11,7 @@ public class SensorAnalyzer extends AbstractKetaiAnalyzer {
 
 	final static String NAME = "AllSensorData";
 	final static String DESCRIPTION = "Stores all sensor data.";
-	final static String[] servicesubscription = { SensorService.class.toString() };
+	final static String[] servicesubscription = { SensorService.class.getName() };
 	private static String TABLE_NAME = "sensor_events";
 	private static String CREATE_TABLE_SQL = "CREATE TABLE sensor_events (id INTEGER PRIMARY KEY, timestamp BIGINT, sensor_type INTEGER, value0 FLOAT, value1 FLOAT, value2 FLOAT)";
 	private static String INSERT_SQL = "insert into "
@@ -55,7 +55,7 @@ public class SensorAnalyzer extends AbstractKetaiAnalyzer {
 	public Class<?> getServiceProviderClass() {
 		try {
 			return Class
-					.forName(SensorService.class.toString());
+					.forName(SensorService.class.getName());
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
