@@ -5,15 +5,14 @@ import processing.core.*;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-import data.analyzer.FaceAnalyzer;
-import data.analyzer.IKetaiAnalyzer;
-import data.analyzer.MotionAnalyzer;
-import data.analyzer.SensorAnalyzer;
-import data.database.DataManager;
-import data.inputService.CameraService;
-import data.inputService.LocationService;
-import data.inputService.SensorService;
-import data.inputService.KetaiNFC.KetaiNFC;
+import ketai.data.analyzer.FaceAnalyzer;
+import ketai.data.analyzer.IKetaiAnalyzer;
+import ketai.data.analyzer.MotionAnalyzer;
+import ketai.data.analyzer.SensorAnalyzer;
+import ketai.data.database.DataManager;
+import ketai.data.inputService.CameraService;
+import ketai.data.inputService.LocationService;
+import ketai.data.inputService.SensorService;
 
 
 
@@ -70,12 +69,7 @@ public class Ketai implements IKetaiEventListener, Runnable {
 	public void enableLocationManager() {
 		inputmanager.addService(new LocationService(parent));
 	}
-	
-	public void enableNFCManager()
-	{
-		inputmanager.addService(new KetaiNFC(parent));
-	}
-	
+		
 	public long getDataCount() {
 		return datamanager.getDataCount();
 	}

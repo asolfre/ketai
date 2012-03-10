@@ -5,9 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import data.analyzer.IKetaiAnalyzer;
-import data.database.DataManager;
-import data.inputService.IKetaiInputService;
+import ketai.data.analyzer.IKetaiAnalyzer;
+import ketai.data.database.DataManager;
+import ketai.data.inputService.IKetaiInputService;
 
 
 import processing.core.PApplet;
