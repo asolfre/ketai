@@ -1,6 +1,6 @@
 #labels Featured
 <p>
-Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&can=2&q=">Ketai.zip</a> and move to your sketchbook "libraries" folder. Restart Processing. Examples and Reference is included.
+Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai_v5.zip&can=2&q=">Ketai_v5.zip</a> and move to your sketchbook "libraries" folder. Restart Processing. Examples and Reference documentation is included.
 </p>
 
 = FAQ = 
@@ -10,13 +10,14 @@ Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&ca
 <a href="http://code.google.com/p/ketai/w/list">Ketai Wiki</a>
 </p>
 
-= v.04 Update log = 
+= v5 Update log = 
 <p>
-- Support for new Sensors available in sdk v13<br />
-- support for location information<br />
-- Front facing camera support<br />
-- NFC Read/Write support (reads text/URI tags, writes text)<br />
-- Experimental Bluetooth RFCOMM support<br />
+- repackaging of the data analysis/capture framework
+- flash support for cameras
+- support for multiple cameras
+- camera will now fallback to nearest requested resolution
+- save camera picture to media store
+- updates to location object to provide faster location value
 </p>
 
 = Follow =
@@ -27,7 +28,7 @@ Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai.zip&ca
 = Credits =
 <p>
 Principal Investigator: Daniel Sauter<br />
-Development with Jesus Duran<br />
+Development with j.duran<br />
 </p>
 
 = Source =
