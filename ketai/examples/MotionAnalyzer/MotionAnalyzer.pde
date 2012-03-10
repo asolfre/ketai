@@ -9,7 +9,7 @@
  * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import ketaimotion.*;
+import ketai.data.*;
 
 Ketai ketai;
 CustomAnalyzer ca;
