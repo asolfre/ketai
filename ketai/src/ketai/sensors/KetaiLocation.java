@@ -8,7 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
-import ketaimotion.IDataConsumer;
+import data.IDataConsumer;
+
 
 import android.content.Context;
 import android.location.Criteria;
