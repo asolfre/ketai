@@ -6,10 +6,10 @@
  * <li>Allows development of custom motion analyzers</li>
  * <li>Refer to Ketai Face Analyzer for a more basic analyzer example</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import edu.uic.ketai.*;
+import ketaimotion.*;
 
 Ketai ketai;
 CustomAnalyzer ca;

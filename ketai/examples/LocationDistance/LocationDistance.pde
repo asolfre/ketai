@@ -9,11 +9,10 @@
  * </ul>
  * More information:
  * http://developer.android.com/reference/android/location/Location.html</p>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import edu.uic.ketai.*; 
-import android.location.Location;
+import ketai.sensors.*; 
 
 double longitude, latitude, altitude, accuracy;
 KetaiLocation location;

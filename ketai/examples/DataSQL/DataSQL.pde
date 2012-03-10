@@ -7,10 +7,10 @@
  * <li>Sends query to SQLight database </li>
  * <li>Maps values onto the screen</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import edu.uic.ketai.*;
+import ketaimotion.*;
 import android.database.Cursor;
 
 Ketai ketai;

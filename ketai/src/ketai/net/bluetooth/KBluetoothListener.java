@@ -13,6 +13,7 @@ public class KBluetoothListener extends Thread {
 	private String mSocketType;
 	private BluetoothAdapter mAdapter;
 	private KBluetoothManager btManager;
+	private boolean go = true;
 
 	public KBluetoothListener(KBluetoothManager btm, boolean secure) {
 		BluetoothServerSocket tmp = null;
@@ -46,7 +47,7 @@ public class KBluetoothListener extends Thread {
 			PApplet.println("Failed to get socket for server! bye.");
 			return;
 		}
-		while (true) {
+		while (go) {
 			try {
 				socket = mmServerSocket.accept();
 				if (socket != null) {
@@ -68,6 +69,7 @@ public class KBluetoothListener extends Thread {
 
 	public void cancel() {
 		PApplet.println("Socket Type" + mSocketType + "cancel " + this);
+		go = false;
 		try {
 			if (mmServerSocket != null)
 				mmServerSocket.close();

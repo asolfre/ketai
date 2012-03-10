@@ -2,10 +2,14 @@ package ketai.sensors;
 
 import processing.core.*;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
+
+import ketaimotion.IDataConsumer;
+import ketaimotion.IDataProducer;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -14,13 +18,14 @@ import android.hardware.SensorManager;
 import android.content.Context;
 
 public class KetaiSensor implements
-		SensorEventListener {
+		SensorEventListener, IDataProducer {
 
 	private SensorManager sensorManager = null;
 
 	private boolean isRegistered = false;
 	private PApplet parent;
-
+	private ArrayList<IDataConsumer> consumers;
+	
 	private Method onSensorEventMethod;
 
 	// Simple methods are of the form v1,v2,v3,v4 (typically x,y,z values)
@@ -61,6 +66,7 @@ public class KetaiSensor implements
 				.getSystemService(Context.SENSOR_SERVICE);
 
 		delayInterval = timeOfLastUpdate = 0;
+		consumers = new ArrayList<IDataConsumer>();
 	}
 
 	public void useSimulator(boolean flag) {
@@ -668,6 +674,11 @@ public class KetaiSensor implements
 	}
 
 	private void broadcastSensorEvent(SensorEvent arg0) {
+			
+		for(IDataConsumer d: consumers)
+		{
+			d.consumeData(arg0);
+		}
 	}
 
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -926,5 +937,13 @@ public class KetaiSensor implements
 
 	public void getQuaternionFromVector(float[] Q, float[] rv) {
 		SensorManager.getQuaternionFromVector(Q, rv);
+	}
+
+	public void registerDataConsumer(IDataConsumer _dataConsumer) {
+		consumers.add(_dataConsumer);	
+	}
+
+	public void removeDataConsumer(IDataConsumer _dataConsumer) {
+			consumers.remove(_dataConsumer);
 	}
 }

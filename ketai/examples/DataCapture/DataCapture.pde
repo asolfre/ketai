@@ -7,10 +7,10 @@
  * <li>Writes data into .csv flat file</li>
  * <li>Captures all sensors registered via SensorEvent into one db/file</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import edu.uic.ketai.*;
+import ketaimotion.*;
 
 Ketai ketai;
 long dataCount;

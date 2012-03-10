@@ -7,10 +7,11 @@
  * <li>Returns a PVector containing PVector.x and PVector.y coordinates of 
  * point between detected eyes, as well as eye distance PVector.z</li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import edu.uic.ketai.*;
+import ketaimotion.*;
+import ketai.camera.*;
 
 Ketai ketai;
 PFont font;
@@ -33,7 +34,6 @@ void setup()
 }
 
 void draw() {
-
   if (ketai.isCollectingData())
     text("Looking for faces...", screenWidth/2, screenHeight/4);
   else
@@ -70,10 +70,11 @@ void onKetaiEvent(String _eventName, Object _data)
 {
   if (_eventName.equals("face"))
   {
-    if (_data == null || !(_data instanceof PVector))
+    if (_data == null || !(_data instanceof kFace))
       return;
-
-    PVector _where = (PVector)_data;
+    kFace face = (kFace)_data;
+    
+    PVector _where = face.location;
     backgroundColor = color(0, 255, 0);
     background(backgroundColor);
     println("iCoords:" + _where.x + "," + _where.y);
@@ -88,6 +89,5 @@ void onKetaiEvent(String _eventName, Object _data)
 void onCameraPreviewEvent(KetaiCamera cam)
 {
   cam.read();
-  image(cam, screenWidth/2, screenHeight/2);
 }  
 
