@@ -1,7 +1,7 @@
 package ketai.data.analyzer;
 
-import data.database.DataManager;
-import data.inputService.CameraService;
+import ketai.data.database.DataManager;
+import ketai.data.inputService.CameraService;
 import ketai.camera.FaceFinder;
 import ketai.camera.kFace;
 import processing.core.PApplet;

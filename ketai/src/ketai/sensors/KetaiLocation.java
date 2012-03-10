@@ -8,7 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
 
-import data.IDataConsumer;
+import ketai.data.IDataConsumer;
+
 
 
 import android.content.Context;

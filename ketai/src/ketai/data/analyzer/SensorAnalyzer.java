@@ -1,7 +1,7 @@
 package ketai.data.analyzer;
 
-import data.database.DataManager;
-import data.inputService.SensorService;
+import ketai.data.database.DataManager;
+import ketai.data.inputService.SensorService;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.hardware.SensorEvent;

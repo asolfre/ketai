@@ -2,7 +2,7 @@ package ketai.data.inputService;
 
 import java.util.Collection;
 
-import data.analyzer.IKetaiAnalyzer;
+import ketai.data.analyzer.IKetaiAnalyzer;
 
 
 
