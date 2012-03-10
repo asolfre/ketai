@@ -10,7 +10,7 @@
  * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import ketaimotion.*;
+import ketai.data.*;
 import ketai.camera.*;
 
 Ketai ketai;
@@ -89,5 +89,6 @@ void onKetaiEvent(String _eventName, Object _data)
 void onCameraPreviewEvent(KetaiCamera cam)
 {
   cam.read();
+  image(cam, width/2, height/2);
 }  
 

@@ -1,6 +1,6 @@
 import android.hardware.SensorEvent;
-import ketaimotion.analyzer.*;
-import ketaimotion.inputService.*;
+import ketai.data.analyzer.*;
+import ketai.data.inputService.*;
 
 class CustomAnalyzer extends AbstractKetaiAnalyzer
 {
