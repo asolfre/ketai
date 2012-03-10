@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,12 +27,14 @@ public class KBluetoothManager {
 	private HashMap<String, KBluetoothConnection> currentConnections;
 	private KBluetoothListener btListener;
 	private ConnectThread mConnectThread;
+	private boolean isStarted = false;
 	protected Method onBluetoothDataEventMethod;
 
 	protected UUID MY_UUID_SECURE = UUID
 			.fromString("fa87c0d0-afac-11de-8a39-0800200c5a66");
 	protected UUID MY_UUID_INSECURE = UUID
 			.fromString("8ce255c0-200a-11e0-ac64-0800200c5a66");
+
 	protected String NAME_SECURE = "BluetoothSecure";
 	protected String NAME_INSECURE = "BluetoothInsecure";
 
@@ -57,6 +60,10 @@ public class KBluetoothManager {
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		parent.registerReceiver(mReceiver, filter);
 		findParentIntention();
+	}
+
+	public boolean isStarted() {
+		return isStarted;
 	}
 
 	public BluetoothAdapter getBluetoothAdapater() {
@@ -95,16 +102,30 @@ public class KBluetoothManager {
 		}
 	}
 
-	public boolean start() {
-		if (btListener == null)
-			btListener = new KBluetoothListener(this, true);
+	public boolean isDiscoverable() {
+		return (bluetoothAdapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+	}
 
-		if (btListener.isAlive()) {
-			btListener.cancel();
+	public boolean start() {
+		// start or re-start
+		if (btListener != null) {
+			stop();
+			isStarted = false;
 		}
 
+		btListener = new KBluetoothListener(this, true);
 		btListener.start();
-		return true;
+		isStarted = true;
+		return isStarted;
+	}
+
+	public ArrayList<String> getDiscoveredDeviceNames() {
+		ArrayList<String> devices = new ArrayList<String>();
+
+		for (String key : discoveredDevices.keySet()) {
+			devices.add(key);// key + "->" + discoveredDevices.get(key) + "\n";
+		}
+		return devices;
 	}
 
 	public ArrayList<String> getPairedDeviceNames() {
@@ -117,6 +138,19 @@ public class KBluetoothManager {
 			for (BluetoothDevice device : bondedDevices) {
 				pairedDevices.put(device.getName(), device.getAddress());
 				devices.add(device.getName());
+			}
+		}
+		return devices;
+	}
+
+	public ArrayList<String> getConnectedDeviceNames() {
+		ArrayList<String> devices = new ArrayList<String>();
+		Set<String> connectedDevices = currentConnections.keySet();
+
+		if (connectedDevices.size() > 0) {
+			for (String device : connectedDevices) {
+				KBluetoothConnection c = currentConnections.get(device);
+				devices.add(c.getDeviceName() + "(" + device + ")");
 			}
 		}
 		return devices;
@@ -150,7 +184,6 @@ public class KBluetoothManager {
 			mConnectThread.start();
 		} else if (mConnectThread.mmDevice.getAddress() != _hwAddress) {
 			mConnectThread.cancel();
-			mConnectThread.stop();
 			mConnectThread = new ConnectThread(device, true);
 			mConnectThread.start();
 		}
@@ -220,6 +253,13 @@ public class KBluetoothManager {
 
 	}
 
+	public void broadcast(byte[] data) {
+		for (Map.Entry<String, KBluetoothConnection> device : currentConnections
+				.entrySet()) {
+			device.getValue().write(data);
+		}
+	}
+
 	protected void removeConnection(KBluetoothConnection c) {
 		PApplet.println("KBTM removing connection for " + c.getAddress());
 		if (currentConnections.containsKey(c.getAddress())) {
@@ -249,11 +289,11 @@ public class KBluetoothManager {
 			}
 		}
 	};
-	
-	private void findParentIntention()
-	{
+
+	private void findParentIntention() {
 		try {
-			onBluetoothDataEventMethod = parent.getClass().getMethod("onBluetoothDataEvent",
+			onBluetoothDataEventMethod = parent.getClass().getMethod(
+					"onBluetoothDataEvent",
 					new Class[] { String.class, byte[].class });
 			PApplet.println("Found onBluetoothDataEvent method.");
 		} catch (NoSuchMethodException e) {
@@ -265,12 +305,10 @@ public class KBluetoothManager {
 	public void stop() {
 		if (btListener != null) {
 			btListener.cancel();
-			btListener.stop();
 		}
 
 		if (mConnectThread != null) {
 			mConnectThread.cancel();
-			mConnectThread.stop();
 		}
 
 		for (String key : currentConnections.keySet()) {

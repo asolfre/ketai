@@ -13,10 +13,10 @@
  * <li>onLocationEvent(latitude, longitude)</li>
  * <li>onLocationEvent(latitude, longitude, altitude)</li>
  * </p>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import edu.uic.ketai.*; 
+import ketai.sensors.*; 
 
 double longitude, latitude, altitude;
 KetaiLocation location;

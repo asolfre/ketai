@@ -6,10 +6,10 @@
  * <li>Interface for built-in camera</li>
  * <li></li>
  * </ul>
- * <p>Updated: 2011-06-09 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-import edu.uic.ketai.*;
+import ketai.camera.*;
 
 KetaiCamera cam;
 

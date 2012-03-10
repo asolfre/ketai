@@ -29,7 +29,7 @@ public class KBluetoothConnection extends Thread {
 		address = socket.getRemoteDevice().getAddress();
 
 		try {
-//			socket.connect();
+			// socket.connect();
 			tmpIn = socket.getInputStream();
 			tmpOut = socket.getOutputStream();
 		} catch (IOException e) {
@@ -45,6 +45,12 @@ public class KBluetoothConnection extends Thread {
 		return address;
 	}
 
+	public String getDeviceName() {
+		if (mmSocket == null)
+			return "";
+		return mmSocket.getRemoteDevice().getName();
+	}
+
 	public void run() {
 		PApplet.println("BEGIN mConnectedThread to " + address);
 		byte[] buffer = new byte[1024];
@@ -55,19 +61,19 @@ public class KBluetoothConnection extends Thread {
 			try {
 				// Read from the InputStream
 				bytes = mmInStream.read(buffer);
-				byte [] data = Arrays.copyOfRange(buffer, 0, bytes);
-				
-				PApplet.println(bytes + " bytes read from "
-						+ mmSocket.getRemoteDevice().getName());
-				
+				byte[] data = Arrays.copyOfRange(buffer, 0, bytes);
+
+				// PApplet.println(bytes + " bytes read from "
+				// + mmSocket.getRemoteDevice().getName());
+
 				if (btm.onBluetoothDataEventMethod != null) {
 					try {
-						btm.onBluetoothDataEventMethod.invoke(btm.parent, new Object[] { this.address, data });
+						btm.onBluetoothDataEventMethod.invoke(btm.parent,
+								new Object[] { this.address, data });
 					} catch (IllegalAccessException e) {
 						PApplet.println("Error in reading connection data.:"
 								+ e.getMessage());
-					}
-					catch (InvocationTargetException e) {
+					} catch (InvocationTargetException e) {
 						PApplet.println("Error in reading connection data.:"
 								+ e.getMessage());
 					}
@@ -75,6 +81,11 @@ public class KBluetoothConnection extends Thread {
 				// // Send the obtained bytes to the UI Activity
 				// mHandler.obtainMessage(BluetoothChat.MESSAGE_READ, bytes, -1,
 				// buffer).sendToTarget();
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+
+				}
 			} catch (IOException e) {
 				btm.removeConnection(this);
 				PApplet.println(getAddress() + " disconnected" + e.getMessage());
@@ -92,8 +103,8 @@ public class KBluetoothConnection extends Thread {
 
 	public void write(byte[] buffer) {
 		try {
-			PApplet.println("KBTConnection thread writing " + buffer.length
-					+ " bytes to " + address);
+			// PApplet.println("KBTConnection thread writing " + buffer.length
+			// + " bytes to " + address);
 
 			mmOutStream.write(buffer);
 		} catch (IOException e) {
@@ -110,4 +121,5 @@ public class KBluetoothConnection extends Thread {
 			PApplet.println("close() of connect socket failed" + e.getMessage());
 		}
 	}
+
 }

@@ -1,4 +1,6 @@
 import android.hardware.SensorEvent;
+import ketaimotion.analyzer.*;
+import ketaimotion.inputService.*;
 
 class CustomAnalyzer extends AbstractKetaiAnalyzer
 {
@@ -42,10 +44,11 @@ class CustomAnalyzer extends AbstractKetaiAnalyzer
     return "";
   }
 
+  //register for sensor service for data
   Class<?> getServiceProviderClass() { 
     try {
       return Class
-        .forName("edu.uic.ketai.inputService.KetaiSensor");
+        .forName( SensorService.class.getName());
     } 
     catch (ClassNotFoundException e) {
       e.printStackTrace();

@@ -29,10 +29,6 @@ import ketai.net.NFC.record.UriRecord;
 
 import processing.core.PApplet;
 
-
-/**
- * Utility class for creating {@link ParsedNdefMessage}s.
- */
 public class NdefMessageParser {
 
 	// Utility class
