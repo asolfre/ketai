@@ -1,4 +1,8 @@
 ketai.camera
+ketai.data
+ketai.data.analyzer
+ketai.data.database
+ketai.data.inputService
 ketai.net
 ketai.net.NFC
 ketai.net.NFC.record
