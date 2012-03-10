@@ -11,14 +11,14 @@ Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai_v5.zip
 </p>
 
 = v5 Update log = 
-<p>
-- repackaging of the data analysis/capture framework
-- flash support for cameras
-- support for multiple cameras
-- camera will now fallback to nearest requested resolution
-- save camera picture to media store
-- updates to location object to provide faster location value
-</p>
+<ul>
+<li> repackaging of the data analysis/capture framework</li>
+<li> flash support for cameras</li>
+<li> support for multiple cameras</li>
+<li> camera will now fallback to nearest requested resolution</li>
+<li> save camera picture to media store</li>
+<li> updates to location object to provide faster location value</li>
+</ul>
 
 = Follow =
 <p>
