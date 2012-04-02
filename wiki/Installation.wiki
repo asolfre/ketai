@@ -12,7 +12,7 @@ Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai_v5.zip
 
 = v5 Update log = 
 <ul>
-<li> official move to Gingerbread Android API 10, platform 2.3<li>
+<li> official move to Gingerbread Android API 10, platform 2.3</li>
 <li> repackaging of the data analysis/capture framework</li>
 <li> flash support for cameras</li>
 <li> support for multiple cameras</li>
