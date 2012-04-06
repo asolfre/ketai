@@ -34,7 +34,6 @@ import android.view.Surface;
 
 public class KetaiCamera extends PImage implements IDataProducer {
 
-	private PApplet parent;
 	private Camera camera;
 	private int[] myPixels;
 	private Method onPreviewEventMethod, onPreviewEventMethodPImage, onSavePhotoEventMethod;
@@ -50,6 +49,7 @@ public class KetaiCamera extends PImage implements IDataProducer {
 
 	public KetaiCamera(PApplet pParent, int _width, int _height,
 			int _framesPerSecond) {
+		super(_width, _height, PImage.ARGB);
 		parent = pParent;
 		frameWidth = _width;
 		frameHeight = _height;
