@@ -15,13 +15,11 @@ import java.util.Vector;
 import ketai.data.IDataConsumer;
 import ketai.data.IDataProducer;
 
-
-
 import processing.core.PImage;
 import processing.core.PApplet;
 
 import android.graphics.ImageFormat;
-//import android.graphics.SurfaceTexture;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
@@ -34,17 +32,18 @@ import android.net.Uri;
 import android.os.Environment;
 import android.view.Surface;
 
-public class KetaiCamera extends PImage implements IDataProducer{
+public class KetaiCamera extends PImage implements IDataProducer {
 
 	private PApplet parent;
 	private Camera camera;
 	private int[] myPixels;
-	private Method onPreviewEventMethod, onPreviewEventMethodPImage;
+	private Method onPreviewEventMethod, onPreviewEventMethodPImage, onSavePhotoEventMethod;
 	private int frameWidth, frameHeight, cameraFPS, cameraID;
 	private int photoWidth, photoHeight;
 	public boolean isStarted, enableFlash, isRGBPreviewSupported;
 	private String savePhotoPath = "";
-	PImage self;
+	KetaiCamera self;
+	String SAVE_DIR = "kCameraApp";
 	// Thread runner;
 	boolean available = false;
 	private ArrayList<IDataConsumer> consumers;
@@ -89,11 +88,28 @@ public class KetaiCamera extends PImage implements IDataProducer{
 			PApplet.println("KetaiCamera did not find onCameraPreviewEvent for Image Method: "
 					+ e.getMessage());
 		}
+
+		try {
+			onSavePhotoEventMethod = parent.getClass().getMethod(
+					"onSavePhotoEvent", new Class[] { String.class });
+			PApplet.println("KetaiCamera found onSavePhotoEvent method in parent... ");
+		} catch (Exception e) {
+			// no such method, or an error.. which is fine, just ignore
+			onSavePhotoEventMethod = null;
+			PApplet.println("KetaiCamera did not find onSavePhotoEventMethod Method: "
+					+ e.getMessage());
+		}
+		
+		
 		PApplet.println("KetaiCamera completed instantiation... ");
 	}
 
 	public int getImageWidth() {
 		return frameWidth;
+	}
+
+	public void setSaveDirectoryName(String _dirname) {
+		SAVE_DIR = _dirname;
 	}
 
 	public int getImageHeight() {
@@ -126,7 +142,6 @@ public class KetaiCamera extends PImage implements IDataProducer{
 			camera.setParameters(cameraParameters);
 		} catch (Exception x) {
 		}// doesnt support flash...its ok...
-
 	}
 
 	public void disableFlash() {
@@ -235,16 +250,15 @@ public class KetaiCamera extends PImage implements IDataProducer{
 
 			// create a default texture to kickoff preview then remove it
 			// if textures arent supported then set nothing and move along
-/** > API 12 **/
-//			try {
-//				SurfaceTexture st = new SurfaceTexture(0);
-//				camera.setPreviewTexture(st);
-//				camera.startPreview();
-//				camera.setPreviewDisplay(null);
-//			} catch (NoClassDefFoundError x) {
-//				camera.startPreview();
-//			}
-			camera.startPreview();
+			/** > API 12 **/
+			try {
+				SurfaceTexture st = new SurfaceTexture(0);
+				camera.setPreviewTexture(st);
+				camera.startPreview();
+				camera.setPreviewDisplay(null);
+			} catch (NoClassDefFoundError x) {
+				camera.startPreview();
+			}
 			isStarted = true;
 
 			PApplet.println("Using preview format: "
@@ -268,17 +282,17 @@ public class KetaiCamera extends PImage implements IDataProducer{
 		return enableFlash;
 	}
 
-	public void takePicture() {
-		if (camera != null) {
+	public void savePhoto() {
+		if (camera != null && isStarted()) {
 			savePhotoPath = "";
-			takePicture(savePhotoPath);
-
+			savePhoto(savePhotoPath);
 		}
 	}
 
-	public void takePicture(String _filename) {
+	public void savePhoto(String _filename) {
 		savePhotoPath = _filename;
-		if (camera != null)
+		
+		if (camera != null && isStarted())
 			camera.takePicture(null, null, jpegCallback);
 	}
 
@@ -299,11 +313,6 @@ public class KetaiCamera extends PImage implements IDataProducer{
 			start();
 		}
 	}
-
-	PictureCallback rawCallback = new PictureCallback() { // <7>
-		public void onPictureTaken(byte[] data, Camera camera) {
-		}
-	};
 
 	public void read() {
 		if (pixels.length != frameWidth * frameHeight)
@@ -336,7 +345,7 @@ public class KetaiCamera extends PImage implements IDataProducer{
 				myPixels = new int[frameWidth * frameHeight];
 
 			if (isRGBPreviewSupported)
-				System.arraycopy(myPixels, 0, data, 0, frameWidth * frameHeight);
+				System.arraycopy(myPixels, 0, data, 0, myPixels.length);
 			else
 				decodeYUV420SP(data);
 
@@ -356,7 +365,7 @@ public class KetaiCamera extends PImage implements IDataProducer{
 			if (onPreviewEventMethodPImage != null && myPixels != null)
 				try {
 					onPreviewEventMethodPImage.invoke(parent,
-							new Object[] { (KetaiCamera) self });
+							new Object[] { (PImage) self });
 				} catch (Exception e) {
 					PApplet.println("Disabling onCameraPreviewEvent(KetaiCamera) because of an error:"
 							+ e.getMessage());
@@ -364,19 +373,19 @@ public class KetaiCamera extends PImage implements IDataProducer{
 					onPreviewEventMethodPImage = null;
 				}
 
-			for(IDataConsumer c: consumers)
-			{
+			for (IDataConsumer c : consumers) {
 				c.consumeData(self);
-			}	
+			}
 		}
 	};
 
-	PictureCallback jpegCallback = new PictureCallback() {
+	private PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
+			PApplet.println("pictureCallback entered...");
 			if (camera == null)
 				return;
 			FileOutputStream outStream = null;
-
+			File mediaFile = null;
 			// BitmapFactory.Options options = new BitmapFactory.Options();
 			// options.inSampleSize = 1;
 			// Bitmap bitmap = BitmapFactory
@@ -394,27 +403,27 @@ public class KetaiCamera extends PImage implements IDataProducer{
 
 			try {
 
-				PApplet.println(savePhotoPath);
+				PApplet.println("Saving to: " + savePhotoPath);
 
-				// Write to SD Card
 				if (savePhotoPath == "") {
-
 					File mediaStorageDir = new File(
 							Environment
 									.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-							"kCameraApp");
-
+							SAVE_DIR);
+					PApplet.println("Default DIRECTORY_PICTURES path: "
+							+ mediaStorageDir.getAbsolutePath());
 					// Create the storage directory if it does not exist
 					if (!mediaStorageDir.exists()) {
 						if (!mediaStorageDir.mkdirs()) {
 							PApplet.println("failed to create directory to save photo");
 						}
 					}
-
+					PApplet.println("Saving image to path: "
+							+ mediaStorageDir.getAbsolutePath());
 					// Create a media file name
 					String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
 							.format(new Date());
-					File mediaFile;
+
 					mediaFile = new File(mediaStorageDir.getPath()
 							+ File.separator + "IMG_" + timeStamp + ".jpg");
 					PApplet.println("Saving image: "
@@ -425,36 +434,41 @@ public class KetaiCamera extends PImage implements IDataProducer{
 
 					outStream.write(data);
 					outStream.close();
-					String[] paths = { mediaFile.getAbsolutePath() };
-					MediaScannerConnection.scanFile(
-							parent.getApplicationContext(), paths, null,
-							myScannerCallback);
-
 				} else {
 					PApplet.println("Saving image: " + savePhotoPath);
 					outStream = new FileOutputStream(savePhotoPath);
 					outStream.write(data);
 					outStream.close();
-
 				}
+				
+				//callback sketch with path of saved image
+				//;
+				if (onSavePhotoEventMethod != null && myPixels != null && mediaFile != null)
+					try {
+						onSavePhotoEventMethod.invoke(parent,
+								new Object[] { (String) mediaFile.getAbsolutePath() });
+					} catch (Exception e) {
+
+					}
 
 				// create a default texture to kickoff preview then remove it
 				// if textures arent supported then set nothing and move along
-/** > API 12 **/
-//				try {
-//					SurfaceTexture st = new SurfaceTexture(0);
-//					camera.setPreviewTexture(st);
-//					camera.startPreview();
-//					camera.setPreviewDisplay(null);
-//				} catch (NoClassDefFoundError x) {
-//					camera.startPreview();
-//				}
+				/** > API 12 **/
+				try {
+					SurfaceTexture st = new SurfaceTexture(0);
+					camera.setPreviewTexture(st);
+					camera.startPreview();
+					camera.setPreviewDisplay(null);
+				} catch (NoClassDefFoundError x) {
+					camera.startPreview();
+				}
 
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {
+
 			}
 		}
 	};
@@ -465,6 +479,15 @@ public class KetaiCamera extends PImage implements IDataProducer{
 					+ " => " + arg0);
 		}
 	};
+
+	public void addImageToMediaLibrary(String _file) {
+
+		// String[] paths = { mediaFile.getAbsolutePath() };
+		String[] paths = { _file };
+		MediaScannerConnection.scanFile(parent.getApplicationContext(), paths,
+				null, myScannerCallback);
+
+	}
 
 	public void pause() {
 		camera.stopPreview();
@@ -556,7 +579,7 @@ public class KetaiCamera extends PImage implements IDataProducer{
 				+ frameWidth + "," + frameHeight + "," + cameraFPS);
 
 		Parameters cameraParameters = camera.getParameters();
-
+		PApplet.println(cameraParameters.flatten());
 		List<Size> supportedSizes = cameraParameters.getSupportedPreviewSizes();
 		boolean foundSupportedSize = false;
 		Size nearestRequestedSize = null;
@@ -616,11 +639,19 @@ public class KetaiCamera extends PImage implements IDataProducer{
 		int nearestFPS = 0;
 
 		for (int r : supportedFPS) {
+			PApplet.println("Supported preview FPS: " + r);
+			if (nearestFPS == 0)
+				nearestFPS = r;
 			if ((Math.abs(cameraFPS - r)) > (Math.abs(cameraFPS - nearestFPS))) {
 				nearestFPS = r;
 			}
 		}
+		PApplet.println("calculated preview FPS: " + nearestFPS);
+
 		cameraParameters.setPreviewFrameRate(nearestFPS);
+
+		PApplet.println("Setting calculated parameters:"
+				+ cameraParameters.flatten());
 
 		camera.setParameters(cameraParameters);
 
@@ -641,10 +672,10 @@ public class KetaiCamera extends PImage implements IDataProducer{
 	}
 
 	public void registerDataConsumer(IDataConsumer _dataConsumer) {
-		consumers.add(_dataConsumer);	
+		consumers.add(_dataConsumer);
 	}
 
 	public void removeDataConsumer(IDataConsumer _dataConsumer) {
-			consumers.remove(_dataConsumer);
+		consumers.remove(_dataConsumer);
 	}
 }
