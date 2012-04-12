@@ -18,9 +18,13 @@ import ketai.data.IDataProducer;
 import processing.core.PImage;
 import processing.core.PApplet;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
@@ -34,15 +38,17 @@ import android.view.Surface;
 
 public class KetaiCamera extends PImage implements IDataProducer {
 
+
 	private Camera camera;
 	private int[] myPixels;
-	private Method onPreviewEventMethod, onPreviewEventMethodPImage, onSavePhotoEventMethod;
+	private Method onPreviewEventMethod, onPreviewEventMethodPImage,
+			onSavePhotoEventMethod;
 	private int frameWidth, frameHeight, cameraFPS, cameraID;
 	private int photoWidth, photoHeight;
 	public boolean isStarted, enableFlash, isRGBPreviewSupported;
 	private String savePhotoPath = "";
 	KetaiCamera self;
-	String SAVE_DIR = "kCameraApp";
+	String SAVE_DIR = "";
 	// Thread runner;
 	boolean available = false;
 	private ArrayList<IDataConsumer> consumers;
@@ -99,21 +105,138 @@ public class KetaiCamera extends PImage implements IDataProducer {
 			PApplet.println("KetaiCamera did not find onSavePhotoEventMethod Method: "
 					+ e.getMessage());
 		}
-		
-		
-		PApplet.println("KetaiCamera completed instantiation... ");
+
+		// we'll store our photos in a folder named after our application!
+		PackageManager pm = parent.getApplicationContext().getPackageManager();
+		ApplicationInfo ai;
+		try {
+			ai = pm.getApplicationInfo(parent.getApplicationContext()
+					.getPackageName(), 0);
+		} catch (final NameNotFoundException e) {
+			ai = null;
+		}
+		SAVE_DIR = (String) (ai != null ? pm.getApplicationLabel(ai)
+				: "unknownApp");
+
+		PApplet.println("KetaiCamera completed instantiation... "
+				+ parent.g.toString());
 	}
 
-	public int getImageWidth() {
-		return frameWidth;
+	// lock any auto settings to keep from constant adjustments
+	public void manualSettings() {
+		if (camera == null)
+			return;
+		PApplet.println("KetaiCamera: locking camera settings...");
+		Parameters cameraParameters = camera.getParameters();
+		// camera.cancelAutoFocus();
+		if (cameraParameters.isAutoExposureLockSupported())
+			cameraParameters.setAutoExposureLock(true);
+		if (cameraParameters.isAutoWhiteBalanceLockSupported())
+			cameraParameters.setAutoWhiteBalanceLock(true);
+
+		List<String> fModes = cameraParameters.getSupportedFocusModes();
+		for (String s : fModes) {
+			if (s.equalsIgnoreCase(Parameters.FOCUS_MODE_FIXED)) {
+				PApplet.println("Fixed focus mode supported!");
+				cameraParameters.setFocusMode(Parameters.FOCUS_MODE_FIXED);
+			}
+		}
+
+		try {
+			camera.setParameters(cameraParameters);
+		} catch (RuntimeException x) {
+			PApplet.println("Failed to set parameters to manual."
+					+ x.getMessage());
+		}
+		PApplet.println("KetaiCamera manualSettings: "
+				+ camera.getParameters().flatten());
 	}
 
-	public void setSaveDirectoryName(String _dirname) {
+	public void setZoom(int _zoom) {
+		if (camera == null)
+			return;
+
+		Parameters cameraParameters = camera.getParameters();
+		if (_zoom > cameraParameters.getMaxZoom())
+			_zoom = cameraParameters.getMaxZoom();
+		else if (_zoom < 0)
+			_zoom = 0;
+		
+		cameraParameters.setZoom(_zoom);
+		camera.setParameters(cameraParameters);
+	}
+	
+	public int getZoom()
+	{
+		if(camera == null)
+			return 0;
+		Parameters p = camera.getParameters();
+		return(p.getZoom());
+	}
+
+	
+	
+	// allow camera settings to auto-adjust
+	// mainly concerned with focus/white balance
+	//
+	public void autoSettings() {
+		if (camera == null)
+			return;
+
+		PApplet.println("KetaiCamera: setting camera settings to auto...");
+		Parameters cameraParameters = camera.getParameters();
+		if (cameraParameters.isAutoExposureLockSupported())
+			cameraParameters.setAutoExposureLock(false);
+		if (cameraParameters.isAutoWhiteBalanceLockSupported())
+			cameraParameters.setAutoWhiteBalanceLock(false);
+
+		List<String> fModes = cameraParameters.getSupportedFocusModes();
+		for (String s : fModes) {
+			PApplet.println("FocusMode: " + s);
+			if (s.equalsIgnoreCase(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
+				cameraParameters
+						.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+		}
+
+		camera.setParameters(cameraParameters);
+		camera.autoFocus(autofocusCB);
+		PApplet.println("KetaiCamera autoSettings: "
+				+ camera.getParameters().flatten());
+	}
+	
+	
+	public String dump() {
+		String result = "";
+		if (camera == null)
+			return result;
+
+		Parameters p = camera.getParameters();
+		result += "Zoom: " + p.getZoom() + "\n";
+
+		result += "White Balance: " + p.getWhiteBalance() + "\n";
+
+		if (p.isAutoWhiteBalanceLockSupported())
+			result += "\t Lock supported, state: "
+					+ p.getAutoWhiteBalanceLock() + "\n";
+		else
+			result += "\t Lock NOT supported\n";
+
+		result += "FocalLength: " + p.getFocalLength() + " m\n";
+
+		result += "Focus Mode: " + p.getFocusMode() + "\n";
+
+		result += "Exposure: " + p.getExposureCompensation() + "\n";
+		if (p.isAutoExposureLockSupported())
+			result += "\t Lock supported, state: " + p.getAutoExposureLock()
+					+ "\n";
+		else
+			result += "\t Lock NOT supported\n";
+
+		return result;
+	}
+
+	public void setSaveDirectory(String _dirname) {
 		SAVE_DIR = _dirname;
-	}
-
-	public int getImageHeight() {
-		return frameHeight;
 	}
 
 	public int getPhotoWidth() {
@@ -282,18 +405,73 @@ public class KetaiCamera extends PImage implements IDataProducer {
 		return enableFlash;
 	}
 
-	public void savePhoto() {
+	public boolean savePhoto() {
 		if (camera != null && isStarted()) {
 			savePhotoPath = "";
-			savePhoto(savePhotoPath);
+			return savePhoto(savePhotoPath);
 		}
+		return false;
 	}
 
-	public void savePhoto(String _filename) {
-		savePhotoPath = _filename;
-		
+	public boolean savePhoto(String _filename) {
+		String filename = "";
+
+		// we have an absolute file pathname....
+		if (_filename.startsWith(File.separator)) {
+			savePhotoPath = _filename;
+		} else {
+			// construct the path using the filename specified...
+			if (_filename.equalsIgnoreCase("")) {
+				String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+						.format(new Date());
+
+				filename = "IMG_" + timeStamp + ".jpg";
+			} else
+				filename = _filename;
+
+			File mediaStorageDir = new File(
+					Environment
+							.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+					SAVE_DIR);
+
+			// Create the storage directory if it does not exist
+			if (!mediaStorageDir.exists()) {
+				if (!mediaStorageDir.mkdirs()) {
+					PApplet.println("failed to create directory to save photo: "
+							+ mediaStorageDir.getAbsolutePath());
+					return false;
+				}
+			}
+			savePhotoPath = mediaStorageDir.getAbsolutePath() + File.separator
+					+ filename;
+
+		}// end creating savePath...
+
+		// test for file write, return false if error
+		// otherwise call camera to save
+		PApplet.println("Calculated photo path: " + savePhotoPath);
+
+		try {
+			FileOutputStream outStream = new FileOutputStream(savePhotoPath);
+			outStream.write(1);
+			outStream.close();
+			File f = new File(savePhotoPath);
+			if (!f.delete())
+				PApplet.println("Failed to remove temp photoFile while testing permissions..oops");
+		} catch (FileNotFoundException x) {
+			PApplet.println("Failed to save photo to " + savePhotoPath + "\n"
+					+ x.getMessage());
+			return false;
+		} catch (IOException e) {
+			PApplet.println("Failed to save photo to " + savePhotoPath + "\n"
+					+ e.getMessage());
+			return false;
+		}
+
 		if (camera != null && isStarted())
 			camera.takePicture(null, null, jpegCallback);
+
+		return true;
 	}
 
 	public void onResume() {
@@ -378,6 +556,12 @@ public class KetaiCamera extends PImage implements IDataProducer {
 			}
 		}
 	};
+	private AutoFocusCallback autofocusCB = new AutoFocusCallback() {
+		public void onAutoFocus(boolean result, Camera c) {
+			PApplet.println("Autofocus result: " + result + " for camera "
+					+ c.toString());
+		}
+	};
 
 	private PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
@@ -385,75 +569,25 @@ public class KetaiCamera extends PImage implements IDataProducer {
 			if (camera == null)
 				return;
 			FileOutputStream outStream = null;
-			File mediaFile = null;
-			// BitmapFactory.Options options = new BitmapFactory.Options();
-			// options.inSampleSize = 1;
-			// Bitmap bitmap = BitmapFactory
-			// .decodeByteArray(data, 0, data.length, options);
-			// int w = bitmap.getWidth();
-			// int h = bitmap.getHeight();
-			// int[] pixels = new int[w * h];
-			// bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
-			//
-			// Log.w(TAG,
-			// "CameraManager PictureCallback.  About to call native code image h/w is "
-			// + h + "/" + w);
-			// // opencv.setSourceImage(pixels, w, h);
-			// byte[] calculatedData = opencv.findContours( w, h);
 
 			try {
+				PApplet.println("Saving image: " + savePhotoPath);
+				outStream = new FileOutputStream(savePhotoPath);
+				outStream.write(data);
+				outStream.close();
 
-				PApplet.println("Saving to: " + savePhotoPath);
-
-				if (savePhotoPath == "") {
-					File mediaStorageDir = new File(
-							Environment
-									.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-							SAVE_DIR);
-					PApplet.println("Default DIRECTORY_PICTURES path: "
-							+ mediaStorageDir.getAbsolutePath());
-					// Create the storage directory if it does not exist
-					if (!mediaStorageDir.exists()) {
-						if (!mediaStorageDir.mkdirs()) {
-							PApplet.println("failed to create directory to save photo");
-						}
-					}
-					PApplet.println("Saving image to path: "
-							+ mediaStorageDir.getAbsolutePath());
-					// Create a media file name
-					String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
-							.format(new Date());
-
-					mediaFile = new File(mediaStorageDir.getPath()
-							+ File.separator + "IMG_" + timeStamp + ".jpg");
-					PApplet.println("Saving image: "
-							+ mediaFile.getAbsolutePath());
-
-					outStream = new FileOutputStream(
-							mediaFile.getAbsolutePath());
-
-					outStream.write(data);
-					outStream.close();
-				} else {
-					PApplet.println("Saving image: " + savePhotoPath);
-					outStream = new FileOutputStream(savePhotoPath);
-					outStream.write(data);
-					outStream.close();
-				}
-				
-				//callback sketch with path of saved image
-				//;
-				if (onSavePhotoEventMethod != null && myPixels != null && mediaFile != null)
+				// callback sketch with path of saved image
+				// ;
+				if (onSavePhotoEventMethod != null && myPixels != null
+						&& savePhotoPath != null)
 					try {
 						onSavePhotoEventMethod.invoke(parent,
-								new Object[] { (String) mediaFile.getAbsolutePath() });
+								new Object[] { (String) savePhotoPath });
 					} catch (Exception e) {
 
 					}
 
-				// create a default texture to kickoff preview then remove it
-				// if textures arent supported then set nothing and move along
-				/** > API 12 **/
+				// restart preview
 				try {
 					SurfaceTexture st = new SurfaceTexture(0);
 					camera.setPreviewTexture(st);
@@ -480,7 +614,7 @@ public class KetaiCamera extends PImage implements IDataProducer {
 		}
 	};
 
-	public void addImageToMediaLibrary(String _file) {
+	public void addToMediaLibrary(String _file) {
 
 		// String[] paths = { mediaFile.getAbsolutePath() };
 		String[] paths = { _file };
@@ -678,4 +812,5 @@ public class KetaiCamera extends PImage implements IDataProducer {
 	public void removeDataConsumer(IDataConsumer _dataConsumer) {
 		consumers.remove(_dataConsumer);
 	}
+
 }
