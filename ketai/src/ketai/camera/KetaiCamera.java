@@ -26,6 +26,7 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.Face;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
@@ -37,12 +38,10 @@ import android.os.Environment;
 import android.view.Surface;
 
 public class KetaiCamera extends PImage implements IDataProducer {
-
-
 	private Camera camera;
 	private int[] myPixels;
-	private Method onPreviewEventMethod, onPreviewEventMethodPImage,
-			onSavePhotoEventMethod;
+	protected Method onPreviewEventMethod, onPreviewEventMethodPImage,
+			onSavePhotoEventMethod, onFaceDetectionEventMethod;
 	private int frameWidth, frameHeight, cameraFPS, cameraID;
 	private int photoWidth, photoHeight;
 	public boolean isStarted, enableFlash, isRGBPreviewSupported;
@@ -51,7 +50,11 @@ public class KetaiCamera extends PImage implements IDataProducer {
 	String SAVE_DIR = "";
 	// Thread runner;
 	boolean available = false;
+	public boolean isDetectingFaces = false;
+	boolean supportsFaceDetection = false;
+
 	private ArrayList<IDataConsumer> consumers;
+	private ketaiFaceDetectionListener facelistener;
 
 	public KetaiCamera(PApplet pParent, int _width, int _height,
 			int _framesPerSecond) {
@@ -69,6 +72,7 @@ public class KetaiCamera extends PImage implements IDataProducer {
 		enableFlash = false;
 		cameraID = 0;
 		consumers = new ArrayList<IDataConsumer>();
+		facelistener = new ketaiFaceDetectionListener(this);
 
 		try {
 			// the following uses reflection to see if the parent
@@ -92,6 +96,17 @@ public class KetaiCamera extends PImage implements IDataProducer {
 			// no such method, or an error.. which is fine, just ignore
 			onPreviewEventMethodPImage = null;
 			PApplet.println("KetaiCamera did not find onCameraPreviewEvent for Image Method: "
+					+ e.getMessage());
+		}
+
+		try {
+			onFaceDetectionEventMethod = parent.getClass().getMethod(
+					"onFaceDetectionEvent", new Class[] { kFace[].class });
+			PApplet.println("KetaiCamera found onFaceDetectionEvent in parent... ");
+		} catch (Exception e) {
+			// no such method, or an error.. which is fine, just ignore
+			onFaceDetectionEventMethod = null;
+			PApplet.println("KetaiCamera did not find onFaceDetectionEvent Method: "
 					+ e.getMessage());
 		}
 
@@ -131,8 +146,19 @@ public class KetaiCamera extends PImage implements IDataProducer {
 		// camera.cancelAutoFocus();
 		if (cameraParameters.isAutoExposureLockSupported())
 			cameraParameters.setAutoExposureLock(true);
+
 		if (cameraParameters.isAutoWhiteBalanceLockSupported())
 			cameraParameters.setAutoWhiteBalanceLock(true);
+		else {
+
+			List<String> w = cameraParameters.getSupportedWhiteBalance();
+			for (String s : w) {
+				if (s.equalsIgnoreCase(Parameters.WHITE_BALANCE_CLOUDY_DAYLIGHT)) {
+					cameraParameters.setWhiteBalance(s);
+					break;
+				}
+			}
+		}
 
 		List<String> fModes = cameraParameters.getSupportedFocusModes();
 		for (String s : fModes) {
@@ -152,6 +178,22 @@ public class KetaiCamera extends PImage implements IDataProducer {
 				+ camera.getParameters().flatten());
 	}
 
+	public void startFaceDetection() {
+		isDetectingFaces = true;
+		if (camera != null && isStarted && supportsFaceDetection) {
+			if (isDetectingFaces) {
+				camera.setFaceDetectionListener(facelistener);
+				camera.startFaceDetection();
+			}
+		}
+	}
+
+	public void stopFaceDetection() {
+		isDetectingFaces = false;
+		if (camera != null && isStarted && supportsFaceDetection)
+			camera.stopFaceDetection();
+	}
+
 	public void setZoom(int _zoom) {
 		if (camera == null)
 			return;
@@ -161,21 +203,18 @@ public class KetaiCamera extends PImage implements IDataProducer {
 			_zoom = cameraParameters.getMaxZoom();
 		else if (_zoom < 0)
 			_zoom = 0;
-		
+
 		cameraParameters.setZoom(_zoom);
 		camera.setParameters(cameraParameters);
 	}
-	
-	public int getZoom()
-	{
-		if(camera == null)
+
+	public int getZoom() {
+		if (camera == null)
 			return 0;
 		Parameters p = camera.getParameters();
-		return(p.getZoom());
+		return (p.getZoom());
 	}
 
-	
-	
 	// allow camera settings to auto-adjust
 	// mainly concerned with focus/white balance
 	//
@@ -203,8 +242,7 @@ public class KetaiCamera extends PImage implements IDataProducer {
 		PApplet.println("KetaiCamera autoSettings: "
 				+ camera.getParameters().flatten());
 	}
-	
-	
+
 	public String dump() {
 		String result = "";
 		if (camera == null)
@@ -221,8 +259,15 @@ public class KetaiCamera extends PImage implements IDataProducer {
 		else
 			result += "\t Lock NOT supported\n";
 
-		result += "FocalLength: " + p.getFocalLength() + " m\n";
+		float[] f = new float[3];
+		String fd = "";
 
+		p.getFocusDistances(f);
+		for (int i = 0; i < f.length; i++)
+			fd += String.valueOf(f[i]) + " ";
+
+		result += "Focal Distances: " + fd + " \n";
+		result += "Focal Depth: " + p.getFocalLength() + "\n";
 		result += "Focus Mode: " + p.getFocusMode() + "\n";
 
 		result += "Exposure: " + p.getExposureCompensation() + "\n";
@@ -231,6 +276,9 @@ public class KetaiCamera extends PImage implements IDataProducer {
 					+ "\n";
 		else
 			result += "\t Lock NOT supported\n";
+
+		result += "Native camera face detection support: "
+				+ supportsFaceDetection;
 
 		return result;
 	}
@@ -383,6 +431,11 @@ public class KetaiCamera extends PImage implements IDataProducer {
 				camera.startPreview();
 			}
 			isStarted = true;
+
+			if (supportsFaceDetection && isDetectingFaces) {
+				camera.setFaceDetectionListener(facelistener);
+				camera.startFaceDetection();
+			}
 
 			PApplet.println("Using preview format: "
 					+ camera.getParameters().getPreviewFormat());
@@ -540,7 +593,7 @@ public class KetaiCamera extends PImage implements IDataProducer {
 					onPreviewEventMethod = null;
 				}
 
-			if (onPreviewEventMethodPImage != null && myPixels != null)
+			if (onPreviewEventMethodPImage != null && myPixels != null) {
 				try {
 					onPreviewEventMethodPImage.invoke(parent,
 							new Object[] { (PImage) self });
@@ -550,6 +603,22 @@ public class KetaiCamera extends PImage implements IDataProducer {
 					e.printStackTrace();
 					onPreviewEventMethodPImage = null;
 				}
+			}
+
+			if (!self.supportsFaceDetection && self.isDetectingFaces) {
+				PApplet.println("Finding faces in preview using CV");
+				kFace[] faces = FaceFinder.findFaces((PImage) self, 5);
+
+				int numberOfFaces = faces.length;
+				if (numberOfFaces > 0)
+					try {
+						onFaceDetectionEventMethod.invoke(parent,
+								new Object[] { faces });
+					} catch (Exception e) {
+						PApplet.println("Exception trying to forward facedetection event (KetaiCamera):"
+								+ e.getMessage());
+					}
+			}
 
 			for (IDataConsumer c : consumers) {
 				c.consumeData(self);
@@ -558,8 +627,7 @@ public class KetaiCamera extends PImage implements IDataProducer {
 	};
 	private AutoFocusCallback autofocusCB = new AutoFocusCallback() {
 		public void onAutoFocus(boolean result, Camera c) {
-			PApplet.println("Autofocus result: " + result + " for camera "
-					+ c.toString());
+			PApplet.println("Autofocus result: " + result);
 		}
 	};
 
@@ -801,6 +869,9 @@ public class KetaiCamera extends PImage implements IDataProducer {
 				+ frameWidth + "," + frameHeight + "," + cameraFPS);
 		PApplet.println(cameraParameters.flatten());
 
+		if (cameraParameters.getMaxNumDetectedFaces() > 0)
+			supportsFaceDetection = true;
+
 		// update PImage
 		resize(frameWidth, frameHeight);
 	}
@@ -813,4 +884,34 @@ public class KetaiCamera extends PImage implements IDataProducer {
 		consumers.remove(_dataConsumer);
 	}
 
+}
+
+class ketaiFaceDetectionListener implements Camera.FaceDetectionListener {
+	KetaiCamera ketaicamera;
+
+	public ketaiFaceDetectionListener(KetaiCamera k) {
+		ketaicamera = k;
+	}
+
+	public void onFaceDetection(Face[] faces, Camera camera) {
+		if (ketaicamera.onFaceDetectionEventMethod == null)
+			return;
+
+		if (faces.length > 0) {
+			kFace[] f = new kFace[faces.length];
+			for (int i = 0; i < faces.length; i++) {
+				f[i].location.set(faces[i].rect.centerX(),
+						faces[i].rect.centerY(), 0);
+				f[i].distance = faces[i].rect.width();
+			}
+			try {
+				ketaicamera.onFaceDetectionEventMethod.invoke(
+						ketaicamera.parent, new Object[] { f });
+			} catch (Exception e) {
+				PApplet.println("Exception trying to forward facedetection event (KetaiCamera):"
+						+ e.getMessage());
+			}
+
+		}
+	}
 }
