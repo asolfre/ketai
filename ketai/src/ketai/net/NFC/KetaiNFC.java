@@ -36,7 +36,8 @@ public class KetaiNFC {
 	private String pushMessage = "";
 	private NfcAdapter mAdapter;
 	private String textToWrite = "";
-	private PendingIntent pendingIntent;
+
+	// private PendingIntent pendingIntent;
 
 	public KetaiNFC(PApplet pParent) {
 		parent = pParent;
@@ -48,11 +49,11 @@ public class KetaiNFC {
 		// will fill in the intent with the details of the discovered tag before
 		// delivering to
 		// this activity.
-		// mPendingIntent = PendingIntent.getActivity(parent, 0, new Intent(
-		// parent, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
-		// 0);
-		Intent intnt = new Intent(parent, parent.getClass());
-		intnt.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		mPendingIntent = PendingIntent.getActivity(parent, 0, new Intent(
+				parent, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+				0);
+		// Intent intnt = new Intent(parent, parent.getClass());
+		// intnt.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
 		// if(pendingIntent == null)
 		// pendingIntent = PendingIntent.getActivity(parent, 0, new
@@ -214,7 +215,7 @@ public class KetaiNFC {
 
 			if (mAdapter != null) {
 				if (mPendingIntent == null)
-					pendingIntent = PendingIntent.getActivity(parent, 0,
+					mPendingIntent = PendingIntent.getActivity(parent, 0,
 							new Intent(parent, getClass())
 									.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
 							0);
