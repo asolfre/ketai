@@ -9,6 +9,7 @@ import processing.core.PApplet;
 
 public class KNetUtility {
 	static public String getLocalIpAddress() {
+		String thing = "0.0.0.0";
 		try {
 			for (Enumeration<NetworkInterface> en = NetworkInterface
 					.getNetworkInterfaces(); en.hasMoreElements();) {
@@ -16,15 +17,18 @@ public class KNetUtility {
 				for (Enumeration<InetAddress> enumIpAddr = intf
 						.getInetAddresses(); enumIpAddr.hasMoreElements();) {
 					InetAddress inetAddress = enumIpAddr.nextElement();
-					if (!inetAddress.isLoopbackAddress()) {
-						return inetAddress.getHostAddress().toString();
+					if (!inetAddress.isLoopbackAddress() && thing == "0.0.0.0"
+							&& inetAddress.getHostAddress().matches("\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b")) {
+						thing = inetAddress.getHostAddress();
 					}
+//					PApplet.println("IP address: "
+//							+ inetAddress.getHostAddress());
 				}
 			}
 		} catch (SocketException ex) {
 			PApplet.println("SocketException:" + ex.toString());
 		}
-		return "0.0.0.0";
+		return thing;
 	}
 
 }
