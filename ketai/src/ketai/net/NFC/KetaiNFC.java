@@ -93,10 +93,10 @@ public class KetaiNFC {
 		if (mTechLists == null)
 			Log.i("KetaiNFC", "KetaiNFC(): mTechLists was null  ");
 
-		// if (parent != null && mAdapter != null && mPendingIntent != null
-		// && mFilters != null && mTechLists != null)
-		// mAdapter.enableForegroundDispatch(parent, mPendingIntent, mFilters,
-		// mTechLists);
+//		 if (parent != null && mAdapter != null && mPendingIntent != null
+//		 && mFilters != null && mTechLists != null)
+//		 mAdapter.enableForegroundDispatch(parent, mPendingIntent, mFilters,
+//		 mTechLists);
 		// else
 		// Log.i("KetaiNFC",
 		// "KetaiNFC(): Something was null and foreground dispatch registration failed  ");
@@ -262,13 +262,13 @@ public class KetaiNFC {
 	}
 
 	public void foregroundPush(String _data) {
-		NfcAdapter mAdapter = NfcAdapter.getDefaultAdapter();
+		NfcAdapter mAdapter = NfcAdapter.getDefaultAdapter(parent);
 
 		// Create an NDEF message with some sample text
 		NdefMessage mMessage = new NdefMessage(
 				new NdefRecord[] { newTextRecord(_data, Locale.ENGLISH, true) });
 		if (mAdapter != null && parent != null && mMessage != null)
-			mAdapter.enableForegroundNdefPush(parent, mMessage);
+			mAdapter.setNdefPushMessage(mMessage,  parent);
 	}
 
 	public void writeTextToTag(String s) {
