@@ -28,6 +28,10 @@ public class KNetUtility {
 		} catch (SocketException ex) {
 			PApplet.println("SocketException:" + ex.toString());
 		}
+		catch (NullPointerException nx)
+		{
+			PApplet.println("Failed to get any network interfaces...");
+		}
 		return thing;
 	}
 
