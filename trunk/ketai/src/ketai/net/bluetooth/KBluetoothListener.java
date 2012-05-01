@@ -12,10 +12,10 @@ public class KBluetoothListener extends Thread {
 	private final BluetoothServerSocket mmServerSocket;
 	private String mSocketType;
 	private BluetoothAdapter mAdapter;
-	private KBluetoothManager btManager;
+	private KetaiBluetooth btManager;
 	private boolean go = true;
 
-	public KBluetoothListener(KBluetoothManager btm, boolean secure) {
+	public KBluetoothListener(KetaiBluetooth btm, boolean secure) {
 		BluetoothServerSocket tmp = null;
 		mSocketType = secure ? "Secure" : "Insecure";
 		btManager = btm;

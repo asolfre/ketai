@@ -73,7 +73,7 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 			}
 
 			public void onFailure(int reason) {
-				PApplet.println("Connect failed. Retry.");
+				PApplet.println("Connect failed. Retry." + reason);
 			}
 		});
 	}
@@ -174,7 +174,6 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 			PApplet.println("p2p device changed"
 					+ (WifiP2pDevice) intent
 							.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE));
-
 		}
 	}
 
@@ -205,8 +204,21 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 	}
 
 	public void onFailure(int arg0) {
-		PApplet.println("WifiDirect failed " + arg0);
-
+		switch(arg0)
+		{
+		case 0:
+			PApplet.println("WifiDirect failed " + arg0);
+			break;
+		case 1:
+			PApplet.println("WifiDirect failed " + arg0);
+			break;
+		case 2:
+			PApplet.println("WifiDirect failed " + arg0);
+			break;
+		default:
+			PApplet.println("WifiDirect failed " + arg0);
+			break;
+		}			
 	}
 
 	public void onSuccess() {
