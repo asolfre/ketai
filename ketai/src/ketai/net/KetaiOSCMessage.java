@@ -9,9 +9,9 @@ package ketai.net;
  */
 import oscP5.OscMessage;
 
-public class kOSCMessage extends OscMessage{
+public class KetaiOSCMessage extends OscMessage{
 
-	public kOSCMessage(byte[] _data) {
+	public KetaiOSCMessage(byte[] _data) {
 		super("");
 		this.parseMessage(_data);
 	}

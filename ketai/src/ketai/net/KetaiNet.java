@@ -7,8 +7,8 @@ import java.util.Enumeration;
 
 import processing.core.PApplet;
 
-public class KNetUtility {
-	static public String getLocalIpAddress() {
+public class KetaiNet {
+	static public String getIP() {
 		String thing = "0.0.0.0";
 		try {
 			for (Enumeration<NetworkInterface> en = NetworkInterface

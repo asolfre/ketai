@@ -17,9 +17,9 @@ public class KBluetoothConnection extends Thread {
 	private final OutputStream mmOutStream;
 	private boolean isConnected = false;
 	private String address = "";
-	private KBluetoothManager btm;
+	private KetaiBluetooth btm;
 
-	public KBluetoothConnection(KBluetoothManager _btm, BluetoothSocket socket) {
+	public KBluetoothConnection(KetaiBluetooth _btm, BluetoothSocket socket) {
 		PApplet.println("create Connection thread to "
 				+ socket.getRemoteDevice().getName());
 		btm = _btm;

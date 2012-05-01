@@ -19,7 +19,7 @@ import android.content.IntentFilter;
 
 import processing.core.PApplet;
 
-public class KBluetoothManager {
+public class KetaiBluetooth {
 	protected PApplet parent;
 	protected BluetoothAdapter bluetoothAdapter;
 	private HashMap<String, String> pairedDevices;
@@ -28,6 +28,7 @@ public class KBluetoothManager {
 	private KBluetoothListener btListener;
 	private ConnectThread mConnectThread;
 	private boolean isStarted = false;
+	private boolean SLIPMode = false;
 	protected Method onBluetoothDataEventMethod;
 
 	protected UUID MY_UUID_SECURE = UUID
@@ -40,7 +41,7 @@ public class KBluetoothManager {
 
 	final static int BLUETOOTH_ENABLE_REQUEST = 1;
 
-	public KBluetoothManager(PApplet _parent) {
+	public KetaiBluetooth(PApplet _parent) {
 		parent = _parent;
 		bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 		if (bluetoothAdapter == null) {
@@ -60,6 +61,10 @@ public class KBluetoothManager {
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		parent.registerReceiver(mReceiver, filter);
 		findParentIntention();
+	}
+
+	public void setSLIPMode(boolean _flag) {
+		SLIPMode = _flag;
 	}
 
 	public boolean isStarted() {
@@ -190,9 +195,14 @@ public class KBluetoothManager {
 		return false;
 	}
 
+	public boolean connectDeviceUsingSLIP(String _hwAddress) {
+		return false;
+	}
+
 	public boolean connectDevice(BluetoothSocket _socket) {
 
 		KBluetoothConnection tmp = new KBluetoothConnection(this, _socket);
+
 		if (tmp.isConnected())
 			tmp.start();
 		else {
@@ -284,8 +294,12 @@ public class KBluetoothManager {
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 				BluetoothDevice device = intent
 						.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-				discoveredDevices.put(device.getName(), device.getAddress());
-				PApplet.println("New Device Discovered: " + device.getName());
+				if (device != null) {
+					discoveredDevices
+							.put(device.getName(), device.getAddress());
+					PApplet.println("New Device Discovered: "
+							+ device.getName());
+				}
 			}
 		}
 	};
@@ -347,6 +361,13 @@ public class KBluetoothManager {
 		}
 
 		public void run() {
+			while(mmSocket == null)
+				try {
+					Thread.sleep(250);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+			
 			PApplet.println("BEGIN mConnectThread SocketType:" + mSocketType
 					+ ":" + mmSocket.getRemoteDevice().getName());
 
