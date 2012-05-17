@@ -11,24 +11,22 @@ import java.util.Vector;
 import ketai.data.IDataConsumer;
 import ketai.data.IDataProducer;
 
-
-
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.content.Context;
 
-public class KetaiSensor implements
-		SensorEventListener, IDataProducer {
+public class KetaiSensor implements SensorEventListener, IDataProducer {
 
 	private SensorManager sensorManager = null;
 
 	private boolean isRegistered = false;
 	private PApplet parent;
 	private ArrayList<IDataConsumer> consumers;
-	
+
 	private Method onSensorEventMethod;
+	float[] accelerometerData, magnetometerData;
 
 	// Simple methods are of the form v1,v2,v3,v4 (typically x,y,z values)
 	// and the non-simple methods take values of v1,v2,v3, time, accuracy.
@@ -49,14 +47,16 @@ public class KetaiSensor implements
 			onRotationVectorSensorEventMethodSimple,
 			onGravitySensorEventMethod, onGravitySensorEventMethodSimple,
 			onLinearAccelerationSensorEventMethod,
-			onLinearAccelerationSensorEventMethodSimple;
+			onLinearAccelerationSensorEventMethodSimple,
+			onAmbientTemperatureEventMethod, onRelativeHumidityEventMethod;
 
 	private boolean accelerometerSensorEnabled, magneticFieldSensorEnabled,
-			orientationSensorEnabled, proximitySensorEnabled, useSimulator;
-	private boolean lightSensorEnabled, pressureSensorEnabled,
+			orientationSensorEnabled, proximitySensorEnabled, useSimulator,
+			lightSensorEnabled, pressureSensorEnabled,
 			temperatureSensorEnabled, gyroscopeSensorEnabled,
 			rotationVectorSensorEnabled, linearAccelerationSensorEnabled,
-			gravitySensorEnabled;
+			gravitySensorEnabled, ambientTemperatureSensorEnabled,
+			relativeHumiditySensorEnabled;
 	private long delayInterval, timeOfLastUpdate;
 	final static String SERVICE_DESCRIPTION = "Android Sensors.";
 
@@ -163,8 +163,24 @@ public class KetaiSensor implements
 		gyroscopeSensorEnabled = false;
 	}
 
+	public void disableAmibentTemperature() {
+		ambientTemperatureSensorEnabled = false;
+	}
+
+	public void disableRelativeHumiditySensor() {
+		relativeHumiditySensorEnabled = false;
+	}
+
+	public void enableAmibentTemperature() {
+		ambientTemperatureSensorEnabled = true;
+	}
+
+	public void enableRelativeHumiditySensor() {
+		relativeHumiditySensorEnabled = true;
+	}
+
 	public void enableAllSensors() {
-		accelerometerSensorEnabled = magneticFieldSensorEnabled = orientationSensorEnabled = proximitySensorEnabled = lightSensorEnabled = pressureSensorEnabled = temperatureSensorEnabled = gyroscopeSensorEnabled = linearAccelerationSensorEnabled = rotationVectorSensorEnabled = true;
+		accelerometerSensorEnabled = magneticFieldSensorEnabled = orientationSensorEnabled = proximitySensorEnabled = lightSensorEnabled = pressureSensorEnabled = temperatureSensorEnabled = gyroscopeSensorEnabled = linearAccelerationSensorEnabled = rotationVectorSensorEnabled = ambientTemperatureSensorEnabled = relativeHumiditySensorEnabled = true;
 	}
 
 	public boolean isAccelerometerAvailable() {
@@ -205,6 +221,14 @@ public class KetaiSensor implements
 
 	public boolean isGyroscopeAvailable() {
 		return isSensorSupported(Sensor.TYPE_GYROSCOPE);
+	}
+
+	public boolean isAmbientTemperatureAvailable() {
+		return isSensorSupported(Sensor.TYPE_AMBIENT_TEMPERATURE);
+	}
+
+	public boolean isRelativeHumidityAvailable() {
+		return isSensorSupported(Sensor.TYPE_RELATIVE_HUMIDITY);
 	}
 
 	public Collection<? extends String> list() {
@@ -289,6 +313,18 @@ public class KetaiSensor implements
 			sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
+		if (ambientTemperatureSensorEnabled) {
+			Sensor s = sensorManager
+					.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
+			sensorManager.registerListener(this, s,
+					SensorManager.SENSOR_DELAY_UI);
+		}
+		if (relativeHumiditySensorEnabled) {
+			Sensor s = sensorManager
+					.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
+			sensorManager.registerListener(this, s,
+					SensorManager.SENSOR_DELAY_UI);
+		}
 		isRegistered = true;
 	}
 
@@ -327,6 +363,7 @@ public class KetaiSensor implements
 				&& accelerometerSensorEnabled) {
 			if (onAccelerometerEventMethod != null) {
 				try {
+					accelerometerData = arg0.values.clone();
 					onAccelerometerEventMethod.invoke(parent, new Object[] {
 							arg0.values[0], arg0.values[1], arg0.values[2],
 							arg0.timestamp, arg0.accuracy });
@@ -342,6 +379,7 @@ public class KetaiSensor implements
 
 			if (onAccelerometerEventMethodSimple != null) {
 				try {
+					accelerometerData = arg0.values.clone();
 					onAccelerometerEventMethodSimple.invoke(parent,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2] });
@@ -425,6 +463,7 @@ public class KetaiSensor implements
 				&& magneticFieldSensorEnabled) {
 			if (onMagneticFieldSensorEventMethod != null) {
 				try {
+					magnetometerData = arg0.values.clone();
 					onMagneticFieldSensorEventMethod.invoke(parent,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2], arg0.timestamp,
@@ -440,6 +479,7 @@ public class KetaiSensor implements
 			}
 			if (onMagneticFieldSensorEventMethodSimple != null) {
 				try {
+					magnetometerData = arg0.values.clone();
 					onMagneticFieldSensorEventMethodSimple.invoke(parent,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2] });
@@ -673,12 +713,44 @@ public class KetaiSensor implements
 				}
 			}
 		}
+		if (arg0.sensor.getType() == Sensor.TYPE_AMBIENT_TEMPERATURE
+				&& ambientTemperatureSensorEnabled) {
+			if (onAmbientTemperatureEventMethod != null) {
+				try {
+					onAmbientTemperatureEventMethod.invoke(parent,
+							new Object[] { arg0.values[0] });
+					timeOfLastUpdate = now;
+					return;
+				} catch (Exception e) {
+					PApplet.println("Disabling onAmbientTemperatureEvent() because of an error:"
+							+ e.getMessage());
+					e.printStackTrace();
+					onAmbientTemperatureEventMethod = null;
+				}
+			}
+		}
+
+		if (arg0.sensor.getType() == Sensor.TYPE_RELATIVE_HUMIDITY
+				&& relativeHumiditySensorEnabled) {
+			if (onRelativeHumidityEventMethod != null) {
+				try {
+					onRelativeHumidityEventMethod.invoke(parent,
+							new Object[] { arg0.values[0] });
+					timeOfLastUpdate = now;
+					return;
+				} catch (Exception e) {
+					PApplet.println("Disabling onRelativeHumidityEventMethod() because of an error:"
+							+ e.getMessage());
+					e.printStackTrace();
+					onRelativeHumidityEventMethod = null;
+				}
+			}
+		}
 	}
 
 	private void broadcastSensorEvent(SensorEvent arg0) {
-			
-		for(IDataConsumer d: consumers)
-		{
+
+		for (IDataConsumer d : consumers) {
 			d.consumeData(arg0);
 		}
 	}
@@ -915,6 +987,23 @@ public class KetaiSensor implements
 
 		} catch (NoSuchMethodException e) {
 		}
+
+		try {
+			onAmbientTemperatureEventMethod = parent.getClass().getMethod(
+					"onAmibentTemperatureEvent", new Class[] { float.class });
+			ambientTemperatureSensorEnabled = true;
+			PApplet.println("Found onAmbientTemperatureEvent callback...");
+		} catch (NoSuchMethodException e) {
+		}
+
+		try {
+			onRelativeHumidityEventMethod = parent.getClass().getMethod(
+					"onRelativeHumidityEvent", new Class[] { float.class });
+			relativeHumiditySensorEnabled = true;
+			PApplet.println("Found onRelativeHumidityEventMethod...");
+		} catch (NoSuchMethodException e) {
+		}
+
 	}
 
 	public void startService() {
@@ -942,10 +1031,29 @@ public class KetaiSensor implements
 	}
 
 	public void registerDataConsumer(IDataConsumer _dataConsumer) {
-		consumers.add(_dataConsumer);	
+		consumers.add(_dataConsumer);
 	}
 
 	public void removeDataConsumer(IDataConsumer _dataConsumer) {
-			consumers.remove(_dataConsumer);
+		consumers.remove(_dataConsumer);
+	}
+
+	public float[] getOrientation() {
+		float[] values = new float[3];
+		float[] R = new float[16];
+		float[] I = new float[9];
+
+		if (!isStarted() && !this.accelerometerSensorEnabled
+				&& !this.magneticFieldSensorEnabled) {
+			PApplet.println("Cannot compute orientation until sensor service is started and accelerometer and magnetometer must also be enabled.");
+			values = new float[3];
+			return values;
+		}
+
+		if (SensorManager.getRotationMatrix(R, I, accelerometerData,
+				magnetometerData))
+			values = SensorManager.getOrientation(null, values);
+
+		return values;
 	}
 }
