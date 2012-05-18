@@ -11,7 +11,9 @@ public class KetaiFaceDetector {
 	public static KetaiSimpleFace[] findFaces(PImage _p, int MAX_FACES) {
 		ArrayList<KetaiSimpleFace> foundFaces = new ArrayList<KetaiSimpleFace>();
 		int numberOfFaces = 0;
-
+		
+		_p.loadPixels();
+		
 		android.graphics.Bitmap _bitmap = Bitmap.createBitmap(_p.pixels,
 				_p.width, _p.height, Bitmap.Config.RGB_565);
 
