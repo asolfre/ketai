@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import processing.core.PApplet;
 
 import android.graphics.Color;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
@@ -53,6 +54,29 @@ public class KetaiList extends ListView {
 
 	public String getSelection() {
 		return selection;
+	}
+	
+	public boolean onKeyDown(int KeyCode, KeyEvent event)
+	{
+		PApplet.println(" key pressed!");
+		return false;
+	}
+
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			PApplet.println("BACK key released!");
+			self.setVisibility(View.GONE);
+			((ViewManager) self.getParent()).removeView(self);
+			parent.runOnUiThread(new Runnable() {
+				public void run() {
+					layout.removeAllViews();
+					layout.setVisibility(View.GONE);
+				}
+			});
+
+			return true;
+		}
+		return false;
 	}
 
 	private void init() {
@@ -102,5 +126,4 @@ public class KetaiList extends ListView {
 		});
 
 	}
-
 }

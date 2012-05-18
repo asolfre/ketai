@@ -3,11 +3,11 @@ package ketai.data.analyzer;
 import ketai.data.database.DataManager;
 import ketai.data.inputService.CameraService;
 import ketai.camera.FaceFinder;
-import ketai.camera.kFace;
 import processing.core.PApplet;
 import processing.core.PImage;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
+import android.media.FaceDetector.Face;
 
 public class FaceAnalyzer extends AbstractKetaiAnalyzer {
 
@@ -36,7 +36,7 @@ public class FaceAnalyzer extends AbstractKetaiAnalyzer {
 
 		SQLiteStatement insertStatement;
 
-		kFace[] faces = FaceFinder.findFaces((PImage)_data, 5);
+		Face[] faces = FaceFinder.findFaces((PImage)_data, 5);
 
 		int numberOfFaces = faces.length;
 

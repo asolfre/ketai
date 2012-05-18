@@ -9,8 +9,8 @@ import android.media.FaceDetector.Face;
 
 public class FaceFinder {
 
-	public static kFace[] findFaces(PImage _p, int MAX_FACES) {
-		ArrayList<kFace> foundFaces = new ArrayList<kFace>();
+	public static Face[] findFaces(PImage _p, int MAX_FACES) {
+		ArrayList<Face> foundFaces = new ArrayList<Face>();
 		int numberOfFaces = 0;
 
 		android.graphics.Bitmap _bitmap = Bitmap.createBitmap(_p.pixels,
@@ -24,17 +24,17 @@ public class FaceFinder {
 			numberOfFaces = _detector.findFaces(_bitmap, faces);
 
 			for (int i = 0; i < numberOfFaces; i++) {
-				foundFaces.add(new kFace(faces[i]));
+				foundFaces.add(faces[i]);
 			}
 		}
-		kFace[] f = new kFace[numberOfFaces];
+		Face[] f = new Face[numberOfFaces];
 		for (int i = 0; i < numberOfFaces; i++) {
 			f[i] = foundFaces.get(i);
 		}
 		return f;
 	}
 
-	public static kFace[] findFaces(PImage _p) {
+	public static Face[] findFaces(PImage _p) {
 		int DEFAULT_MAX_FACES = 5;
 		return findFaces(_p, DEFAULT_MAX_FACES);
 	}
