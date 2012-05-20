@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ketai.net.NFC;
+package ketai.net.nfc;
 
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -21,10 +21,10 @@ import android.nfc.NdefRecord;
 import java.util.ArrayList;
 import java.util.List;
 
-import ketai.net.NFC.record.ParsedNdefRecord;
-import ketai.net.NFC.record.SmartPoster;
-import ketai.net.NFC.record.TextRecord;
-import ketai.net.NFC.record.UriRecord;
+import ketai.net.nfc.record.ParsedNdefRecord;
+import ketai.net.nfc.record.SmartPoster;
+import ketai.net.nfc.record.TextRecord;
+import ketai.net.nfc.record.UriRecord;
 
 
 import processing.core.PApplet;

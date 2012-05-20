@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package ketai.net.NFC.record;
+package ketai.net.nfc.record;
 
 import android.nfc.NdefRecord;
 

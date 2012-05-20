@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ketai.net.NFC.record;
+package ketai.net.nfc.record;
 
 public interface ParsedNdefRecord {
 

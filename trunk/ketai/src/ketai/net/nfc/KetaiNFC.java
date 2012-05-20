@@ -1,4 +1,4 @@
-package ketai.net.NFC;
+package ketai.net.nfc;
 
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
 
-import ketai.net.NFC.record.ParsedNdefRecord;
+import ketai.net.nfc.record.ParsedNdefRecord;
 
 import processing.core.PApplet;
 import android.app.PendingIntent;
