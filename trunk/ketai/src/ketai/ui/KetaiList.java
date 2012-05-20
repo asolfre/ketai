@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import processing.core.PApplet;
 
 import android.graphics.Color;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewManager;
@@ -29,8 +28,8 @@ public class KetaiList extends ListView {
 	public KetaiList(PApplet _parent, ArrayList<String> data) {
 		super(_parent.getApplicationContext());
 		parent = _parent;
-		adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_list_item_1,
-				data);
+		adapter = new ArrayAdapter<String>(parent,
+				android.R.layout.simple_list_item_1, data);
 		init();
 
 	}
@@ -39,8 +38,8 @@ public class KetaiList extends ListView {
 		super(_parent.getApplicationContext());
 
 		parent = _parent;
-		adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_list_item_1,
-				data);
+		adapter = new ArrayAdapter<String>(parent,
+				android.R.layout.simple_list_item_1, data);
 		init();
 	}
 
@@ -49,8 +48,8 @@ public class KetaiList extends ListView {
 
 		parent = _parent;
 		title = _title;
-		adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_list_item_1,
-				data);
+		adapter = new ArrayAdapter<String>(parent,
+				android.R.layout.simple_list_item_1, data);
 		init();
 	}
 
@@ -58,8 +57,8 @@ public class KetaiList extends ListView {
 		super(_parent.getApplicationContext());
 		parent = _parent;
 		title = _title;
-		adapter = new ArrayAdapter<String>(parent, android.R.layout.simple_list_item_1,
-				data);
+		adapter = new ArrayAdapter<String>(parent,
+				android.R.layout.simple_list_item_1, data);
 		init();
 
 	}
@@ -78,40 +77,45 @@ public class KetaiList extends ListView {
 		return selection;
 	}
 
-	public boolean onKeyDown(int KeyCode, KeyEvent event) {
-		PApplet.println(" key pressed!");
-		return false;
-	}
-
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			PApplet.println("BACK key released!");
-			self.setVisibility(View.GONE);
-			((ViewManager) self.getParent()).removeView(self);
-			parent.runOnUiThread(new Runnable() {
-				public void run() {
-					layout.removeAllViews();
-					layout.setVisibility(View.GONE);
-				}
-			});
-
-			return true;
-		}
-		return false;
-	}
-
 	private void init() {
 		setBackgroundColor(Color.BLACK);
 		setAlpha(1);
 		self = this;
+		final TextView cancel;
+
 		layout = new RelativeLayout(parent);
 
 		if (title != "") {
 			TextView tv = new TextView(parent);
 			tv.setText(title);
+			setHeaderDividersEnabled(true);
 			addHeaderView(tv);
 		}
 
+		cancel = new TextView(parent);
+		cancel.setText("<CANCEL SELECTION>");
+		
+		cancel.setOnClickListener(new OnClickListener() {
+			public void onClick(View arg0) {
+				layout.removeAllViewsInLayout();
+
+				self.setVisibility(View.GONE);
+				((ViewManager) self.getParent()).removeView(self);
+				parent.runOnUiThread(new Runnable() {
+					public void run() {
+						layout.removeAllViews();
+						try {
+							parentCallback.invoke(parent, new Object[] { self });
+						} catch (Exception ex) {
+						}
+						layout.setVisibility(View.GONE);
+					}
+				});
+			}
+		});
+
+		setFooterDividersEnabled(true);
+		addFooterView(cancel);
 		try {
 			parentCallback = parent.getClass().getMethod(
 					"onKetaiListSelection", new Class[] { KetaiList.class });
