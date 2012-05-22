@@ -1,0 +1,13 @@
+v6 updates
+-------------
+- moved to android Ice Cream Sandwich (4.0)
+- updated for news Sensors (ambient temp, relative humidity)
+- moved android face detection to separate package(cv)
+- updated camera class to wrap face detection provided by camera (if supported)
+- camera now uses a preview texture(allowed in ICS) to allow proper initialization
+- added example for using bluetooth class
+- added wifi direct example
+- created new OSC message class to allow OSC parsing over serial connections(bluetooth)
+- added ui package to allow alert dialogs and lists to be used from sketch
+- renamed some packages/classes for consistency 
+
