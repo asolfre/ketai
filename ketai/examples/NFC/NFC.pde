@@ -32,7 +32,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 
-import ketai.net.NFC.*;
+import ketai.net.nfc.*;
 
 String textRead = "";
 KetaiNFC ketaiNFC;
