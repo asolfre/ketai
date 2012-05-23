@@ -26,8 +26,8 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.CameraInfo;
-import android.hardware.Camera.Face;
-import android.hardware.Camera.FaceDetectionListener;
+//import android.hardware.Camera.Face;
+//import android.hardware.Camera.FaceDetectionListener;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
@@ -52,7 +52,7 @@ public class KetaiCamera extends PImage implements IDataProducer
 	String SAVE_DIR = "";
 	// Thread runner;
 	boolean available = false;
-	public boolean isDetectingFaces = false;
+//	public boolean isDetectingFaces = false;
 	boolean supportsFaceDetection = false;
 
 	private ArrayList<IDataConsumer> consumers;
@@ -191,11 +191,11 @@ public class KetaiCamera extends PImage implements IDataProducer
 //		}
 //	}
 
-	public void stopFaceDetection() {
-		isDetectingFaces = false;
-		if (camera != null && isStarted && supportsFaceDetection)
-			camera.stopFaceDetection();
-	}
+//	public void stopFaceDetection() {
+//		isDetectingFaces = false;
+//		if (camera != null && isStarted && supportsFaceDetection)
+//			camera.stopFaceDetection();
+//	}
 
 	public void setZoom(int _zoom) {
 		if (camera == null)
