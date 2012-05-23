@@ -38,8 +38,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.view.Surface;
 
-public class KetaiCamera extends PImage implements IDataProducer,
-		FaceDetectionListener {
+public class KetaiCamera extends PImage implements IDataProducer
+		 {
 	private Camera camera;
 	private int[] myPixels;
 	protected Method onPreviewEventMethod, onPreviewEventMethodPImage,
@@ -181,15 +181,15 @@ public class KetaiCamera extends PImage implements IDataProducer,
 				+ camera.getParameters().flatten());
 	}
 
-	public void startFaceDetection() {
-		isDetectingFaces = true;
-		if (camera != null && isStarted && supportsFaceDetection) {
-			if (isDetectingFaces) {
-				camera.setFaceDetectionListener(this);
-				camera.startFaceDetection();
-			}
-		}
-	}
+//	public void startFaceDetection() {
+//		isDetectingFaces = true;
+//		if (camera != null && isStarted && supportsFaceDetection) {
+//			if (isDetectingFaces) {
+//				camera.setFaceDetectionListener(this);
+//				camera.startFaceDetection();
+//			}
+//		}
+//	}
 
 	public void stopFaceDetection() {
 		isDetectingFaces = false;
@@ -435,10 +435,10 @@ public class KetaiCamera extends PImage implements IDataProducer,
 			}
 			isStarted = true;
 
-			if (supportsFaceDetection && isDetectingFaces) {
-				camera.setFaceDetectionListener(this);
-				camera.startFaceDetection();
-			}
+//			if (supportsFaceDetection && isDetectingFaces) {
+//				camera.setFaceDetectionListener(this);
+//				camera.startFaceDetection();
+//			}
 
 			PApplet.println("Using preview format: "
 					+ camera.getParameters().getPreviewFormat());
@@ -889,24 +889,24 @@ public class KetaiCamera extends PImage implements IDataProducer,
 		consumers.remove(_dataConsumer);
 	}
 
-	public void onFaceDetection(Face[] _faces, Camera camera) {
-		KetaiFace[] faces = new KetaiFace[_faces.length];
-
-		for (int i = 0; i < _faces.length; i++) {
-			faces[i] = new KetaiFace(_faces[i], frameWidth, frameHeight);
-		}
-		if (onFaceDetectionEventMethod != null) {
-			try {
-				onFaceDetectionEventMethod.invoke(parent,
-						new Object[] { faces });
-			} catch (Exception e) {
-				PApplet.println("Disabling onFaceDetectionEventMethod(KetaiCamera) because of an error:"
-						+ e.getMessage());
-				e.printStackTrace();
-				onFaceDetectionEventMethod = null;
-			}
-		}
-	}
+//	public void onFaceDetection(Face[] _faces, Camera _camera) {
+//		KetaiFace[] faces = new KetaiFace[_faces.length];
+//
+//		for (int i = 0; i < _faces.length; i++) {
+//			faces[i] = new KetaiFace(_faces[i], frameWidth, frameHeight);
+//		}
+//		if (onFaceDetectionEventMethod != null) {
+//			try {
+//				onFaceDetectionEventMethod.invoke(parent,
+//						new Object[] { faces });
+//			} catch (Exception e) {
+//				PApplet.println("Disabling onFaceDetectionEventMethod(KetaiCamera) because of an error:"
+//						+ e.getMessage());
+//				e.printStackTrace();
+//				onFaceDetectionEventMethod = null;
+//			}
+//		}
+//	}
 
 }
 
