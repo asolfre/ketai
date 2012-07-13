@@ -27,50 +27,13 @@
  * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
  */
 
-//The following are required for setup
-import android.app.PendingIntent;
-import android.content.Intent;
-import android.os.Bundle;
+
 
 import ketai.net.nfc.*;
 
 String textRead = "";
 KetaiNFC ketaiNFC;
 
-PendingIntent mPendingIntent;  //required for nfc registration
-
-/*
-  The following code allows the sketch to handle all NFC events
- when it is running.  Eventually we would like to handle this
- in a more elegant manner for now cut'n'paste will suffice.  
- */
-//====================================================================
-void onCreate(Bundle savedInstanceState) {
-  super.onCreate(savedInstanceState);
-  mPendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, 
-  getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-}
-
-void onNewIntent(Intent intent) {
-  if (ketaiNFC != null)
-    ketaiNFC.handleIntent(intent);
-}
-
-void onResume() {
-  super.onResume();
-  if (ketaiNFC == null)
-    ketaiNFC = new KetaiNFC(this);
-
-  ketaiNFC.start(mPendingIntent);
-}
-
-void onPause() {
-  super.onPause();
-  if (ketaiNFC != null)
-    ketaiNFC.onPause();
-}
-
-//====================================================================
 
 void setup()
 {   
@@ -92,4 +55,30 @@ void onNFCEvent(String txt)
 {
   textRead = txt;
 }
+
+//void onNFCEvent(URI uri)
+//{
+//  
+//}
+
+
+void onNFCEvent(byte[] data)
+{
+  
+}
+
+//set our write string....
+void mousePressed()
+{
+ ketaiNFC.write("ket.ai"); 
+}
+
+
+//Press menu key to cancel write
+void keyPressed()
+{
+   ketaiNFC.cancelWrite(); 
+}
+
+
 
