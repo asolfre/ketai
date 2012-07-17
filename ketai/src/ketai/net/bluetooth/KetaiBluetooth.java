@@ -121,14 +121,24 @@ public class KetaiBluetooth {
 		btListener = new KBluetoothListener(this, true);
 		btListener.start();
 		isStarted = true;
+		findParentIntention();
 		return isStarted;
+	}
+	
+	public String getAddress()
+	{
+		if(bluetoothAdapter != null)
+			return bluetoothAdapter.getAddress();
+		else
+			return "";
 	}
 
 	public ArrayList<String> getDiscoveredDeviceNames() {
 		ArrayList<String> devices = new ArrayList<String>();
 
 		for (String key : discoveredDevices.keySet()) {
-			devices.add(key);// key + "->" + discoveredDevices.get(key) + "\n";
+			if(key != null)
+				devices.add(key);// key + "->" + discoveredDevices.get(key) + "\n";
 		}
 		return devices;
 	}
@@ -363,7 +373,7 @@ public class KetaiBluetooth {
 		public void run() {
 			while(mmSocket == null)
 				try {
-					Thread.sleep(250);
+					Thread.sleep(100);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
