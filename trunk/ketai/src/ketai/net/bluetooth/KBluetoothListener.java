@@ -55,6 +55,7 @@ public class KBluetoothListener extends Thread {
 						PApplet.println("Incoming connection from: "
 								+ socket.getRemoteDevice().getName());
 						btManager.connectDevice(socket);
+						mmServerSocket.close();
 					}
 				}
 			} catch (IOException e) {
