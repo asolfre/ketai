@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -204,8 +205,7 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 	}
 
 	public void onFailure(int arg0) {
-		switch(arg0)
-		{
+		switch (arg0) {
 		case 0:
 			PApplet.println("WifiDirect failed " + arg0);
 			break;
@@ -218,7 +218,7 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		default:
 			PApplet.println("WifiDirect failed " + arg0);
 			break;
-		}			
+		}
 	}
 
 	public void onSuccess() {
@@ -238,6 +238,15 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 			}
 
 		}
+	}
+
+	public String getHardwareAddress() {
+		  
+//		  WifiP2pDevice w  = new WifiP2pDevice();
+//		  PApplet.println("Device :" + w.toString());
+		WifiManager wm = (WifiManager) parent.getSystemService(Context.WIFI_SERVICE);
+		String mac = wm.getConnectionInfo().getMacAddress();
+		return mac;
 	}
 
 	public void reset() {
@@ -265,11 +274,16 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 				device = d;
 		}
 
-		if (device == null)
-			return;
+		// if (device == null)
+		// return;
 
 		WifiP2pConfig config = new WifiP2pConfig();
-		config.deviceAddress = device.deviceAddress;
+
+		if (device != null)
+			config.deviceAddress = device.deviceAddress;
+		else
+			config.deviceAddress = deviceName;
+
 		manager.connect(channel, config, new ActionListener() {
 			public void onSuccess() {
 				// success logic
