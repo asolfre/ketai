@@ -10,7 +10,7 @@
  * <p>Updated: 2012-07-25 Daniel Sauter/j.duran</p>
  */
 
-import ketai.database.*;
+import ketai.data.*;
 import ketai.sensors.*;
 
 KetaiSensor sensor;
