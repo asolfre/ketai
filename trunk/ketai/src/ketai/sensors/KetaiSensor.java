@@ -2,14 +2,10 @@ package ketai.sensors;
 
 import processing.core.*;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
-
-import ketai.data.IDataConsumer;
-import ketai.data.IDataProducer;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -17,13 +13,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.content.Context;
 
-public class KetaiSensor implements SensorEventListener, IDataProducer {
+public class KetaiSensor implements SensorEventListener {
 
 	private SensorManager sensorManager = null;
 
 	private boolean isRegistered = false;
 	private PApplet parent;
-	private ArrayList<IDataConsumer> consumers;
 
 	private Method onSensorEventMethod;
 	float[] accelerometerData, magnetometerData;
@@ -68,7 +63,6 @@ public class KetaiSensor implements SensorEventListener, IDataProducer {
 				.getSystemService(Context.SENSOR_SERVICE);
 
 		delayInterval = timeOfLastUpdate = 0;
-		consumers = new ArrayList<IDataConsumer>();
 	}
 
 	public void useSimulator(boolean flag) {
@@ -345,7 +339,6 @@ public class KetaiSensor implements SensorEventListener, IDataProducer {
 			return;
 
 		timeOfLastUpdate = now;
-		broadcastSensorEvent(arg0);
 
 		if (onSensorEventMethod != null) {
 			try {
@@ -748,13 +741,6 @@ public class KetaiSensor implements SensorEventListener, IDataProducer {
 		}
 	}
 
-	private void broadcastSensorEvent(SensorEvent arg0) {
-
-		for (IDataConsumer d : consumers) {
-			d.consumeData(arg0);
-		}
-	}
-
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 	}
 
@@ -1028,14 +1014,6 @@ public class KetaiSensor implements SensorEventListener, IDataProducer {
 
 	public void getQuaternionFromVector(float[] Q, float[] rv) {
 		SensorManager.getQuaternionFromVector(Q, rv);
-	}
-
-	public void registerDataConsumer(IDataConsumer _dataConsumer) {
-		consumers.add(_dataConsumer);
-	}
-
-	public void removeDataConsumer(IDataConsumer _dataConsumer) {
-		consumers.remove(_dataConsumer);
 	}
 
 	public float[] getOrientation() {
