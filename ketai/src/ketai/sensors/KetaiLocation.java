@@ -3,14 +3,9 @@ package ketai.sensors;
 import processing.core.*;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
-
-import ketai.data.IDataConsumer;
-
-
 
 import android.content.Context;
 import android.location.Criteria;
@@ -25,7 +20,6 @@ public class KetaiLocation implements LocationListener {
 			onLocationEventMethod3arg, onLocationEventMethod4arg;
 	private String provider;
 	private Location location;
-	private ArrayList<IDataConsumer> consumers;
 
 	final static String SERVICE_DESCRIPTION = "Android Location.";
 
@@ -36,7 +30,6 @@ public class KetaiLocation implements LocationListener {
 		PApplet.println("KetaiLocationManager instantiated:"
 				+ locationManager.toString());
 		findParentIntentions();
-		consumers = new ArrayList<IDataConsumer>();
 		start();
 	}
 
@@ -225,15 +218,5 @@ public class KetaiLocation implements LocationListener {
 
 	public void onLocationChanged(android.location.Location arg0) {
 		onLocationChanged(new Location(arg0));
-	}
-	
-	public void registerDataConsumer(IDataConsumer _dataConsumer) {
-		consumers.add(_dataConsumer);	
-	}
-
-	public void removeDataConsumer(IDataConsumer _dataConsumer) {
-			consumers.remove(_dataConsumer);
-	}
-
-
+	}	
 }

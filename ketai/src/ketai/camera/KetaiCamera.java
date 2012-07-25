@@ -6,14 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
-
-import ketai.data.IDataConsumer;
-import ketai.data.IDataProducer;
 
 import processing.core.PImage;
 import processing.core.PApplet;
@@ -38,7 +34,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.view.Surface;
 
-public class KetaiCamera extends PImage implements IDataProducer
+public class KetaiCamera extends PImage
 		 {
 	private Camera camera;
 	private int[] myPixels;
@@ -54,8 +50,6 @@ public class KetaiCamera extends PImage implements IDataProducer
 	boolean available = false;
 //	public boolean isDetectingFaces = false;
 	boolean supportsFaceDetection = false;
-
-	private ArrayList<IDataConsumer> consumers;
 
 	// private ketaiFaceDetectionListener facelistener;
 
@@ -74,7 +68,6 @@ public class KetaiCamera extends PImage implements IDataProducer
 		isRGBPreviewSupported = false;
 		enableFlash = false;
 		cameraID = 0;
-		consumers = new ArrayList<IDataConsumer>();
 		// facelistener = new ketaiFaceDetectionListener(this);
 
 		try {
@@ -428,8 +421,9 @@ public class KetaiCamera extends PImage implements IDataProducer
 			try {
 				SurfaceTexture st = new SurfaceTexture(0);
 				camera.setPreviewTexture(st);
+				//camera.setPreviewTexture(null);
 				camera.startPreview();
-				camera.setPreviewDisplay(null);
+				//camera.setPreviewDisplay(null);
 			} catch (NoClassDefFoundError x) {
 				camera.startPreview();
 			}
@@ -623,9 +617,6 @@ public class KetaiCamera extends PImage implements IDataProducer
 			// }
 			// }
 
-			for (IDataConsumer c : consumers) {
-				c.consumeData(self);
-			}
 		}
 	};
 	private AutoFocusCallback autofocusCB = new AutoFocusCallback() {
@@ -879,14 +870,6 @@ public class KetaiCamera extends PImage implements IDataProducer
 		}
 		// update PImage
 		resize(frameWidth, frameHeight);
-	}
-
-	public void registerDataConsumer(IDataConsumer _dataConsumer) {
-		consumers.add(_dataConsumer);
-	}
-
-	public void removeDataConsumer(IDataConsumer _dataConsumer) {
-		consumers.remove(_dataConsumer);
 	}
 
 //	public void onFaceDetection(Face[] _faces, Camera _camera) {
