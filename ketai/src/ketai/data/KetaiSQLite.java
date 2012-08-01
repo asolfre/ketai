@@ -210,7 +210,7 @@ public class KetaiSQLite {
 		return c;
 	}
 
-	public long getRecordCountForTable(String table) {
+	public long getRecordCount(String table) {
 		this.sqlStatement = this.db.compileStatement("SELECT COUNT(*) FROM "
 				+ table);
 		long c = this.sqlStatement.simpleQueryForLong();
