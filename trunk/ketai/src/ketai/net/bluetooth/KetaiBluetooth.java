@@ -28,7 +28,7 @@ public class KetaiBluetooth {
 	private KBluetoothListener btListener;
 	private ConnectThread mConnectThread;
 	private boolean isStarted = false;
-	private boolean SLIPMode = false;
+	//private boolean SLIPMode = false;
 	protected Method onBluetoothDataEventMethod;
 
 	protected UUID MY_UUID_SECURE = UUID
@@ -64,7 +64,7 @@ public class KetaiBluetooth {
 	}
 
 	public void setSLIPMode(boolean _flag) {
-		SLIPMode = _flag;
+//		SLIPMode = _flag;
 	}
 
 	public boolean isStarted() {
