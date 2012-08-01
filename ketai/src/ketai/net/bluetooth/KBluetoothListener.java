@@ -55,13 +55,12 @@ public class KBluetoothListener extends Thread {
 						PApplet.println("Incoming connection from: "
 								+ socket.getRemoteDevice().getName());
 						btManager.connectDevice(socket);
-						mmServerSocket.close();
+						//mmServerSocket.close();
 					}
 				}
 			} catch (IOException e) {
 				PApplet.println("Socket Type: " + mSocketType
 						+ "accept() failed" + e.getMessage());
-				break;
 			}
 		}
 		PApplet.println("END mAcceptThread, socket Type: " + mSocketType);
