@@ -9,13 +9,12 @@ body {
 	padding-left : 10px;
 	padding-right : 8px;
 	background-color : #FFFFFF;
+	font-family : Verdana, Geneva, Arial, Helvetica, sans-serif; 
+	font-size : 100%; 
+    font-size : 0.7em;
+	font-weight : normal;
+	line-height	: normal;
 	margin-bottom:30px;
-}
-
-
-body, font, table, tr, td {
-	font-family : Times, serif; 
-    font-size:14px;
 }
 
 
@@ -23,10 +22,15 @@ body, font, table, tr, td {
 
 /* Headings */
 h1, h2, h3, h4, h5, th {
-	font-family : Times, serif; 
-    font-weight:normal;
+	font-family :Arial, Helvetica, sans-serif; 	
+	font-size:1.2em;
 }
 
+
+p { 
+	font-size : 1em; 		
+	width:80%;
+}
 
 pre, code {  
 	font-family : "Courier New", Courier, monospace; 
@@ -38,8 +42,8 @@ pre, code {
 
 table {
 	border:0;
-	margin-bottom:0px;
-	margin-top:0px;
+	margin-bottom:10px;
+	margin-top:10px;
 }
 
 
@@ -55,21 +59,17 @@ tr, td {
 hr {
 	border:0;
 	height:1px;
-    background:#333;
 	padding:0;
 	margin:0;
-	margin-bottom:24px;
+	margin-bottom:4px;
 
 }
 
 
-.FrameHeadingFont b {
-    line-height:40px;
-}
 
-.FrameItemFont {
-    font-size:1.0em;
-    line-height:1.4em;
+dd, th, td, font {
+	font-size:1.0em;
+	line-height:1.0em;
 }
 
 
@@ -102,7 +102,6 @@ a:visited,
 a:link:visited {
 	text-decoration: underline;
 	font-weight: normal;
-    color:#00f;
 }
 
 
@@ -112,45 +111,20 @@ img {
 
 
 
-p,li {
-    width:70%;
-}
-
-
-li {
-    list-style:none;
-}
-
-tr.TableRowColor td {
-    padding:10px;
-}
-
-
-td code {
-    margin-bottom:120px;
-    line-height:20px;
-
-}
-
-.NavBarCell2 {
-    padding-bottom:40px;
-}
-
-.NavBarCell3 font, .NavBarCell2 font {
-    font-size:0.8em;
-    font-weight:normal;
-
-}
-
 /* Navigation bar fonts */
 .NavBarCell1    { 
 	border:0;
-    margin:0;
 }
 
 .NavBarCell1Rev {
 	border:0;
 }
+
+.NavBarFont1 { 
+	font-family: Arial, Helvetica, sans-serif;  
+	font-size:1.1em;
+}
+
 
 .NavBarFont1 b {
 	font-weight:normal;
@@ -160,16 +134,46 @@ td code {
 
 .NavBarFont1:after, .NavBarFont1Rev:after {
 	font-weight:normal;
+	content: " \\";
 }
 
 
-.NavBarFont1Rev b, .NavBarCell1Rev { 
+.NavBarFont1Rev { 
+	font-family: Arial, Helvetica, sans-serif;
+	font-size:1.1em;
+}
+
+.NavBarFont1Rev b { 
+	font-family: Arial, Helvetica, sans-serif;
+	font-size:1.1em;
 	font-weight:normal;
-    background:transparent;
+}
+
+.NavBarCell2    { 
+	font-family: Arial, Helvetica, sans-serif; 
+}
+
+.NavBarCell3    { 
+	font-family: Arial, Helvetica, sans-serif;
 }
 
 
 
+font.FrameItemFont {
+	font-family: Helvetica, Arial, sans-serif;
+	font-size:1.1em;
+	line-height:1.1em;
+}
+
+font.FrameHeadingFont {
+	font-family: Helvetica, Arial, sans-serif;
+	line-height:32px;
+}
+
+/* Font used in left-hand frame lists */
+.FrameTitleFont   { 
+	font-family: Helvetica, Arial, sans-serif 
+}
 
 
 .toggleList { 
@@ -179,23 +183,15 @@ td code {
 }
 
 .toggleList dt {
-    background:#00ff90;
-    color:#333;
-    display:inline-block;
-	padding:8px 16px;
+ 	font-weight:bold;
+ 	font-size:12px;
+ 	font-family:arial,sans-serif;
+	padding:0px;
 	margin:10px 0px 10px 0px;
-    -moz-border-radius: 20px; /* Firefox */
-    -webkit-border-radius: 20px; /* Safari, Chrome */
-    border-radius: 20px; /* CSS3 */
-}
-
-.toggleList dt:hover {
-    cursor:pointer;
 }
 
 .toggleList dt span { 
 	font-family: monospace;
-    
 	padding:0;
 	margin:0;
 }
@@ -213,3 +209,102 @@ html.isjs .toggleList dd {
 .toggleList pre {
 	padding: 4px 4px 4px 4px;
 }
+
+
+
+
+
+/* COLORS */
+
+pre, code {  
+	color: #000000;
+}
+
+
+body {
+	color : #333333;
+	background-color :#FFFFFF;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+	color:#555;
+}
+
+a, 
+.toggleList dt {
+	color: #1a7eb0;
+}
+
+a:hover, 
+a:active {
+	color: #1a7eb0;
+}
+
+a:visited,
+a:link:visited {
+	color: #1a7eb0;
+}
+
+td,tr {
+	border-color: #999999;
+}
+
+hr {
+	color:#999999;
+	background:#999999;
+}
+
+
+.TableHeadingColor     { 
+	background: #dcdcdc;
+	color: #555;
+}
+
+
+.TableSubHeadingColor {
+	background: #EEEEFF 
+}
+
+.TableRowColor {
+	background: #FFFFFF 
+}
+
+
+.NavBarCell1    { 
+	background-color:#dcdcdc; 
+	color:#000; 
+}
+
+.NavBarCell1 a { 
+	color:#333;
+}
+
+
+.NavBarCell1Rev {
+	background-color:transparent;
+}
+
+.NavBarFont1    { 
+	color:#333; 
+}
+
+
+.NavBarFont1Rev { 
+	color:#fff; 
+}
+
+.NavBarCell2 { 
+	background-color:#999; 
+}
+
+.NavBarCell2 a { 
+	color:#fff; 
+}
+
+
+
+.NavBarCell3    { 
+	background-color:#dcdcdc;
+}
+
