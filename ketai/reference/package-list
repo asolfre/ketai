@@ -1,9 +1,6 @@
 ketai.camera
 ketai.cv.facedetector
 ketai.data
-ketai.data.analyzer
-ketai.data.database
-ketai.data.inputService
 ketai.net
 ketai.net.bluetooth
 ketai.net.nfc
