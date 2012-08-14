@@ -14,7 +14,7 @@ public class KetaiVibrate {
 		vibe = (Vibrator)parent.getSystemService(Context.VIBRATOR_SERVICE);
 	}
 
-	boolean hasVibrator(){
+	public boolean hasVibrator(){
 		return vibe.hasVibrator();
 	}
 	
@@ -22,7 +22,7 @@ public class KetaiVibrate {
 	{
 		//forever! (well...almost)
 		long[] pattern = {0, Long.MAX_VALUE};
-		vibe.vibrate(pattern, Integer.MAX_VALUE);
+		vibe.vibrate(pattern, 0);
 	}
 	
 	public void vibrate(long _duration)
