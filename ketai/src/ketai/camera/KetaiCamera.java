@@ -11,6 +11,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
+import javax.microedition.khronos.opengles.GL10;
+
+import ketai.ui.KetaiAlertDialog;
+
 import processing.core.PImage;
 import processing.core.PApplet;
 
@@ -31,11 +35,11 @@ import android.hardware.Camera.Size;
 import android.media.MediaScannerConnection;
 import android.media.MediaScannerConnection.OnScanCompletedListener;
 import android.net.Uri;
+import android.opengl.GLES20;
 import android.os.Environment;
 import android.view.Surface;
 
-public class KetaiCamera extends PImage
-		 {
+public class KetaiCamera extends PImage {
 	private Camera camera;
 	private int[] myPixels;
 	protected Method onPreviewEventMethod, onPreviewEventMethodPImage,
@@ -48,8 +52,9 @@ public class KetaiCamera extends PImage
 	String SAVE_DIR = "";
 	// Thread runner;
 	boolean available = false;
-//	public boolean isDetectingFaces = false;
+	// public boolean isDetectingFaces = false;
 	boolean supportsFaceDetection = false;
+	SurfaceTexture mTexture;
 
 	// private ketaiFaceDetectionListener facelistener;
 
@@ -174,21 +179,21 @@ public class KetaiCamera extends PImage
 				+ camera.getParameters().flatten());
 	}
 
-//	public void startFaceDetection() {
-//		isDetectingFaces = true;
-//		if (camera != null && isStarted && supportsFaceDetection) {
-//			if (isDetectingFaces) {
-//				camera.setFaceDetectionListener(this);
-//				camera.startFaceDetection();
-//			}
-//		}
-//	}
+	// public void startFaceDetection() {
+	// isDetectingFaces = true;
+	// if (camera != null && isStarted && supportsFaceDetection) {
+	// if (isDetectingFaces) {
+	// camera.setFaceDetectionListener(this);
+	// camera.startFaceDetection();
+	// }
+	// }
+	// }
 
-//	public void stopFaceDetection() {
-//		isDetectingFaces = false;
-//		if (camera != null && isStarted && supportsFaceDetection)
-//			camera.stopFaceDetection();
-//	}
+	// public void stopFaceDetection() {
+	// isDetectingFaces = false;
+	// if (camera != null && isStarted && supportsFaceDetection)
+	// camera.stopFaceDetection();
+	// }
 
 	public void setZoom(int _zoom) {
 		if (camera == null)
@@ -341,6 +346,8 @@ public class KetaiCamera extends PImage
 				try {
 					camera = Camera.open(cameraID);
 				} catch (Exception x) {
+					KetaiAlertDialog.popup(parent, "KetaiCamera",
+							"Failed to connect to Camera.\n" + x.getMessage());
 					PApplet.println("Failed to open camera for camera ID: "
 							+ cameraID + ":" + x.getMessage());
 					return false;
@@ -379,7 +386,6 @@ public class KetaiCamera extends PImage
 			} else
 				PApplet.println("No flash support.");
 
-			// camera.setPreviewDisplay(mHolder);
 			int rotation = parent.getWindowManager().getDefaultDisplay()
 					.getRotation();
 			int degrees = 0;
@@ -396,17 +402,18 @@ public class KetaiCamera extends PImage
 			case Surface.ROTATION_270:
 				degrees = 270;
 				break;
+
 			}
 			Camera.CameraInfo info = new CameraInfo();
 			Camera.getCameraInfo(cameraID, info);
+
 			int result;
 			if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-				result = 270;
+				result = (info.orientation + degrees) % 360;
 				result = (360 - result) % 360; // compensate the mirror
 			} else { // back-facing
 				result = (info.orientation - degrees + 360) % 360;
 			}
-			// result = (info.orientation - degrees + 360) % 360;
 			camera.setDisplayOrientation(result);
 
 			camera.setParameters(cameraParameters);
@@ -415,24 +422,35 @@ public class KetaiCamera extends PImage
 			// set sizes
 			determineCameraParameters();
 
-			// create a default texture to kickoff preview then remove it
-			// if textures arent supported then set nothing and move along
-			/** > API 12 **/
 			try {
-				SurfaceTexture st = new SurfaceTexture(0);
-				camera.setPreviewTexture(st);
-				//camera.setPreviewTexture(null);
+				parent.runOnUiThread(new Runnable() {
+					public void run() {
+
+						int[] textures = new int[1];
+						// generate one texture pointer and bind it as an
+						// external texture so preview will start
+						GLES20.glGenTextures(1, textures, 0);
+						GLES20.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
+
+						int texture_id = textures[0];
+						mTexture = new SurfaceTexture(texture_id);
+
+						try {
+							camera.setPreviewTexture(mTexture);
+						} catch (IOException iox) {
+						}
+					}
+				});
 				camera.startPreview();
-				//camera.setPreviewDisplay(null);
 			} catch (NoClassDefFoundError x) {
 				camera.startPreview();
 			}
 			isStarted = true;
 
-//			if (supportsFaceDetection && isDetectingFaces) {
-//				camera.setFaceDetectionListener(this);
-//				camera.startFaceDetection();
-//			}
+			// if (supportsFaceDetection && isDetectingFaces) {
+			// camera.setFaceDetectionListener(this);
+			// camera.startFaceDetection();
+			// }
 
 			PApplet.println("Using preview format: "
 					+ camera.getParameters().getPreviewFormat());
@@ -542,11 +560,11 @@ public class KetaiCamera extends PImage
 		}
 	}
 
-	public void read() {
+	public synchronized void read() {
 		if (pixels.length != frameWidth * frameHeight)
 			pixels = new int[frameWidth * frameHeight];
-		loadPixels();
 		synchronized (pixels) {
+			//loadPixels();
 			System.arraycopy(myPixels, 0, pixels, 0, frameWidth * frameHeight);
 			available = false;
 			updatePixels();
@@ -586,8 +604,9 @@ public class KetaiCamera extends PImage
 				} catch (Exception e) {
 					PApplet.println("Disabling onCameraPreviewEvent() because of an error:"
 							+ e.getMessage());
+					
 					e.printStackTrace();
-					onPreviewEventMethod = null;
+					
 				}
 
 			if (onPreviewEventMethodPImage != null && myPixels != null) {
@@ -650,19 +669,21 @@ public class KetaiCamera extends PImage
 					}
 
 				// restart preview
-				try {
-					SurfaceTexture st = new SurfaceTexture(0);
-					camera.setPreviewTexture(st);
-					camera.startPreview();
-					camera.setPreviewDisplay(null);
-				} catch (NoClassDefFoundError x) {
-					camera.startPreview();
-				}
+				camera.startPreview();
+				// try {
+				// SurfaceTexture st = new SurfaceTexture(0);
+				// camera.setPreviewTexture(st);
+				// camera.startPreview();
+				// camera.setPreviewDisplay(null);
+				// } catch (NoClassDefFoundError x) {
+				// camera.startPreview();
+				// }
 
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
+			} catch (RuntimeException rtx) {
 			} finally {
 
 			}
@@ -863,8 +884,7 @@ public class KetaiCamera extends PImage
 				+ frameWidth + "," + frameHeight + "," + cameraFPS);
 		PApplet.println(cameraParameters.flatten());
 
-		if (cameraParameters.getMaxNumDetectedFaces() > 0)
-		{
+		if (cameraParameters.getMaxNumDetectedFaces() > 0) {
 			PApplet.println("Face detection supported!");
 			supportsFaceDetection = true;
 		}
@@ -872,24 +892,26 @@ public class KetaiCamera extends PImage
 		resize(frameWidth, frameHeight);
 	}
 
-//	public void onFaceDetection(Face[] _faces, Camera _camera) {
-//		KetaiFace[] faces = new KetaiFace[_faces.length];
-//
-//		for (int i = 0; i < _faces.length; i++) {
-//			faces[i] = new KetaiFace(_faces[i], frameWidth, frameHeight);
-//		}
-//		if (onFaceDetectionEventMethod != null) {
-//			try {
-//				onFaceDetectionEventMethod.invoke(parent,
-//						new Object[] { faces });
-//			} catch (Exception e) {
-//				PApplet.println("Disabling onFaceDetectionEventMethod(KetaiCamera) because of an error:"
-//						+ e.getMessage());
-//				e.printStackTrace();
-//				onFaceDetectionEventMethod = null;
-//			}
-//		}
-//	}
+	public void onFrameAvailable(SurfaceTexture arg0) {
+		PApplet.print(".");
+	}
 
+	// public void onFaceDetection(Face[] _faces, Camera _camera) {
+	// KetaiFace[] faces = new KetaiFace[_faces.length];
+	//
+	// for (int i = 0; i < _faces.length; i++) {
+	// faces[i] = new KetaiFace(_faces[i], frameWidth, frameHeight);
+	// }
+	// if (onFaceDetectionEventMethod != null) {
+	// try {
+	// onFaceDetectionEventMethod.invoke(parent,
+	// new Object[] { faces });
+	// } catch (Exception e) {
+	// PApplet.println("Disabling onFaceDetectionEventMethod(KetaiCamera) because of an error:"
+	// + e.getMessage());
+	// e.printStackTrace();
+	// onFaceDetectionEventMethod = null;
+	// }
+	// }
+	// }
 }
-
