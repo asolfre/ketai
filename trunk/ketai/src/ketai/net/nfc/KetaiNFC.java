@@ -94,6 +94,15 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				NfcAdapter.ACTION_TECH_DISCOVERED.equals(parent.getIntent().getAction()))
 			handleIntent(parent.getIntent());
 	}
+	
+	public void start(PendingIntent p)
+	{
+		p = PendingIntent.getActivity(parent, 0,
+				new Intent(parent, parent.getClass())
+						.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+		mAdapter.enableForegroundDispatch(parent, p, mFilters, mTechLists);
+		
+	}
 
 	public void onPause() {
 		Log.i("KetaiNFC", "pausing...");
@@ -150,6 +159,10 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			msgs = new NdefMessage[] { msg };
 		}
 
+		if (tag != null && messageToWrite != null) {
+			writeNFCString(tag);
+			return;
+		}else
 		if (msgs == null || msgs.length == 0) {
 			return;
 		}
@@ -176,10 +189,6 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				e.printStackTrace();
 				onNFCEventMethod_String = null;
 			}
-
-		if (tag != null && messageToWrite != null) {
-			writeNFCString(tag);
-		}
 	}
 
 	public static NdefRecord newTextRecord(String text, Locale locale,
