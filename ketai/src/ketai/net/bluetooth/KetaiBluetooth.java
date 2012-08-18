@@ -58,8 +58,6 @@ public class KetaiBluetooth {
 		pairedDevices = new HashMap<String, String>();
 		discoveredDevices = new HashMap<String, String>();
 		currentConnections = new HashMap<String, KBluetoothConnection>();
-		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-		parent.registerReceiver(mReceiver, filter);
 		findParentIntention();
 	}
 
@@ -122,7 +120,10 @@ public class KetaiBluetooth {
 		btListener.start();
 		isStarted = true;
 		findParentIntention();
+		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+		parent.registerReceiver(mReceiver, filter);
 		return isStarted;
+
 	}
 	
 	public String getAddress()
