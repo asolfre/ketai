@@ -37,8 +37,8 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 	private IntentFilter[] mFilters;
 	private String[][] mTechLists;
 	private NfcAdapter mAdapter;
-	private NdefMessage messageToWrite;
-
+	private NdefMessage messageToWrite, messageToBeam;
+	private PendingIntent p;
 
 	public KetaiNFC(PApplet pParent) {
 		parent = pParent;
@@ -51,49 +51,53 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			Log.i("KetaiNFC", "Failed to get NFC adapter...");
 		else
 			mAdapter.setNdefPushMessageCallback(this, parent);
+		
+		p = PendingIntent.getActivity(parent, 0,
+				new Intent(parent, parent.getClass())
+						.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 
+		// Setup an intent filter for all MIME based dispatches
+		// For now we'll just pretend to handle all types, but should
+		// be configurable...eventually
+		IntentFilter ndef = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+		IntentFilter tech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
+		IntentFilter tag = new IntentFilter(NfcAdapter.ACTION_TAG_DISCOVERED);
+		try {
+			ndef.addDataType("*/*");
+			tag.addDataType("*/*");
+			tech.addDataType("*/*");
+		} catch (MalformedMimeTypeException e) {
+			throw new RuntimeException("fail", e);
+		}
+		mFilters = new IntentFilter[] { ndef, tag, tech, };
+
+		// Setup a tech list for all NfcF tags
+		mTechLists = new String[][] { new String[] { NfcA.class.getName() },
+				new String[] { MifareUltralight.class.getName() },
+				new String[] { NfcF.class.getName() },
+				new String[] { NdefFormatable.class.getName() } };
 	}
 
 	public void onResume() {
+		Log.i("KetaiNFC", "resuming...");
 		if (mAdapter != null) {
-			PApplet.println("resuming KetaiNFC");
-			PendingIntent p = PendingIntent.getActivity(parent, 0, new Intent(
-					parent, parent.getClass())
-					.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-
-			// Setup an intent filter for all MIME based dispatches
-			// For now we'll just pretend to handle all types, but should
-			// be configurable...eventually
-			IntentFilter ndef = new IntentFilter(
-					NfcAdapter.ACTION_NDEF_DISCOVERED);
-			IntentFilter tech = new IntentFilter(
-					NfcAdapter.ACTION_TECH_DISCOVERED);
-			IntentFilter tag = new IntentFilter(
-					NfcAdapter.ACTION_TAG_DISCOVERED);
-			try {
-				ndef.addDataType("*/*");
-				tag.addDataType("*/*");
-				tech.addDataType("*/*");
-			} catch (MalformedMimeTypeException e) {
-				throw new RuntimeException("fail", e);
-			}
-			mFilters = new IntentFilter[] { ndef, tag, tech, };
-
-			// Setup a tech list for all NfcF tags
-			mTechLists = new String[][] {
-					new String[] { NfcA.class.getName() },
-					new String[] { MifareUltralight.class.getName() },
-					new String[] { NfcF.class.getName() },
-					new String[] { NdefFormatable.class.getName() } };
-
 			mAdapter.enableForegroundDispatch(parent, p, mFilters, mTechLists);
 			Intent intent = parent.getIntent();
+			Log.i("KetaiNFC", "resuming...intent: " + intent.getAction());
+			mAdapter.setNdefPushMessageCallback(this, parent);
 			handleIntent(intent);
 		} else
 			PApplet.println("mAdapter was null in onResume()");
+		
+		if(NfcAdapter.ACTION_NDEF_DISCOVERED.equals(parent.getIntent().getAction()) ||
+				NfcAdapter.ACTION_TAG_DISCOVERED.equals(parent.getIntent().getAction()) ||
+				NfcAdapter.ACTION_TECH_DISCOVERED.equals(parent.getIntent().getAction()))
+			handleIntent(parent.getIntent());
 	}
 
 	public void onPause() {
+		Log.i("KetaiNFC", "pausing...");
+
 		if (mAdapter != null)
 			mAdapter.disableForegroundDispatch(parent);
 	}
@@ -103,10 +107,12 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		if (mAdapter == null)
 			return;
 
+		Log.i("KetaiNFC", "processing intent...");
 		String action = intent.getAction();
 		String thingToReturn = "";
 		Tag tag = null;
-
+//		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) 
+			
 		if (!NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
 				&& !NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)
 				&& !NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
@@ -129,11 +135,6 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			PApplet.println("Supported Tag tech: " + foo + "\n");
 		} else
 			tag = null;
-
-		if (tag != null && messageToWrite != null) {
-			writeNFCString(tag);
-			return;
-		}
 
 		if (rawMsgs != null) {
 			msgs = new NdefMessage[rawMsgs.length];
@@ -175,6 +176,10 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				e.printStackTrace();
 				onNFCEventMethod_String = null;
 			}
+
+		if (tag != null && messageToWrite != null) {
+			writeNFCString(tag);
+		}
 	}
 
 	public static NdefRecord newTextRecord(String text, Locale locale,
@@ -227,6 +232,28 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				NdefRecord.RTD_TEXT, new byte[0], data);
 		NdefRecord[] records = { record };
 		messageToWrite = new NdefMessage(records);
+	}
+
+	public void beam(String textToWrite) {
+
+		Locale locale = Locale.US;
+		final byte[] langBytes = locale.getLanguage().getBytes(
+				Charset.forName("UTF-8"));
+		final byte[] textBytes = textToWrite.getBytes(Charset.forName("UTF-8"));
+
+		final int utfBit = 0;
+		final char status = (char) (utfBit + langBytes.length);
+		final byte[] data = new byte[1 + langBytes.length + textBytes.length];
+
+		data[0] = (byte) status;
+		System.arraycopy(langBytes, 0, data, 1, langBytes.length);
+		System.arraycopy(textBytes, 0, data, 1 + langBytes.length,
+				textBytes.length);
+
+		NdefRecord record = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
+				NdefRecord.RTD_TEXT, new byte[0], data);
+		NdefRecord[] records = { record };
+		messageToBeam = new NdefMessage(records);
 	}
 
 	public void write(byte[] _data) {
@@ -309,7 +336,6 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 	}
 
 	private void findParentIntentions() {
-
 		try {
 			onNFCEventMethod_String = parent.getClass().getMethod("onNFCEvent",
 					new Class[] { String.class });
@@ -336,18 +362,22 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			Log.d("KetaiNFC", "Found onNFCEvent(byte[]) callback...");
 		} catch (NoSuchMethodException e) {
 		}
-
 	}
 
 	public void onNdefPushComplete(NfcEvent arg0) {
 		PApplet.println("Completed a beam! clearing out pending message.");
-		messageToWrite = null;
+		messageToBeam = null;
 	}
 
 	public NdefMessage createNdefMessage(NfcEvent arg0) {
+		
+		if (messageToBeam == null) {
+			beam("");
+		}
 		PApplet.println("createNdefMessage callback called for beam, returning: "
-				+ messageToWrite.toString());
-		return this.messageToWrite;
+				+ messageToBeam.toString());
+
+		return messageToBeam;
 	}
 
 }
