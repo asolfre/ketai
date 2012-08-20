@@ -16,15 +16,23 @@ Follow the Processing Wiki at http://wiki.processing.org/w/Android#Instructions 
 <li>Fixed Camera issues, increased performance</li>
 </ul>
 
+= Documentation = 
+Library Examples and JavaDocs are included in the library zip folder.
+The following book includes a comprehensive introduction to the Ketai library, and more than 20 projects using the library.
+Available with source code at the <a href="http://pragprog.com/book/dsproc/rapid-android-development">The Pragmatic Bookshelf</a>
+
+[http://imagery.pragprog.com/products/261/dsproc.jpg]
+
+
 = Follow =
 <p>
-<a href="http://twitter.com/KetaiMLibrary">@KetaiLibrary</a> (<a href="http://twitter.com/#!/search?q=%23nfc">#ketaimotion</a>) to receive version updates<br />
+<a href="http://twitter.com/KetaiMLibrary">@KetaiLibrary</a> (<a href="http://twitter.com/#!/search?q=%23nfc">#ketailibrary</a>) to receive version updates<br />
 </p>
 
 = Credits =
 <p>
-The Ketai Library was created by
-Daniel Sauter<br />
+The Ketai Library was created by<br />
+<a href="http://daniel-sauter.com">Daniel Sauter</a><br />
 Jesus Duran<br />
 </p>
 
