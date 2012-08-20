@@ -15,7 +15,7 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 	PApplet parent;
 	GestureDetector gestures;
 	KetaiGesture me;
-	Method onDoubleTapMethod, onScrollMethod, onFlingMethod, onTapMethod,
+	Method onDoubleTapMethod, onScrollMethod, onFlickMethod, onTapMethod,
 			onLongPressMethod, onPinchMethod, onRotateMethod;
 	HashMap<Integer, PVector> cursors = new HashMap<Integer, PVector>();
 	HashMap<Integer, PVector> pcursors = new HashMap<Integer, PVector>();
@@ -39,9 +39,9 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 
 	public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2,
 			float arg3) {
-		if (onFlingMethod != null) {
+		if (onFlickMethod != null) {
 			try {
-				onFlingMethod.invoke(parent,
+				onFlickMethod.invoke(parent,
 						new Object[] { arg1.getX(), arg1.getY(), arg0.getX(),
 								arg0.getY(), arg3 });
 			} catch (Exception e) {
@@ -151,8 +151,8 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		}
 
 		try {
-			onFlingMethod = parent.getClass().getMethod(
-					"onFling",
+			onFlickMethod = parent.getClass().getMethod(
+					"onFlick",
 					new Class[] { float.class, float.class, float.class,
 							float.class, float.class });
 		} catch (Exception e) {
