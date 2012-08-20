@@ -1,35 +1,31 @@
 #labels Featured
 <p>
-Unzip <a href="http://code.google.com/p/ketai/downloads/detail?name=Ketai_v5.zip&can=2&q=">Ketai_v5.zip</a> and move to your sketchbook "libraries" folder. Restart Processing. Examples and Reference documentation is included.
+Follow the Processing Wiki at http://wiki.processing.org/w/Android#Instructions to install the Android SDK for your operating system
 </p>
-
-= FAQ = 
 <p>
-<a href="http://wiki.processing.org/w/Android">Processing Android Wiki</a>
-</p><p>
-<a href="http://code.google.com/p/ketai/w/list">Ketai Wiki</a>
-</p>
+<a href="http://code.google.com/p/ketai/downloads/list">Download</a> the Ketai library, current version 7 (requires Android Ice Cream Sandwich (4.0) or Jelly Bean (4.1))
+<p>
 
-= v5 Update log = 
+= v7 Update log = 
 <ul>
-<li> official move to Gingerbread Android API 10, platform 2.3</li>
-<li> repackaging of the data analysis/capture framework</li>
-<li> flash support for cameras</li>
-<li> support for multiple cameras</li>
-<li> camera will now fallback to nearest requested resolution</li>
-<li> save camera picture to media store</li>
-<li> location object to provides initial location value more quickly</li>
+<li>Updated examples for all Ketai classes</li>
+<li>Added SQLite Support</li>
+<li>Added NFC Beam Support</li>
+<li>Added Multi-Touch Gesture Support</li>
+<li>Added WiFi Direct Support</li>
+<li>Fixed Camera issues, increased performance</li>
 </ul>
 
 = Follow =
 <p>
-<a href="http://twitter.com/KetaiMotion">@KetaiMotion</a> (<a href="http://twitter.com/#!/search?q=%23nfc">#ketaimotion</a>) to receive version updates<br />
+<a href="http://twitter.com/KetaiMLibrary">@KetaiLibrary</a> (<a href="http://twitter.com/#!/search?q=%23nfc">#ketaimotion</a>) to receive version updates<br />
 </p>
 
 = Credits =
 <p>
-Principal Investigator: Daniel Sauter<br />
-Development with j.duran<br />
+The Ketai Library was created by
+Daniel Sauter<br />
+Jesus Duran<br />
 </p>
 
 = Source =
