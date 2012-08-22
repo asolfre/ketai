@@ -87,7 +87,7 @@ void mousePressed()
 {
   //keyboard button -- toggle virtual keyboard
   if (mouseY <= 50 && mouseX > 0 && mouseX < width/3)
-    KetaiSoftKeyboard.toggle(this);
+    KetaiKeyboard.toggle(this);
   else if (mouseY <= 50 && mouseX > width/3 && mouseX < 2*(width/3)) //config button
   {
     isConfiguring=true;
