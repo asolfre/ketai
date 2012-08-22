@@ -187,7 +187,6 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				PApplet.println("Disabling onNFCEvent() because of an error:"
 						+ e.getMessage());
 				e.printStackTrace();
-				onNFCEventMethod_String = null;
 			}
 	}
 
@@ -296,7 +295,6 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 							PApplet.println("Disabling onNFCWriteEvent() because of an error:"
 									+ e.getMessage());
 							e.printStackTrace();
-							onNFCWriteMethod = null;
 							return;
 						}
 					}
