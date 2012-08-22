@@ -20,7 +20,7 @@ void setup() {
 }
 
 void draw() {
-  image(cam, screenWidth/2, screenHeight/2);
+  image(cam, width/2, height/2);
 }
 
 void onPause()
