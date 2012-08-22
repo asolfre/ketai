@@ -251,72 +251,72 @@ public class KetaiSensor implements SensorEventListener {
 		if (accelerometerSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (magneticFieldSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (pressureSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (orientationSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (proximitySensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (temperatureSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (gyroscopeSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (rotationVectorSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (linearAccelerationSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (lightSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (gravitySensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (ambientTemperatureSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		if (relativeHumiditySensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
-			sensorManager.registerListener(this, s,
+			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
 		isRegistered = true;
