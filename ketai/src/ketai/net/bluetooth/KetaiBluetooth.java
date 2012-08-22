@@ -31,10 +31,11 @@ public class KetaiBluetooth {
 	//private boolean SLIPMode = false;
 	protected Method onBluetoothDataEventMethod;
 
+	//user the well-known ssp UUID: 00001101-0000-1000-8000-00805F9B34FB
 	protected UUID MY_UUID_SECURE = UUID
-			.fromString("fa87c0d0-afac-11de-8a39-0800200c5a66");
+			.fromString("00001101-0000-1000-8000-00805F9B34FB");
 	protected UUID MY_UUID_INSECURE = UUID
-			.fromString("8ce255c0-200a-11e0-ac64-0800200c5a66");
+			.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
 	protected String NAME_SECURE = "BluetoothSecure";
 	protected String NAME_INSECURE = "BluetoothInsecure";
