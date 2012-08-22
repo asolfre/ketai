@@ -1,3 +1,21 @@
+v7 updates
+-------------
+Test platforms : Android 4.1, 4.0.2
+Test Hardware: Nexus 7, Galaxy 3s, Nexus S, Transformer Prime
+
+- minimum requirement maintained at ICS (also tested with Jellybean)
+- added multi-touch UI support (flick/(un-)pinch/tap/double-tap/rotate)
+- camera fixes for > 4.0
+- removed data capture framework
+- virtual keyboard show/hide support
+- refactored NFC to better support Beam(tm)
+- sqlite support reworked
+- vibration motor support
+- HW address available from net classes (bt/p2p)
+- jdocs updated
+- resolved issue 10 https://code.google.com/p/ketai/issues/detail?id=10
+
+
 v6 updates
 -------------
 - moved to android Ice Cream Sandwich (4.0)
