@@ -35,8 +35,6 @@ void setup()
   stroke(255);
   textSize(24);
 
-  net = new KetaiWiFiDirect(this);
-
   UIText =  "d - discover devices\n" +
     "c - connect to device\n     from peer list.\n" +
     "i - show net information\n" +
@@ -67,6 +65,8 @@ void draw()
     else if (key == 'p')
     {
       info += "Peers: \n";
+      for (String s:net.getPeerNameList())
+        info+= "\t" + s + "\n";
     }
     text(UIText + "\n\n" + info, 5, 90);
   }

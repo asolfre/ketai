@@ -65,13 +65,20 @@ void keyPressed() {
     net.reset();
     clientip = "";
   }
+  else if (key == 'f')
+  {
+//      net.connect( "10:bf:48:CF:28:a3");
+      net.connect( "ketai7");
+
+  }
 }
 
 void onKetaiListSelection(KetaiList klist)
 {
   String selection = klist.getSelection();
-  net.connectToDevice(selection);
-  //dispose of list for now
+  println("CONNECTING FROM LIST TO: " + selection);
+  net.connect(selection);
+  //dispose of list for now  
   connectionList = null;
 }
 
