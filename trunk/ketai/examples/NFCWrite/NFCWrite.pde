@@ -31,7 +31,7 @@
 
 import ketai.net.nfc.*;
 
-String textRead = "";
+String writeStatus = "";
 KetaiNFC ketaiNFC;
 
 
@@ -42,43 +42,37 @@ void setup()
   orientation(LANDSCAPE);
   textAlign(CENTER, CENTER);
   textSize(36);
+  String d = "Ketai writing tag at: " + month()+"/"+day()+"/"+year()+" "+hour()+":"+minute()+":"+second();
+  ketaiNFC.write(d);
 }
 
 void draw()
 {
   background(78, 93, 75);
-  text("Last tag read:\n"+ textRead, width/2, height/2);
-  text("<Touch tag to read>", width/2, height-35);
+  text("<Touch tag to write message>\nLast Write Status: "    + writeStatus, width/2, height/2);
+  if (frameCount % (int)frameRate == 0)
+  {
+    String d = "Ketai writing tag at: " + month()+"/"+day()+"/"+year()+" "+hour()+":"+minute()+":"+second();
+    ketaiNFC.write(d);
+  }
 }
 
-void onNFCEvent(String txt)
-{
-  textRead = txt;
-}
-
-//void onNFCEvent(URI uri)
-//{
-//  
-//}
-
-
-void onNFCEvent(byte[] data)
-{
-  
-}
-
-//set our write string....
 void mousePressed()
 {
- ketaiNFC.write("ket.ai"); 
+  writeStatus = "";
 }
 
+void onNFCWrite(boolean result, String message)
+{
+  if (result)
+    writeStatus = "SUCCESS writing tag!";
+  else
+    writeStatus = message;
+}
 
 //Press menu key to cancel write
 void keyPressed()
 {
-   ketaiNFC.cancelWrite(); 
+  ketaiNFC.cancelWrite();
 }
-
-
 

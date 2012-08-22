@@ -23,11 +23,11 @@ void setup()
 {
   db = new KetaiSQLite(this);
   sensor = new KetaiSensor(this);
-
+  frameRate(5);
   orientation(LANDSCAPE);
   textAlign(CENTER, CENTER);
   textSize(36);
-  
+
   //lets make our table if it is the first time we're running 
   if ( db.connect() )
   {
@@ -58,7 +58,9 @@ void mousePressed()
   else
     isCapturing = true;
 }
-
+/*
+      collect accelerometer data and save it to the database
+*/
 void onAccelerometerEvent(float x, float y, float z, long time, int accuracy)
 {
   if (db.connect() && isCapturing)
@@ -75,16 +77,20 @@ void plotData()
     pushStyle();
     noStroke();
     db.query( "SELECT * FROM data ORDER BY time DESC LIMIT " + width );
-    int  i = 0;    
+    int  i = 0;   
+    long mymin = Long.parseLong(db.getFieldMin("data", "time"));
+    long mymax = Long.parseLong(db.getFieldMax("data", "time"));
     while (db.next ())
     {
 
       float x = db.getFloat("x");
       float y = db.getFloat("y");
       float z = db.getFloat("z");
-
+      long  t = db.getLong("time");
+      int plotx = (int)maplong(t, mymin, mymax, 0, width);
+      
       fill(255, 0, 0);
-      ellipse(i, map(x, -30, 30, 0, height), 5, 5);
+      ellipse(plotx, map(x, -30, 30, 0, height), 5, 5);
       fill(0, 255, 0);
       ellipse(i, map(y, -30, 30, 0, height), 5, 5);
       fill(0, 0, 255);
@@ -94,5 +100,10 @@ void plotData()
     }
     popStyle();
   }
+}
+
+long maplong(long value, long istart, long istop, long ostart, long ostop) {
+  long divisor = istop - istart;
+  return (ostart + (ostop - ostart) * (value - istart) / divisor);
 }
 
