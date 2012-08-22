@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import processing.core.PApplet;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -22,15 +23,16 @@ import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 
-public class KetaiWiFiDirect implements ChannelListener,
-		ConnectionInfoListener, PeerListListener {
+public class KetaiWiFiDirect extends BroadcastReceiver implements
+		ChannelListener, ConnectionInfoListener, ActionListener,
+		PeerListListener {
 
 	PApplet parent;
 	private WifiP2pManager manager;
 	private boolean isWifiP2pEnabled = false;
 	private boolean retryChannel = false;
 	private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
-	private WifiBroadcastReceiver receiver;
+
 	private final IntentFilter intentFilter = new IntentFilter();
 	private Channel channel;
 	private String ip = "";
@@ -48,13 +50,8 @@ public class KetaiWiFiDirect implements ChannelListener,
 				.getSystemService(Context.WIFI_P2P_SERVICE);
 
 		channel = manager.initialize(parent, parent.getMainLooper(), this);
-		receiver = new WifiBroadcastReceiver(this, manager, channel);
-		parent.registerReceiver(receiver, intentFilter);
+		parent.registerReceiver(this, intentFilter);
 
-	}
-
-	public boolean isEnabled() {
-		return isWifiP2pEnabled;
 	}
 
 	public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
@@ -62,22 +59,38 @@ public class KetaiWiFiDirect implements ChannelListener,
 	}
 
 	public void onResume() {
-		receiver = new WifiBroadcastReceiver(this, manager, channel);
-		parent.registerReceiver(receiver, intentFilter);
+		parent.registerReceiver(this, intentFilter);
 	}
 
 	public void onPause() {
-		parent.unregisterReceiver(receiver);
+		parent.unregisterReceiver(this);
+	}
+
+	private void connectToConfig(WifiP2pConfig config) {
+		manager.connect(channel, config, new ActionListener() {
+
+			public void onSuccess() {
+				// WiFiDirectBroadcastReceiver will notify us. Ignore for now.
+			}
+
+			public void onFailure(int reason) {
+				PApplet.println("Connect failed. Retry." + reason);
+			}
+		});
 	}
 
 	public void disconnect() {
 		manager.removeGroup(channel, new ActionListener() {
+
 			public void onFailure(int reasonCode) {
 				PApplet.println("Disconnect failed. Reason :" + reasonCode);
+
 			}
 
 			public void onSuccess() {
+
 			}
+
 		});
 	}
 
@@ -90,20 +103,6 @@ public class KetaiWiFiDirect implements ChannelListener,
 		} else {
 			PApplet.println("Severe! Channel is probably lost premanently. Try Disable/Re-Enable P2P.");
 		}
-	}
-
-	public void cancelConnection() {
-		manager.cancelConnect(channel, new ActionListener() {
-
-			public void onSuccess() {
-				PApplet.println("Cancelling pending connection...");
-			}
-
-			public void onFailure(int reasonCode) {
-				PApplet.println("Connection cancel request failed. Reason Code: "
-						+ reasonCode);
-			}
-		});
 	}
 
 	public void cancelDisconnect() {
@@ -124,7 +123,6 @@ public class KetaiWiFiDirect implements ChannelListener,
 				public void onFailure(int reasonCode) {
 					PApplet.println("Connect abort request failed. Reason Code: "
 							+ reasonCode);
-					
 				}
 			});
 		}
@@ -202,53 +200,31 @@ public class KetaiWiFiDirect implements ChannelListener,
 
 	public void discover() {
 		if (manager != null) {
-			manager.discoverPeers(channel, new ActionListener() {
-				public void onSuccess() {
-					// success logic
-				}
-
-				public void onFailure(int reason) {
-					switch (reason) {
-					case 0:
-						PApplet.println("Failed to discover peers (Internal Error)");
-						break;
-					case 1:
-						PApplet.println("Failed to discover peers (P2P UNSUPPORTED)");
-						break;
-					case 2:
-						PApplet.println("Failed to discover peers (Busy)");
-						break;
-					default:
-						PApplet.println("Failed to discover peers (" + reason + ")");
-						break;
-					}
-
-				}
-			});
+			manager.discoverPeers(channel, this);
 		}
 	}
 
-	// public void onFailure(int arg0) {
-	// switch (arg0) {
-	// case 0:
-	// PApplet.println("WifiDirect failed " + arg0);
-	// break;
-	// case 1:
-	// PApplet.println("WifiDirect failed " + arg0);
-	// break;
-	// case 2:
-	// PApplet.println("WifiDirect failed " + arg0);
-	// break;
-	// default:
-	// PApplet.println("WifiDirect failed " + arg0);
-	// break;
-	// }
-	// }
-	//
-	// public void onSuccess() {
-	// PApplet.println("WifiDirect succeeded ");
-	//
-	// }
+	public void onFailure(int arg0) {
+		switch (arg0) {
+		case 0:
+			PApplet.println("WifiDirect failed " + arg0);
+			break;
+		case 1:
+			PApplet.println("WifiDirect failed " + arg0);
+			break;
+		case 2:
+			PApplet.println("WifiDirect failed " + arg0);
+			break;
+		default:
+			PApplet.println("WifiDirect failed " + arg0);
+			break;
+		}
+	}
+
+	public void onSuccess() {
+		PApplet.println("WifiDirect succeeded ");
+
+	}
 
 	public void onPeersAvailable(WifiP2pDeviceList arg0) {
 		Collection<WifiP2pDevice> list = arg0.getDeviceList();
@@ -265,61 +241,18 @@ public class KetaiWiFiDirect implements ChannelListener,
 	}
 
 	public String getHardwareAddress() {
-
-		// WifiP2pDevice w = new WifiP2pDevice();
-		// PApplet.println("Device :" + w.toString());
-		WifiManager wm = (WifiManager) parent
-				.getSystemService(Context.WIFI_SERVICE);
+		  
+//		  WifiP2pDevice w  = new WifiP2pDevice();
+//		  PApplet.println("Device :" + w.toString());
+		WifiManager wm = (WifiManager) parent.getSystemService(Context.WIFI_SERVICE);
 		String mac = wm.getConnectionInfo().getMacAddress();
 		return mac;
 	}
 
 	public void reset() {
 		peers.clear();
-		manager.cancelConnect(channel, new ActionListener() {
-			public void onSuccess() {
-				// success logic
-			}
-
-			public void onFailure(int reason) {
-				switch (reason) {
-				case 0:
-					PApplet.println("Failed to cancel connect (Internal Error)");
-					break;
-				case 1:
-					PApplet.println("Failed to cancel connect (P2P UNSUPPORTED)");
-					break;
-				case 2:
-					PApplet.println("Failed to cancel connect (Busy)");
-					break;
-				default:
-					PApplet.println("Failed to cancel connect (" + reason + ")");
-					break;
-				}
-			}
-		});
-		manager.removeGroup(channel, new ActionListener() {
-			public void onSuccess() {
-				// success logic
-			}
-
-			public void onFailure(int reason) {
-				switch (reason) {
-				case 0:
-					PApplet.println("Failed to remove group (Internal Error)");
-					break;
-				case 1:
-					PApplet.println("Failed to remove group (P2P UNSUPPORTED)");
-					break;
-				case 2:
-					PApplet.println("Failed to remove group (Busy)");
-					break;
-				default:
-					PApplet.println("Failed to remove group (" + reason + ")");
-					break;
-				}
-			}
-		});
+		manager.cancelConnect(channel, this);
+		manager.removeGroup(channel, this);
 
 	}
 
@@ -360,15 +293,5 @@ public class KetaiWiFiDirect implements ChannelListener,
 				PApplet.println("Failed to connect to device (" + reason + ")");
 			}
 		});
-	}
-
-	public void updateDevice(WifiP2pDevice device) {
-		for (WifiP2pDevice p : peers) {
-			if (p.deviceAddress == device.deviceAddress) {
-				p = device;
-				return;
-			}
-			peers.add(device);
-		}
 	}
 }
