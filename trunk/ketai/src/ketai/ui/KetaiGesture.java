@@ -27,7 +27,7 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		parent.runOnUiThread(new Runnable() {
 			public void run() {
 				gestures = new GestureDetector(parent, me);
-				parent.registerMouseEvent(me);
+				parent.registerMethod("mouseEvent", me);
 			}
 		});
 		findParentIntentions();
