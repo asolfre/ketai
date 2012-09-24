@@ -1,7 +1,10 @@
 package ketai.data;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -10,8 +13,13 @@ import android.os.Environment;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import processing.core.PApplet;
@@ -31,9 +39,61 @@ public class KetaiSQLite {
 		this.context = context;
 		DATABASE_NAME = context.getPackageName();
 		DATA_ROOT_DIRECTORY = context.getPackageName();
+		PApplet.println("data path"
+				+ context.getDatabasePath(context.getPackageName())
+						.getAbsolutePath());
 		OpenHelper openHelper = new OpenHelper(this.context);
 		this.db = openHelper.getWritableDatabase();
-		
+
+	}
+
+	public KetaiSQLite(Context context, String dbname) {
+		this.context = context;
+		DATABASE_NAME = dbname;
+		OpenHelper openHelper = new OpenHelper(this.context, dbname);
+		this.db = openHelper.getWritableDatabase();
+	}
+
+	static public boolean load(Context _context, String filename,
+			String dbname) {
+
+		InputStream myInput;
+
+		try {
+			AssetManager assets = _context.getAssets();
+			myInput = assets.open(filename);
+			if (myInput == null)
+				return false;
+
+			String outFileName = _context.getDatabasePath(dbname).getAbsolutePath();
+			OutputStream myOutput = new FileOutputStream(outFileName);
+
+			byte[] buffer = new byte[4096];
+			int length;
+			while ((length = myInput.read(buffer)) > 0) {
+				myOutput.write(buffer, 0, length);
+			}
+
+			// Close the streams
+			myOutput.flush();
+			myOutput.close();
+			myInput.close();
+
+			return true;
+
+		} catch (FileNotFoundException e) {
+			PApplet.println("Failed to load SQLite file(not found): "
+					+ filename);
+		} catch (IOException iox) {
+			PApplet.println("IO Error in copying SQLite database " + filename
+					+ ": " + iox.getMessage());
+		}
+
+		return false;
+	}
+
+	public String getPath() {
+		return this.db.getPath();
 	}
 
 	public SQLiteDatabase getDb() {
@@ -376,11 +436,15 @@ public class KetaiSQLite {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
 		}
 
+		OpenHelper(Context context, String dbname) {
+			super(context, dbname, null, DATABASE_VERSION);
+
+		}
+
 		public void onCreate(SQLiteDatabase db) {
 		}
 
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		}
 	}
-
 }
