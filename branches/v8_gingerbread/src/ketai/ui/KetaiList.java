@@ -79,7 +79,6 @@ public class KetaiList extends ListView {
 
 	private void init() {
 		setBackgroundColor(Color.BLACK);
-		setAlpha(1);
 		self = this;
 		final TextView cancel;
 

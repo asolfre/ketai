@@ -42,16 +42,14 @@ public class KetaiSensor implements SensorEventListener {
 			onRotationVectorSensorEventMethodSimple,
 			onGravitySensorEventMethod, onGravitySensorEventMethodSimple,
 			onLinearAccelerationSensorEventMethod,
-			onLinearAccelerationSensorEventMethodSimple,
-			onAmbientTemperatureEventMethod, onRelativeHumidityEventMethod;
+			onLinearAccelerationSensorEventMethodSimple;
 
 	private boolean accelerometerSensorEnabled, magneticFieldSensorEnabled,
 			orientationSensorEnabled, proximitySensorEnabled, useSimulator,
 			lightSensorEnabled, pressureSensorEnabled,
 			temperatureSensorEnabled, gyroscopeSensorEnabled,
 			rotationVectorSensorEnabled, linearAccelerationSensorEnabled,
-			gravitySensorEnabled, ambientTemperatureSensorEnabled,
-			relativeHumiditySensorEnabled;
+			gravitySensorEnabled;
 	private long delayInterval, timeOfLastUpdate;
 	final static String SERVICE_DESCRIPTION = "Android Sensors.";
 
@@ -157,24 +155,8 @@ public class KetaiSensor implements SensorEventListener {
 		gyroscopeSensorEnabled = false;
 	}
 
-	public void disableAmibentTemperature() {
-		ambientTemperatureSensorEnabled = false;
-	}
-
-	public void disableRelativeHumiditySensor() {
-		relativeHumiditySensorEnabled = false;
-	}
-
-	public void enableAmibentTemperature() {
-		ambientTemperatureSensorEnabled = true;
-	}
-
-	public void enableRelativeHumiditySensor() {
-		relativeHumiditySensorEnabled = true;
-	}
-
 	public void enableAllSensors() {
-		accelerometerSensorEnabled = magneticFieldSensorEnabled = orientationSensorEnabled = proximitySensorEnabled = lightSensorEnabled = pressureSensorEnabled = temperatureSensorEnabled = gyroscopeSensorEnabled = linearAccelerationSensorEnabled = rotationVectorSensorEnabled = ambientTemperatureSensorEnabled = relativeHumiditySensorEnabled = true;
+		accelerometerSensorEnabled = magneticFieldSensorEnabled = orientationSensorEnabled = proximitySensorEnabled = lightSensorEnabled = pressureSensorEnabled = temperatureSensorEnabled = gyroscopeSensorEnabled = linearAccelerationSensorEnabled = rotationVectorSensorEnabled = true;
 	}
 
 	public boolean isAccelerometerAvailable() {
@@ -215,14 +197,6 @@ public class KetaiSensor implements SensorEventListener {
 
 	public boolean isGyroscopeAvailable() {
 		return isSensorSupported(Sensor.TYPE_GYROSCOPE);
-	}
-
-	public boolean isAmbientTemperatureAvailable() {
-		return isSensorSupported(Sensor.TYPE_AMBIENT_TEMPERATURE);
-	}
-
-	public boolean isRelativeHumidityAvailable() {
-		return isSensorSupported(Sensor.TYPE_RELATIVE_HUMIDITY);
 	}
 
 	public Collection<? extends String> list() {
@@ -304,18 +278,6 @@ public class KetaiSensor implements SensorEventListener {
 		}
 		if (gravitySensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
-		}
-		if (ambientTemperatureSensorEnabled) {
-			Sensor s = sensorManager
-					.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
-		}
-		if (relativeHumiditySensorEnabled) {
-			Sensor s = sensorManager
-					.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
 			if (s != null) sensorManager.registerListener(this, s,
 					SensorManager.SENSOR_DELAY_UI);
 		}
@@ -706,39 +668,6 @@ public class KetaiSensor implements SensorEventListener {
 				}
 			}
 		}
-		if (arg0.sensor.getType() == Sensor.TYPE_AMBIENT_TEMPERATURE
-				&& ambientTemperatureSensorEnabled) {
-			if (onAmbientTemperatureEventMethod != null) {
-				try {
-					onAmbientTemperatureEventMethod.invoke(parent,
-							new Object[] { arg0.values[0] });
-					timeOfLastUpdate = now;
-					return;
-				} catch (Exception e) {
-					PApplet.println("Disabling onAmbientTemperatureEvent() because of an error:"
-							+ e.getMessage());
-					e.printStackTrace();
-					onAmbientTemperatureEventMethod = null;
-				}
-			}
-		}
-
-		if (arg0.sensor.getType() == Sensor.TYPE_RELATIVE_HUMIDITY
-				&& relativeHumiditySensorEnabled) {
-			if (onRelativeHumidityEventMethod != null) {
-				try {
-					onRelativeHumidityEventMethod.invoke(parent,
-							new Object[] { arg0.values[0] });
-					timeOfLastUpdate = now;
-					return;
-				} catch (Exception e) {
-					PApplet.println("Disabling onRelativeHumidityEventMethod() because of an error:"
-							+ e.getMessage());
-					e.printStackTrace();
-					onRelativeHumidityEventMethod = null;
-				}
-			}
-		}
 	}
 
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -973,23 +902,6 @@ public class KetaiSensor implements SensorEventListener {
 
 		} catch (NoSuchMethodException e) {
 		}
-
-		try {
-			onAmbientTemperatureEventMethod = parent.getClass().getMethod(
-					"onAmibentTemperatureEvent", new Class[] { float.class });
-			ambientTemperatureSensorEnabled = true;
-			PApplet.println("Found onAmbientTemperatureEvent callback...");
-		} catch (NoSuchMethodException e) {
-		}
-
-		try {
-			onRelativeHumidityEventMethod = parent.getClass().getMethod(
-					"onRelativeHumidityEvent", new Class[] { float.class });
-			relativeHumiditySensorEnabled = true;
-			PApplet.println("Found onRelativeHumidityEventMethod...");
-		} catch (NoSuchMethodException e) {
-		}
-
 	}
 
 	public void startService() {

@@ -15,7 +15,7 @@ public class KetaiVibrate {
 	}
 
 	public boolean hasVibrator(){
-		return vibe.hasVibrator();
+		return vibe == null;
 	}
 	
 	public void vibrate()
