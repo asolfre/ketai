@@ -37,35 +37,74 @@ void drawUI()
   popStyle();
 }
 
-void keyPressed() {
-  if (key == 'c')
+//use event framework temporarily
+public void keyEvent(processing.event.KeyEvent ke) {
+  key = ke.getKey();
+  keyCode = ke.getKeyCode();
+
+  if (ke.getAction() == processing.event.KeyEvent.PRESSED)  //processing.event.KeyEvent.RELEASED
   {
-    if (devices.size() > 0)
-      connectionList = new KetaiList(this, devices);
-  }
-  else if (key == 'd')
-  {
-    net.discover();
-    println("device list contains "  + devices.size() + " elements");
-  }
-  else if (key == 'i')
-    net.getConnectionInfo();
-  else if (key == 'o')
-  {
-    if (net.getIPAddress().length() > 0)
-      oscP5 = new OscP5(this, 12000);
-  }
-  else if (key == 'r')
-  {
-    if (oscP5 != null)
+    if (key == 'c')
     {
-      oscP5.stop();
-      oscP5 = null;
+      if (devices.size() > 0)
+        connectionList = new KetaiList(this, devices);
     }
-    net.reset();
-    clientip = "";
+    else if (key == 'd')
+    {
+      net.discover();
+      println("device list contains "  + devices.size() + " elements");
+    }
+    else if (key == 'i')
+      net.getConnectionInfo();
+    else if (key == 'o')
+    {
+      if (net.getIPAddress().length() > 0)
+        oscP5 = new OscP5(this, 12000);
+    }
+    else if (key == 'r')
+    {
+      if (oscP5 != null)
+      {
+        oscP5.stop();
+        oscP5 = null;
+      }
+      net.reset();
+      clientip = "";
+    }
   }
 }
+
+
+//
+//void keyPressed() {
+//  if (key == 'c')
+//  {
+//    if (devices.size() > 0)
+//      connectionList = new KetaiList(this, devices);
+//  }
+//  else if (key == 'd')
+//  {
+//    net.discover();
+//    println("device list contains "  + devices.size() + " elements");
+//  }
+//  else if (key == 'i')
+//    net.getConnectionInfo();
+//  else if (key == 'o')
+//  {
+//    if (net.getIPAddress().length() > 0)
+//      oscP5 = new OscP5(this, 12000);
+//  }
+//  else if (key == 'r')
+//  {
+//    if (oscP5 != null)
+//    {
+//      oscP5.stop();
+//      oscP5 = null;
+//    }
+//    net.reset();
+//    clientip = "";
+//  }
+//}
 
 void onKetaiListSelection(KetaiList klist)
 {

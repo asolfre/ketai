@@ -70,7 +70,7 @@ void onNFCWrite(boolean result, String message)
     writeStatus = message;
 }
 
-//Press menu key to cancel write
+//Press any key to cancel write
 void keyPressed()
 {
   ketaiNFC.cancelWrite();

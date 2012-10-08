@@ -39,30 +39,41 @@ void mouseDragged()
 }
 
 
-void keyPressed() {
-  if (key =='c')
+
+//--
+//use event framework temporarily
+
+public void keyEvent(processing.event.KeyEvent ke) {
+  key = ke.getKey();
+  keyCode = ke.getKeyCode();
+
+  if (ke.getAction() == processing.event.KeyEvent.PRESSED)  //processing.event.KeyEvent.RELEASED
   {
-    //If we have not discovered any devices, try prior paired devices
-    if (bt.getDiscoveredDeviceNames().size() > 0)
-      klist = new KetaiList(this, bt.getDiscoveredDeviceNames());
-    else if (bt.getPairedDeviceNames().size() > 0)
-      klist = new KetaiList(this, bt.getPairedDeviceNames());
-  }
-  else if (key == 'd')
-  {
-    bt.discoverDevices();
-  }
-  else if (key == 'x')
-    bt.stop();
-  else if (key == 'b')
-  {
-    bt.makeDiscoverable();
-  }
-  else if (key == 's')
-  {
-    bt.start();
+    if (key =='c')
+    {
+      //If we have not discovered any devices, try prior paired devices
+      if (bt.getDiscoveredDeviceNames().size() > 0)
+        klist = new KetaiList(this, bt.getDiscoveredDeviceNames());
+      else if (bt.getPairedDeviceNames().size() > 0)
+        klist = new KetaiList(this, bt.getPairedDeviceNames());
+    }
+    else if (key == 'd')
+    {
+      bt.discoverDevices();
+    }
+    else if (key == 'x')
+      bt.stop();
+    else if (key == 'b')
+    {
+      bt.makeDiscoverable();
+    }
+    else if (key == 's')
+    {
+      bt.start();
+    }
   }
 }
+
 
 void drawUI()
 {
