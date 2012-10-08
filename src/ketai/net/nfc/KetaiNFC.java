@@ -16,9 +16,6 @@ import android.content.IntentFilter.MalformedMimeTypeException;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.NfcAdapter.CreateNdefMessageCallback;
-import android.nfc.NfcAdapter.OnNdefPushCompleteCallback;
-import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
@@ -28,8 +25,7 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.nfc.tech.NdefFormatable;
 
-public class KetaiNFC implements CreateNdefMessageCallback,
-		OnNdefPushCompleteCallback {
+public class KetaiNFC {
 	private PApplet parent;
 	private Method onNFCEventMethod_String, onNFCWriteMethod,
 			onNFCEventMethod_URI, onNFCEventMethod_bArray;
@@ -49,8 +45,6 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 
 		if (mAdapter == null)
 			Log.i("KetaiNFC", "Failed to get NFC adapter...");
-		else
-			mAdapter.setNdefPushMessageCallback(this, parent);
 		
 		p = PendingIntent.getActivity(parent, 0,
 				new Intent(parent, parent.getClass())
@@ -84,7 +78,6 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			mAdapter.enableForegroundDispatch(parent, p, mFilters, mTechLists);
 			Intent intent = parent.getIntent();
 			Log.i("KetaiNFC", "resuming...intent: " + intent.getAction());
-			mAdapter.setNdefPushMessageCallback(this, parent);
 			handleIntent(intent);
 		} else
 			PApplet.println("mAdapter was null in onResume()");
@@ -370,21 +363,4 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		} catch (NoSuchMethodException e) {
 		}
 	}
-
-	public void onNdefPushComplete(NfcEvent arg0) {
-		PApplet.println("Completed a beam! clearing out pending message.");
-		messageToBeam = null;
-	}
-
-	public NdefMessage createNdefMessage(NfcEvent arg0) {
-		
-		if (messageToBeam == null) {
-			beam("");
-		}
-		PApplet.println("createNdefMessage callback called for beam, returning: "
-				+ messageToBeam.toString());
-
-		return messageToBeam;
-	}
-
 }

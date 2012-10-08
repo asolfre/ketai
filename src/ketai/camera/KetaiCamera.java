@@ -22,7 +22,6 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.ImageFormat;
-import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.CameraInfo;
@@ -54,7 +53,6 @@ public class KetaiCamera extends PImage {
 	boolean available = false;
 	// public boolean isDetectingFaces = false;
 	boolean supportsFaceDetection = false;
-	SurfaceTexture mTexture;
 
 	// private ketaiFaceDetectionListener facelistener;
 
@@ -101,17 +99,6 @@ public class KetaiCamera extends PImage {
 		}
 
 		try {
-			onFaceDetectionEventMethod = parent.getClass().getMethod(
-					"onFaceDetectionEvent", new Class[] { KetaiFace[].class });
-			PApplet.println("KetaiCamera found onFaceDetectionEvent in parent... ");
-		} catch (Exception e) {
-			// no such method, or an error.. which is fine, just ignore
-			onFaceDetectionEventMethod = null;
-			PApplet.println("KetaiCamera did not find onFaceDetectionEvent Method: "
-					+ e.getMessage());
-		}
-
-		try {
 			onSavePhotoEventMethod = parent.getClass().getMethod(
 					"onSavePhotoEvent", new Class[] { String.class });
 			PApplet.println("KetaiCamera found onSavePhotoEvent method in parent... ");
@@ -144,22 +131,6 @@ public class KetaiCamera extends PImage {
 			return;
 		PApplet.println("KetaiCamera: locking camera settings...");
 		Parameters cameraParameters = camera.getParameters();
-		// camera.cancelAutoFocus();
-		if (cameraParameters.isAutoExposureLockSupported())
-			cameraParameters.setAutoExposureLock(true);
-
-		if (cameraParameters.isAutoWhiteBalanceLockSupported())
-			cameraParameters.setAutoWhiteBalanceLock(true);
-		else {
-
-			List<String> w = cameraParameters.getSupportedWhiteBalance();
-			for (String s : w) {
-				if (s.equalsIgnoreCase(Parameters.WHITE_BALANCE_CLOUDY_DAYLIGHT)) {
-					cameraParameters.setWhiteBalance(s);
-					break;
-				}
-			}
-		}
 
 		List<String> fModes = cameraParameters.getSupportedFocusModes();
 		for (String s : fModes) {
@@ -225,18 +196,6 @@ public class KetaiCamera extends PImage {
 
 		PApplet.println("KetaiCamera: setting camera settings to auto...");
 		Parameters cameraParameters = camera.getParameters();
-		if (cameraParameters.isAutoExposureLockSupported())
-			cameraParameters.setAutoExposureLock(false);
-		if (cameraParameters.isAutoWhiteBalanceLockSupported())
-			cameraParameters.setAutoWhiteBalanceLock(false);
-
-		List<String> fModes = cameraParameters.getSupportedFocusModes();
-		for (String s : fModes) {
-			PApplet.println("FocusMode: " + s);
-			if (s.equalsIgnoreCase(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE))
-				cameraParameters
-						.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-		}
 
 		camera.setParameters(cameraParameters);
 		camera.autoFocus(autofocusCB);
@@ -254,12 +213,6 @@ public class KetaiCamera extends PImage {
 
 		result += "White Balance: " + p.getWhiteBalance() + "\n";
 
-		if (p.isAutoWhiteBalanceLockSupported())
-			result += "\t Lock supported, state: "
-					+ p.getAutoWhiteBalanceLock() + "\n";
-		else
-			result += "\t Lock NOT supported\n";
-
 		float[] f = new float[3];
 		String fd = "";
 
@@ -272,11 +225,6 @@ public class KetaiCamera extends PImage {
 		result += "Focus Mode: " + p.getFocusMode() + "\n";
 
 		result += "Exposure: " + p.getExposureCompensation() + "\n";
-		if (p.isAutoExposureLockSupported())
-			result += "\t Lock supported, state: " + p.getAutoExposureLock()
-					+ "\n";
-		else
-			result += "\t Lock NOT supported\n";
 
 		result += "Native camera face detection support: "
 				+ supportsFaceDetection;
@@ -426,17 +374,8 @@ public class KetaiCamera extends PImage {
 				parent.runOnUiThread(new Runnable() {
 					public void run() {
 
-						int[] textures = new int[1];
-						// generate one texture pointer and bind it as an
-						// external texture so preview will start
-						GLES20.glGenTextures(1, textures, 0);
-						GLES20.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
-
-						int texture_id = textures[0];
-						mTexture = new SurfaceTexture(texture_id);
-
 						try {
-							camera.setPreviewTexture(mTexture);
+							camera.setPreviewDisplay(parent.getSurfaceHolder());
 						} catch (IOException iox) {
 						}
 					}
@@ -884,16 +823,8 @@ public class KetaiCamera extends PImage {
 				+ frameWidth + "," + frameHeight + "," + cameraFPS);
 		PApplet.println(cameraParameters.flatten());
 
-		if (cameraParameters.getMaxNumDetectedFaces() > 0) {
-			PApplet.println("Face detection supported!");
-			supportsFaceDetection = true;
-		}
 		// update PImage
 		resize(frameWidth, frameHeight);
-	}
-
-	public void onFrameAvailable(SurfaceTexture arg0) {
-		PApplet.print(".");
 	}
 
 	// public void onFaceDetection(Face[] _faces, Camera _camera) {
