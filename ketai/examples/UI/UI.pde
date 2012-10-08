@@ -16,15 +16,17 @@ void setup()
   colorlist.add("Green");
   colorlist.add("Blue");
   colorlist.add("Gray");
-  for(int i = 0; i < 20; i++)
+  for (int i = 0; i < 20; i++)
     colorlist.add("Stub Entry " + i);
+    
+  //register for key events(keyPressed currently Broken)
+  registerMethod("keyEvent", this);  
 }
-
 
 void draw()
 {
   background(backgroundcolor);
-  
+
   drawUI();
   text("click screen to change background color", width/2, height/2);
 }
@@ -78,4 +80,20 @@ void drawUI()
   text("Vibrate", width/3*2 + 5, 60); 
   popStyle();
 }
+
+//use event framework temporarily
+public void keyEvent(processing.event.KeyEvent ke) {
+  key = ke.getKey();
+  keyCode = ke.getKeyCode();
+
+  if (ke.getAction() == processing.event.KeyEvent.PRESSED)  //processing.event.KeyEvent.RELEASED
+  {
+    if (key == ' ')
+      KetaiAlertDialog.popup(this, "SPACE pressed", "You pressed the <SPACE> key!");
+    else
+      println(key);
+  }
+}
+
+
 

@@ -41,6 +41,9 @@ void setup()
     "o - start OSC Server\n" + 
     "p - list paired devices\n" + 
     "r - reset all connections\n" ;
+
+  //register for key events(keyPressed currently Broken)
+  registerMethod("keyEvent", this);
 }
 
 void draw()
