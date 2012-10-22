@@ -24,21 +24,16 @@
  * </intent-filter>
  *
  * </p> 
- * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-10-21 Daniel Sauter/j.duran</p>
  */
-
-
 
 import ketai.net.nfc.*;
 
 String writeStatus = "";
 KetaiNFC ketaiNFC;
 
-
 void setup()
 {   
-  if (ketaiNFC == null)
-    ketaiNFC = new KetaiNFC(this);
   orientation(LANDSCAPE);
   textAlign(CENTER, CENTER);
   textSize(36);

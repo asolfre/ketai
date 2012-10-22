@@ -82,17 +82,12 @@ void drawUI()
 }
 
 //use event framework temporarily
-public void keyEvent(processing.event.KeyEvent ke) {
-  key = ke.getKey();
-  keyCode = ke.getKeyCode();
+public void keyPressed() {
 
-  if (ke.getAction() == processing.event.KeyEvent.PRESSED)  //processing.event.KeyEvent.RELEASED
-  {
     if (key == ' ')
       KetaiAlertDialog.popup(this, "SPACE pressed", "You pressed the <SPACE> key!");
     else
       println(key);
-  }
 }
 
 
