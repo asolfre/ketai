@@ -12,6 +12,7 @@ import android.location.Criteria;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.GestureDetector;
 
 public class KetaiLocation implements LocationListener {
 	private LocationManager locationManager = null;
@@ -20,11 +21,13 @@ public class KetaiLocation implements LocationListener {
 			onLocationEventMethod3arg, onLocationEventMethod4arg;
 	private String provider;
 	private Location location;
+	KetaiLocation me;
 
 	final static String SERVICE_DESCRIPTION = "Android Location.";
 
 	public KetaiLocation(PApplet pParent) {
 		parent = pParent;
+		me = this;
 		locationManager = (LocationManager) parent.getApplicationContext()
 				.getSystemService(Context.LOCATION_SERVICE);
 		PApplet.println("KetaiLocationManager instantiated:"
@@ -173,7 +176,13 @@ public class KetaiLocation implements LocationListener {
 		if (provider == null)
 			return false;
 		PApplet.println("Requesting location updates from: " + provider);
-		locationManager.requestLocationUpdates(provider, 10000, 1, this);
+
+		parent.runOnUiThread(new Runnable() {
+			public void run() {
+				locationManager.requestLocationUpdates(provider, 10000, 1, me);
+			}
+		});
+	
 		return true;
 	}
 
