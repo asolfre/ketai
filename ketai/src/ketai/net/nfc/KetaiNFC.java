@@ -76,9 +76,11 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				new String[] { MifareUltralight.class.getName() },
 				new String[] { NfcF.class.getName() },
 				new String[] { NdefFormatable.class.getName() } };
+		parent.registerMethod("resume", this);
+		parent.registerMethod("pause", this);		
 	}
 
-	public void onResume() {
+	public void resume() {
 		Log.i("KetaiNFC", "resuming...");
 		if (mAdapter != null) {
 			mAdapter.enableForegroundDispatch(parent, p, mFilters, mTechLists);
@@ -104,7 +106,7 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		
 	}
 
-	public void onPause() {
+	public void pause() {
 		Log.i("KetaiNFC", "pausing...");
 
 		if (mAdapter != null)
