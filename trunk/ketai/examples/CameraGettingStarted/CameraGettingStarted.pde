@@ -6,7 +6,7 @@
  * <li>Interface for built-in camera</li>
  * <li></li>
  * </ul>
- * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-10-21 Daniel Sauter/j.duran</p>
  */
 
 import ketai.camera.*;
@@ -23,22 +23,9 @@ void draw() {
   image(cam, width/2, height/2);
 }
 
-void onPause()
-{
-  super.onPause();
-  //Make sure to releae the camera when we go
-  //  to sleep otherwise it stays locked
-  if (cam != null && cam.isStarted())
-    cam.stop();
-}
-
 void onCameraPreviewEvent()
 {
   cam.read();
-}
-
-void exit() {
-  cam.stop();
 }
 
 // start/stop camera preview by tapping the screen
