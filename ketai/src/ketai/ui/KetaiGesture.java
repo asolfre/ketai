@@ -5,6 +5,7 @@ import java.util.HashMap;
 
 import processing.core.PApplet;
 import processing.core.PVector;
+import processing.event.TouchEvent;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
@@ -27,11 +28,11 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		parent.runOnUiThread(new Runnable() {
 			public void run() {
 				gestures = new GestureDetector(parent, me);
-				// currently we'll hijack the touch events....should really 
-				//   register but looks broken atm...
-				//parent.registerMethod("touchEvent", me);
 			}
 		});
+		//this stuff is still not working in b4
+//		parent.registerMethod("touchEvent", this);
+		
 		findParentIntentions();
 	}
 
@@ -60,7 +61,6 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 			} catch (Exception e) {
 			}
 		}
-
 	}
 
 	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
@@ -84,7 +84,17 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		return true;
 	}
 
+	public void touchEvent(TouchEvent e) {
+		PApplet.println("motionEvent called inside kgesture");
+		if (e.getNative() instanceof MotionEvent) {
+			PApplet.println("KGesture got a MotionEvent!");
+			MotionEvent me = (MotionEvent) e.getNative();
+			surfaceTouchEvent(me);
+		}
+	}
+
 	public boolean surfaceTouchEvent(MotionEvent event) {
+		// public boolean touchEvent(TouchEvent event){
 
 		int code = event.getAction() & MotionEvent.ACTION_MASK;
 		int index = event.getAction() >> MotionEvent.ACTION_POINTER_ID_SHIFT;
