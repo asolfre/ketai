@@ -13,7 +13,7 @@
  * <li>onLocationEvent(latitude, longitude)</li>
  * <li>onLocationEvent(latitude, longitude, altitude)</li>
  * </p>
- * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-10-21 Daniel Sauter/j.duran</p>
  */
 
 import ketai.sensors.*; 
@@ -25,6 +25,7 @@ void setup() {
   orientation(LANDSCAPE);
   textAlign(CENTER, CENTER);
   textSize(36);
+  location = new KetaiLocation(this);
 }
 
 void draw() {
@@ -40,13 +41,6 @@ void draw() {
   // getProvider() returns "gps" if GPS is available
   // otherwise "network" (cell network) or "passive" (WiFi MACID)
 }
-
-void onResume()
-{
-  location = new KetaiLocation(this);
-  super.onResume();
-}
-
 
 void onLocationEvent(double _latitude, double _longitude, double _altitude)
 {

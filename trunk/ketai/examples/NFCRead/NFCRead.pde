@@ -24,21 +24,15 @@
  * </intent-filter>
  *
  * </p> 
- * <p>Updated: 2012-03-10 Daniel Sauter/j.duran</p>
+ * <p>Updated: 2012-10-20 Daniel Sauter/j.duran</p>
  */
-
-
-
 import ketai.net.nfc.*;
 
 String textRead = "";
 KetaiNFC ketaiNFC;
 
-
 void setup()
 {   
-  if (ketaiNFC == null)
-    ketaiNFC = new KetaiNFC(this);
   orientation(LANDSCAPE);
   textAlign(CENTER, CENTER);
   textSize(36);
@@ -60,15 +54,13 @@ void onNFCEvent(String txt)
 //set our write string....
 void mousePressed()
 {
- ketaiNFC.write(""+millis()); 
+  ketaiNFC.write("" + millis());
 }
 
 
 //Press any key to cancel write
 void keyPressed()
 {
-   ketaiNFC.cancelWrite(); 
+  ketaiNFC.cancelWrite();
 }
-
-
 

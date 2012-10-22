@@ -59,9 +59,6 @@ void setup()
     "c - connect to device\n     from discovered list.\n" +
     "p - list paired devices\n" +
     "i - Bluetooth info";
-
-  //register for key events(keyPressed currently Broken)
-  registerMethod("keyEvent", this);  
 }
 
 void draw()
@@ -148,5 +145,4 @@ String getBluetoothInformation()
 
   return btInfo;
 }
-
 

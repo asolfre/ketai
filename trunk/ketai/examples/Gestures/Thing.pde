@@ -21,8 +21,8 @@ class Thing
   public void draw()
   {
     pushStyle();
-    stroke(255);
-    fill(255);
+    stroke(255,map(life, frameRate*3, 0, 255, 0));
+    fill(255, map(life, frameRate*3, 0, 255, 0));
     life--;
     if (life > 0)
       text(mText, location.x, location.y);

@@ -18,20 +18,5 @@ public void onNewIntent(Intent intent) {
     ketaiNFC.handleIntent(intent);
 }
 
-void onResume()
-{
-  super.onResume();
-
-  if (ketaiNFC != null)
-    ketaiNFC.onResume();
-}
-
-public void onPause()
-{
-  super.onPause();
-  if (ketaiNFC != null)
-    ketaiNFC.onPause();
-}
-
 //====================================================================
 
