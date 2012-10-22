@@ -21,7 +21,8 @@ public class KetaiSensor implements SensorEventListener {
 	private PApplet parent;
 
 	private Method onSensorEventMethod;
-	float[] accelerometerData, magnetometerData;
+	
+	float[] accelerometerData, magnetometerData; //for getting orientation data
 
 	// Simple methods are of the form v1,v2,v3,v4 (typically x,y,z values)
 	// and the non-simple methods take values of v1,v2,v3, time, accuracy.
@@ -356,6 +357,7 @@ public class KetaiSensor implements SensorEventListener {
 				&& accelerometerSensorEnabled) {
 			if (onAccelerometerEventMethod != null) {
 				try {
+					//holding accel data for orientation
 					accelerometerData = arg0.values.clone();
 					onAccelerometerEventMethod.invoke(parent, new Object[] {
 							arg0.values[0], arg0.values[1], arg0.values[2],
@@ -363,15 +365,15 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onAccelerometerEvent() because of an error:"
+					PApplet.println("Error onAccelerometerEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onAccelerometerEventMethod = null;
 				}
 			}
 
 			if (onAccelerometerEventMethodSimple != null) {
 				try {
+					//holding accel data for orientation calc
 					accelerometerData = arg0.values.clone();
 					onAccelerometerEventMethodSimple.invoke(parent,
 							new Object[] { arg0.values[0], arg0.values[1],
@@ -379,10 +381,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onAccelerometerEvent() [simple] because of an error:"
+					PApplet.println("Error onAccelerometerEvent() [simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onAccelerometerEventMethodSimple = null;
 				}
 			}
 		}
@@ -397,10 +398,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onGravityEvent() because of an error:"
+					PApplet.println("Error onGravityEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onGravitySensorEventMethod = null;
 				}
 			}
 
@@ -412,10 +412,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onGravityEvent()[simple] because of an error:"
+					PApplet.println("Error onGravityEvent()[simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onGravitySensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -430,10 +429,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onOrientationEvent() because of an error:"
+					PApplet.println("Error onOrientationEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onOrientationSensorEventMethod = null;
 				}
 			}
 			if (onOrientationSensorEventMethodSimple != null) {
@@ -444,10 +442,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onOrientationEvent()[simple] because of an error:"
+					PApplet.println("Error onOrientationEvent()[simple] :"
 							+ e.getMessage());
 					e.printStackTrace();
-					onOrientationSensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -464,10 +461,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onMagneticFieldEvent() because of an error:"
+					PApplet.println("Error onMagneticFieldEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onMagneticFieldSensorEventMethod = null;
 				}
 			}
 			if (onMagneticFieldSensorEventMethodSimple != null) {
@@ -479,10 +475,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onMagneticFieldEvent()[simple] because of an error:"
+					PApplet.println("Error onMagneticFieldEvent()[simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onMagneticFieldSensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -497,10 +492,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onGyroscopeEvent() because of an error:"
+					PApplet.println("Error onGyroscopeEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onGyroscopeSensorEventMethod = null;
 				}
 			}
 			if (onGyroscopeSensorEventMethodSimple != null) {
@@ -511,10 +505,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onGyroscopeEvent()[simple] because of an error:"
+					PApplet.println("Error onGyroscopeEvent()[simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onGyroscopeSensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -528,10 +521,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onLightEvent() because of an error:"
+					PApplet.println("Error onLightEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onLightSensorEventMethod = null;
 				}
 			}
 			if (onLightSensorEventMethodSimple != null) {
@@ -542,10 +534,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onLightEvent()[simple] because of an error:"
+					PApplet.println("Error onLightEvent()[simple]r:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onLightSensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -559,10 +550,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onProximityEvent() because of an error:"
+					PApplet.println("Error onProximityEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onProximitySensorEventMethod = null;
 				}
 			}
 			if (onProximitySensorEventMethodSimple != null) {
@@ -572,10 +562,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onProximityEvent()[simple] because of an error:"
+					PApplet.println("Error onProximityEvent()[simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onProximitySensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -589,10 +578,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onPressureEvent() because of an error:"
+					PApplet.println("Error onPressureEvent()r:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onPressureSensorEventMethod = null;
 				}
 			}
 			if (onPressureSensorEventMethodSimple != null) {
@@ -602,10 +590,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onPressureEvent()[simple] because of an error:"
+					PApplet.println("Error onPressureEvent()[simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onPressureSensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -619,10 +606,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onTemperatureEvent() because of an error:"
+					PApplet.println("Error onTemperatureEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onTemperatureSensorEventMethod = null;
 				}
 			}
 			if (onTemperatureSensorEventMethodSimple != null) {
@@ -632,10 +618,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onTemperatureEvent()[simple] because of an error:"
+					PApplet.println("Error onTemperatureEvent()[simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onTemperatureSensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -651,10 +636,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onLinearAccelerationEvent() because of an error:"
+					PApplet.println("Error onLinearAccelerationEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onLinearAccelerationSensorEventMethod = null;
 				}
 			}
 
@@ -666,10 +650,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onLinearAccelerationEvent()[simple] because of an error:"
+					PApplet.println("Error onLinearAccelerationEvent()[simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onLinearAccelerationSensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -685,10 +668,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onRotationVectorEvent() because of an error:"
+					PApplet.println("Error onRotationVectorEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onRotationVectorSensorEventMethod = null;
 				}
 			}
 			if (onRotationVectorSensorEventMethodSimple != null) {
@@ -699,10 +681,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onRotationVectorEvent()[simple] because of an error:"
+					PApplet.println("Error onRotationVectorEvent()[simple]:"
 							+ e.getMessage());
 					e.printStackTrace();
-					onRotationVectorSensorEventMethodSimple = null;
 				}
 			}
 		}
@@ -715,10 +696,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onAmbientTemperatureEvent() because of an error:"
+					PApplet.println("Error onAmbientTemperatureEvent():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onAmbientTemperatureEventMethod = null;
 				}
 			}
 		}
@@ -732,10 +712,9 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Disabling onRelativeHumidityEventMethod() because of an error:"
+					PApplet.println("Error onRelativeHumidityEventMethod():"
 							+ e.getMessage());
 					e.printStackTrace();
-					onRelativeHumidityEventMethod = null;
 				}
 			}
 		}
