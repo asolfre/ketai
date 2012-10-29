@@ -1,10 +1,13 @@
 package ketai.net.nfc;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
+
+import javax.microedition.khronos.opengles.GL10;
 
 import ketai.net.nfc.record.ParsedNdefRecord;
 
@@ -13,6 +16,8 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
+import android.graphics.SurfaceTexture;
+import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -24,6 +29,7 @@ import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NfcA;
 import android.nfc.tech.NfcF;
+import android.opengl.GLES20;
 import android.os.Parcelable;
 import android.util.Log;
 import android.nfc.tech.NdefFormatable;
@@ -39,6 +45,8 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 	private NfcAdapter mAdapter;
 	private NdefMessage messageToWrite, messageToBeam;
 	private PendingIntent p;
+	NdefFormatable tag;
+	Ndef ndefTag;
 
 	public KetaiNFC(PApplet pParent) {
 		parent = pParent;
@@ -51,7 +59,7 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			Log.i("KetaiNFC", "Failed to get NFC adapter...");
 		else
 			mAdapter.setNdefPushMessageCallback(this, parent);
-		
+
 		p = PendingIntent.getActivity(parent, 0,
 				new Intent(parent, parent.getClass())
 						.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
@@ -77,7 +85,7 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				new String[] { NfcF.class.getName() },
 				new String[] { NdefFormatable.class.getName() } };
 		parent.registerMethod("resume", this);
-		parent.registerMethod("pause", this);		
+		parent.registerMethod("pause", this);
 	}
 
 	public void resume() {
@@ -88,22 +96,27 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			Log.i("KetaiNFC", "resuming...intent: " + intent.getAction());
 			mAdapter.setNdefPushMessageCallback(this, parent);
 			handleIntent(intent);
-		} else
+		} else {
 			PApplet.println("mAdapter was null in onResume()");
-		
-		if(NfcAdapter.ACTION_NDEF_DISCOVERED.equals(parent.getIntent().getAction()) ||
-				NfcAdapter.ACTION_TAG_DISCOVERED.equals(parent.getIntent().getAction()) ||
-				NfcAdapter.ACTION_TECH_DISCOVERED.equals(parent.getIntent().getAction()))
+			mAdapter = NfcAdapter.getDefaultAdapter(parent);
+			;
+		}
+
+		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(parent.getIntent()
+				.getAction())
+				|| NfcAdapter.ACTION_TAG_DISCOVERED.equals(parent.getIntent()
+						.getAction())
+				|| NfcAdapter.ACTION_TECH_DISCOVERED.equals(parent.getIntent()
+						.getAction()))
 			handleIntent(parent.getIntent());
 	}
-	
-	public void start(PendingIntent p)
-	{
+
+	public void start(PendingIntent p) {
 		p = PendingIntent.getActivity(parent, 0,
 				new Intent(parent, parent.getClass())
 						.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
 		mAdapter.enableForegroundDispatch(parent, p, mFilters, mTechLists);
-		
+
 	}
 
 	public void pause() {
@@ -122,8 +135,9 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		String action = intent.getAction();
 		String thingToReturn = "";
 		Tag tag = null;
-//		if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction())) 
-			
+		// if
+		// (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction()))
+
 		if (!NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
 				&& !NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)
 				&& !NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
@@ -162,10 +176,10 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		}
 
 		if (tag != null && messageToWrite != null) {
+			PApplet.println("Attempting to write to Tag");
 			writeNFCString(tag);
 			return;
-		}else
-		if (msgs == null || msgs.length == 0) {
+		} else if (msgs == null || msgs.length == 0) {
 			return;
 		}
 		String foo = new String(msgs[0].toByteArray());
@@ -275,8 +289,8 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 	}
 
 	private void writeNFCString(Tag t) {
-		NdefFormatable tag = NdefFormatable.get(t);
-		Ndef ndefTag = null;
+		tag = NdefFormatable.get(t);
+		ndefTag = null;
 
 		if (tag == null) {
 			PApplet.println("Tag does not support writing (via NdefFormattable). Trying NDEF write...");
@@ -294,7 +308,7 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 									false, "Tag is NOT writable" });
 							return;
 						} catch (Exception e) {
-							PApplet.println("Disabling onNFCWriteEvent() because of an error:"
+							PApplet.println(" onNFCWriteEvent()  error:"
 									+ e.getMessage());
 							e.printStackTrace();
 							return;
@@ -306,41 +320,89 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				return;
 		}
 
-		try {
-			if (tag != null) {
-				tag.connect();
-				tag.format(messageToWrite);
-				messageToWrite = null;
-			} else if (ndefTag != null) {
-				ndefTag.connect();
-				ndefTag.writeNdefMessage(messageToWrite);
-				ndefTag.close();
-				messageToWrite = null;
-				if (onNFCWriteMethod != null) {
+		if (tag != null && messageToWrite != null) {
+			new Runnable() {
+				public void run() {
 					try {
-						onNFCWriteMethod.invoke(parent,
-								new Object[] { true, "" });
-					} catch (Exception e) {
-						PApplet.println("Failed to write NFC Tag: "
-								+ e.getMessage());
+						tag.connect();
+						PApplet.println(messageToWrite.toByteArray());
+						if (tag.isConnected()) {
+							tag.format(messageToWrite);
+							messageToWrite = null;
+						} else
+							PApplet.println("Failed to connect to tag.");
+
+						tag.close();
+
+					} catch (FormatException fx) {
+						fx.printStackTrace();
+
+					} catch (IOException e) {
+						e.printStackTrace();
+						String errorMessage = e.getMessage();
+						PApplet.println("Failed to write to tag.  Error: "
+								+ errorMessage);
+						if (onNFCWriteMethod != null) {
+							try {
+								onNFCWriteMethod.invoke(parent, new Object[] {
+										false, errorMessage });
+
+								// return;
+							} catch (Exception ex) {
+								PApplet.println("Failed to write nfc tag because of an error:"
+										+ ex.getMessage());
+								ex.printStackTrace();
+							}
+						}
 					}
 				}
-			}
-		} catch (Exception e) {
-			String errorMessage = e.getMessage();
-			PApplet.println("Failed to write to tag.  Error: " + errorMessage);
-			if (onNFCWriteMethod != null) {
-				try {
-					onNFCWriteMethod.invoke(parent, new Object[] { false,
-							errorMessage });
+			}.run();
+		} else if (ndefTag != null) {
+			new Runnable() {
+				public void run() {
 
-					// return;
-				} catch (Exception ex) {
-					PApplet.println("Failed to write nfc tag because of an error:"
-							+ ex.getMessage());
-					ex.printStackTrace();
+					try {
+						PApplet.println(messageToWrite.toByteArray());
+						ndefTag.connect();
+						if (ndefTag.isConnected()) {
+							ndefTag.writeNdefMessage(messageToWrite);
+							messageToWrite = null;
+						} else
+							PApplet.println("Failed to connect to Tag for an NDef write.");
+
+						ndefTag.close();
+						if (onNFCWriteMethod != null) {
+							try {
+								onNFCWriteMethod.invoke(parent, new Object[] {
+										true, "" });
+							} catch (Exception e) {
+								PApplet.println("Failed to notify sketch of an NFC write Tag operation: "
+										+ e.getMessage());
+							}
+						}
+					} catch (FormatException fx) {
+						fx.printStackTrace();
+
+					} catch (IOException e) {
+						e.printStackTrace();
+						String errorMessage = e.getMessage();
+						PApplet.println("Failed to write to tag.  Error: "
+								+ errorMessage);
+						if (onNFCWriteMethod != null) {
+							try {
+								onNFCWriteMethod.invoke(parent, new Object[] {
+										false, errorMessage });
+
+								// return;
+							} catch (Exception ex) {
+								PApplet.println("Failed to write nfc tag & subsequently notify sketch, error:"
+										+ ex.getMessage());
+								ex.printStackTrace();
+							}
+						}
+					}
 				}
-			}
+			}.run();
 		}
 	}
 
@@ -379,7 +441,7 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 	}
 
 	public NdefMessage createNdefMessage(NfcEvent arg0) {
-		
+
 		if (messageToBeam == null) {
 			beam("");
 		}
