@@ -51,18 +51,19 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 
 		channel = manager.initialize(parent, parent.getMainLooper(), this);
 		parent.registerReceiver(this, intentFilter);
-
+		parent.registerMethod("resume", this);
+		parent.registerMethod("pause", this);
 	}
 
 	public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
 		this.isWifiP2pEnabled = isWifiP2pEnabled;
 	}
 
-	public void onResume() {
+	public void resume() {
 		parent.registerReceiver(this, intentFilter);
 	}
 
-	public void onPause() {
+	public void pause() {
 		parent.unregisterReceiver(this);
 	}
 
