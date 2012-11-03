@@ -321,7 +321,7 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		}
 
 		if (tag != null && messageToWrite != null) {
-			new Runnable() {
+			parent.runOnUiThread(new Runnable() {
 				public void run() {
 					try {
 						tag.connect();
@@ -356,9 +356,10 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 						}
 					}
 				}
-			}.run();
+			}
+			);
 		} else if (ndefTag != null) {
-			new Runnable() {
+			parent.runOnUiThread(new Runnable() {
 				public void run() {
 
 					try {
@@ -402,7 +403,7 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 						}
 					}
 				}
-			}.run();
+			});
 		}
 	}
 
