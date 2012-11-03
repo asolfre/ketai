@@ -1,3 +1,16 @@
+v8 updates
+------------
+Test platforms : Android 4.1, 4.1.2, 4.0.2
+Test Hardware: Nexus 7, Galaxy 3s, Nexus S, Transformer Prime
+
+- added support for loading external sqlite files
+- added registration for resume/pause (updated examples)
+- cleaned up debugging prints for camera
+- removed sensor disabling due to exceptions(they happen sometimes)
+- added ability for camera to remember if it was started through pauses
+- forked gingerbread version (tested against 2.3.7 HTC Evo)
+
+
 v7 updates
 -------------
 Test platforms : Android 4.1, 4.0.2
