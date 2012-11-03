@@ -6,8 +6,8 @@
  */
 //====================================================================
 public void onCreate(Bundle savedInstanceState) { 
-  super.onCreate(savedInstanceState);
   ketaiNFC = new KetaiNFC(this);
+  super.onCreate(savedInstanceState);
 }
 
 public void onNewIntent(Intent intent) { 
