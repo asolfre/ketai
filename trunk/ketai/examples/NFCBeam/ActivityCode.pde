@@ -1,5 +1,3 @@
-import android.content.Intent;
-import android.os.Bundle;
 
 public void onCreate(Bundle savedInstanceState) { 
   super.onCreate(savedInstanceState);

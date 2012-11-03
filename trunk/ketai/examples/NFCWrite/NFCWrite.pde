@@ -26,6 +26,9 @@
  * </p> 
  * <p>Updated: 2012-10-21 Daniel Sauter/j.duran</p>
  */
+//The following are required for setup
+import android.content.Intent;
+import android.os.Bundle;
 
 import ketai.net.nfc.*;
 
@@ -45,15 +48,19 @@ void draw()
 {
   background(78, 93, 75);
   text("<Touch tag to write message>\nLast Write Status: "    + writeStatus, width/2, height/2);
-  if (frameCount % (int)frameRate == 0)
-  {
-    String d = "Ketai writing tag at: " + month()+"/"+day()+"/"+year()+" "+hour()+":"+minute()+":"+second();
-    ketaiNFC.write(d);
-  }
+  //  if (frameCount % (int)frameRate == 0)
+  //  {
+  //    println("setting write.");
+  //    String d = "Ketai writing tag at: " + month()+"/"+day()+"/"+year()+" "+hour()+":"+minute()+":"+second();
+  //    ketaiNFC.write(d);
+  //  }
 }
 
 void mousePressed()
 {
+  println("setting write.");
+  String d = "Ketai writing tag at: " + month()+"/"+day()+"/"+year()+" "+hour()+":"+minute()+":"+second();
+  ketaiNFC.write(d);
   writeStatus = "";
 }
 

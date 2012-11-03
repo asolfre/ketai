@@ -1,6 +1,3 @@
-//The following are required for setup
-import android.content.Intent;
-import android.os.Bundle;
 
 /*
   The following code allows the sketch to handle all NFC events

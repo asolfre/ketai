@@ -57,7 +57,7 @@ void onLongPress(float x, float y)
 //     end of gesture and velocity in pixels/sec
 void onFlick( float x, float y, float px, float py, float v)
 {
-  things.add(new Thing("FLICK-"+v, x, y, px, py));
+  things.add(new Thing("FLICK:"+v, x, y, px, py));
 }
 
 void onPinch(float x, float y, float d)

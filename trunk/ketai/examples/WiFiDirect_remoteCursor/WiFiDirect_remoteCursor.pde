@@ -10,6 +10,8 @@
  * </ul>
  * <p>Updated: 2012-05-18 Daniel Sauter/j.duran</p>
  */
+import android.os.Bundle;
+ 
 import ketai.net.wifidirect.*;
 
 import ketai.net.*;
