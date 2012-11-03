@@ -20,7 +20,7 @@ void setup()
     colorlist.add("Stub Entry " + i);
     
   //register for key events(keyPressed currently Broken)
-  registerMethod("keyEvent", this);  
+  //registerMethod("keyEvent", this);  
 }
 
 void draw()

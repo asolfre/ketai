@@ -26,6 +26,11 @@
  * </p> 
  * <p>Updated: 2012-10-20 Daniel Sauter/j.duran</p>
  */
+//The following are required for setup
+import android.content.Intent;
+import android.os.Bundle;
+
+ 
 import ketai.net.nfc.*;
 
 String textRead = "";
