@@ -22,7 +22,8 @@ public class KetaiLocation implements LocationListener {
 	private Location location;
 
 	final static String SERVICE_DESCRIPTION = "Android Location.";
-
+	private KetaiLocation me;
+	
 	public KetaiLocation(PApplet pParent) {
 		parent = pParent;
 		locationManager = (LocationManager) parent.getApplicationContext()
@@ -30,6 +31,7 @@ public class KetaiLocation implements LocationListener {
 		PApplet.println("KetaiLocationManager instantiated:"
 				+ locationManager.toString());
 		findParentIntentions();
+		me = this;
 		start();
 	}
 
@@ -173,8 +175,12 @@ public class KetaiLocation implements LocationListener {
 		if (provider == null)
 			return false;
 		PApplet.println("Requesting location updates from: " + provider);
-		locationManager.requestLocationUpdates(provider, 10000, 1, this);
-		return true;
+		parent.runOnUiThread(new Runnable() {
+			public void run() {
+				locationManager.requestLocationUpdates(provider, 10000, 1, me);
+			}
+		});
+			return true;
 	}
 
 	private void findParentIntentions() {
