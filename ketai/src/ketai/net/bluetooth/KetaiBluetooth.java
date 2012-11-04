@@ -28,10 +28,10 @@ public class KetaiBluetooth {
 	private KBluetoothListener btListener;
 	private ConnectThread mConnectThread;
 	private boolean isStarted = false;
-	//private boolean SLIPMode = false;
+	// private boolean SLIPMode = false;
 	protected Method onBluetoothDataEventMethod;
 
-	//user the well-known ssp UUID: 00001101-0000-1000-8000-00805F9B34FB
+	// user the well-known ssp UUID: 00001101-0000-1000-8000-00805F9B34FB
 	protected UUID MY_UUID_SECURE = UUID
 			.fromString("00001101-0000-1000-8000-00805F9B34FB");
 	protected UUID MY_UUID_INSECURE = UUID
@@ -63,7 +63,7 @@ public class KetaiBluetooth {
 	}
 
 	public void setSLIPMode(boolean _flag) {
-//		SLIPMode = _flag;
+		// SLIPMode = _flag;
 	}
 
 	public boolean isStarted() {
@@ -72,6 +72,10 @@ public class KetaiBluetooth {
 
 	public BluetoothAdapter getBluetoothAdapater() {
 		return bluetoothAdapter;
+	}
+
+	public boolean isDiscovering() {
+		return bluetoothAdapter.isDiscovering();
 	}
 
 	public String toString() {
@@ -123,13 +127,14 @@ public class KetaiBluetooth {
 		findParentIntention();
 		IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
 		parent.registerReceiver(mReceiver, filter);
+		parent.registerReceiver(mReceiver, new IntentFilter(
+				BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
 		return isStarted;
 
 	}
-	
-	public String getAddress()
-	{
-		if(bluetoothAdapter != null)
+
+	public String getAddress() {
+		if (bluetoothAdapter != null)
 			return bluetoothAdapter.getAddress();
 		else
 			return "";
@@ -139,8 +144,9 @@ public class KetaiBluetooth {
 		ArrayList<String> devices = new ArrayList<String>();
 
 		for (String key : discoveredDevices.keySet()) {
-			if(key != null)
-				devices.add(key);// key + "->" + discoveredDevices.get(key) + "\n";
+			if (key != null)
+				devices.add(key);// key + "->" + discoveredDevices.get(key) +
+									// "\n";
 		}
 		return devices;
 	}
@@ -373,13 +379,13 @@ public class KetaiBluetooth {
 		}
 
 		public void run() {
-			while(mmSocket == null)
+			while (mmSocket == null)
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
-			
+
 			PApplet.println("BEGIN mConnectThread SocketType:" + mSocketType
 					+ ":" + mmSocket.getRemoteDevice().getName());
 
