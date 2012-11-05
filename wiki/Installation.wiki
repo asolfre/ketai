@@ -3,18 +3,9 @@
 Follow the Processing Wiki at http://wiki.processing.org/w/Android#Instructions to install the Android SDK for your operating system
 </p>
 <p>
-<a href="http://code.google.com/p/ketai/downloads/list">Download</a> the Ketai library, current version 7 (requires Android Ice Cream Sandwich (4.0) or Jelly Bean (4.1))
-<p>
+Check your Device Android version (Settings/About Phone/Android Version) to determine the Ketai version you need for your device.
 
-= v7 Update log = 
-<ul>
-<li>Updated examples for all Ketai classes</li>
-<li>Added SQLite Support</li>
-<li>Added NFC Beam Support</li>
-<li>Added Multi-Touch Gesture Support</li>
-<li>Added WiFi Direct Support</li>
-<li>Fixed Camera issues, increased performance</li>
-</ul>
+If you are running Android 4.0 Ice Cream Sandwich or higher, you can also use Sketch/Add Library.../Import Library) and search for "Ketai" to install the library from within the Processing IDE.
 
 = Documentation = 
 Library Examples and JavaDocs are included in the library zip folder.
