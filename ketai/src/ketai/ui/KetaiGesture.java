@@ -31,7 +31,7 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 			}
 		});
 		//this stuff is still not working in b4
-//		parent.registerMethod("touchEvent", this);
+		parent.registerMethod("touchEvent", this);
 		
 		findParentIntentions();
 	}
