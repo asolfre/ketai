@@ -12,7 +12,6 @@ import android.location.Criteria;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.view.GestureDetector;
 
 public class KetaiLocation implements LocationListener {
 	private LocationManager locationManager = null;
@@ -22,6 +21,8 @@ public class KetaiLocation implements LocationListener {
 	private String provider;
 	private Location location;
 	KetaiLocation me;
+	private long minTime = 10000;	//millis
+	private float minDistance = 1; //meters
 
 	final static String SERVICE_DESCRIPTION = "Android Location.";
 
@@ -167,7 +168,14 @@ public class KetaiLocation implements LocationListener {
 		list.add("Location");
 		return list;
 	}
-
+	
+	public void setUpdateRate(int millis, int meters)
+	{
+		minTime = millis;
+		minDistance = meters;
+		
+		determineProvider();
+	}
 	private boolean determineProvider() {
 		if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
 			provider = LocationManager.GPS_PROVIDER;
@@ -179,7 +187,7 @@ public class KetaiLocation implements LocationListener {
 
 		parent.runOnUiThread(new Runnable() {
 			public void run() {
-				locationManager.requestLocationUpdates(provider, 10000, 1, me);
+				locationManager.requestLocationUpdates(provider, minTime, minDistance, me);
 			}
 		});
 	
