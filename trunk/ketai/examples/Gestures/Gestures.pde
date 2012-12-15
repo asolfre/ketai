@@ -1,3 +1,5 @@
+import android.view.MotionEvent;
+
 import ketai.ui.*;
 
 KetaiGesture gesture;
