@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package ketai.ui;
 
 import java.lang.reflect.Method;
@@ -11,16 +14,44 @@ import android.view.GestureDetector.OnDoubleTapListener;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.MotionEvent;
 
+/**
+ * Provides gesture recognition services to a processing sketch.  To receive 
+ * 		gesture events a sketch can define the following methods:<br /><br />
+ * 
+ * 		void onTap(float x, float y)  - x, y location of the tap<br />
+ * 		void onDoubleTap(float x, float y) - x,y location of double tap<br />
+ *		void onFlick(float x, float y, float px, float py, float v) - x,y where flick ended, px,py - where flick began, v - velocity of flick in pixels/sec <br /> 
+ *		void onScroll(int x int y) - not currently used<br />
+ *		void onLongPress(float x, float y)  - x, y position of long press<br />
+ *		void onPinch(float x, float y, float r) - x,y of center, r is the distance change<br />
+ *		void onRotate(float x, float y, float a) - x, y of center, a is the angle change in radians<br />
+ */
 public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 
+	/** The parent. */
 	PApplet parent;
+	
+	/** The gestures. */
 	GestureDetector gestures;
+	
+	/** The me. */
 	KetaiGesture me;
+	
+	/** The on rotate method. */
 	Method onDoubleTapMethod, onScrollMethod, onFlickMethod, onTapMethod,
 			onLongPressMethod, onPinchMethod, onRotateMethod;
+	
+	/** The cursors. */
 	HashMap<Integer, PVector> cursors = new HashMap<Integer, PVector>();
+	
+	/** The pcursors. */
 	HashMap<Integer, PVector> pcursors = new HashMap<Integer, PVector>();
 
+	/**
+	 * Instantiates a new ketai gesture.
+	 *
+	 * @param _parent the PApplet/sketch
+	 */
 	public KetaiGesture(PApplet _parent) {
 		parent = _parent;
 		me = this; // self reference for UI-thread constructor hackiness
@@ -30,29 +61,40 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 				gestures = new GestureDetector(parent, me);
 			}
 		});
-		//this stuff is still not working in b4
+		// this stuff is still not working in b7
 		parent.registerMethod("touchEvent", this);
-		
+
 		findParentIntentions();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnGestureListener#onDown(android.view.MotionEvent)
+	 */
 	public boolean onDown(MotionEvent arg0) {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnGestureListener#onFling(android.view.MotionEvent, android.view.MotionEvent, float, float)
+	 */
 	public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2,
 			float arg3) {
 		if (onFlickMethod != null) {
 			try {
+				PVector v = new PVector(arg2, arg3);
+				
 				onFlickMethod.invoke(parent,
 						new Object[] { arg1.getX(), arg1.getY(), arg0.getX(),
-								arg0.getY(), arg3 });
+								arg0.getY(), v.mag() });
 			} catch (Exception e) {
 			}
 		}
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnGestureListener#onLongPress(android.view.MotionEvent)
+	 */
 	public void onLongPress(MotionEvent arg0) {
 		if (onLongPressMethod != null) {
 			try {
@@ -63,16 +105,24 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnGestureListener#onScroll(android.view.MotionEvent, android.view.MotionEvent, float, float)
+	 */
 	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
 			float arg3) {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnGestureListener#onShowPress(android.view.MotionEvent)
+	 */
 	public void onShowPress(MotionEvent arg0) {
-		// TODO Auto-generated method stub
 
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnGestureListener#onSingleTapUp(android.view.MotionEvent)
+	 */
 	public boolean onSingleTapUp(MotionEvent arg0) {
 		if (onTapMethod != null) {
 			try {
@@ -84,6 +134,11 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		return true;
 	}
 
+	/**
+	 * Touch event.
+	 *
+	 * @param e the e
+	 */
 	public void touchEvent(TouchEvent e) {
 		PApplet.println("motionEvent called inside kgesture");
 		if (e.getNative() instanceof MotionEvent) {
@@ -93,6 +148,12 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		}
 	}
 
+	/**
+	 * Surface touch event.
+	 *
+	 * @param event the event
+	 * @return true, if successful
+	 */
 	public boolean surfaceTouchEvent(MotionEvent event) {
 		// public boolean touchEvent(TouchEvent event){
 
@@ -132,11 +193,16 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		return gestures.onTouchEvent(event);
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnDoubleTapListener#onSingleTapConfirmed(android.view.MotionEvent)
+	 */
 	public boolean onSingleTapConfirmed(MotionEvent arg0) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnDoubleTapListener#onDoubleTap(android.view.MotionEvent)
+	 */
 	public boolean onDoubleTap(MotionEvent arg0) {
 		if (onDoubleTapMethod != null) {
 			try {
@@ -148,6 +214,9 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		return true;
 	}
 
+	/**
+	 * Find parent intentions.
+	 */
 	private void findParentIntentions() {
 
 		try {
@@ -195,6 +264,9 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		}
 	}
 
+	/**
+	 * Analyse.
+	 */
 	private synchronized void analyse() {
 		if (cursors.size() > 1 && pcursors.size() > 1) {
 			PVector c1, c2, p1, p2;
@@ -240,6 +312,9 @@ public class KetaiGesture implements OnGestureListener, OnDoubleTapListener {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.GestureDetector.OnDoubleTapListener#onDoubleTapEvent(android.view.MotionEvent)
+	 */
 	public boolean onDoubleTapEvent(MotionEvent arg0) {
 		// TODO Auto-generated method stub
 		return false;

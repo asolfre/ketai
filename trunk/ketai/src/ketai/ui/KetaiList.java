@@ -1,10 +1,12 @@
+/*
+ * 
+ */
 package ketai.ui;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import processing.core.PApplet;
-
 import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,16 +17,44 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+/**
+ * The KetaiList class provides an android UI scroll list.  To receive the selection
+ * 	data a sketch should define the following method:<br /><br />
+ * 
+ * void onKetaiListSelection(String selection) - selection is the string selected from the list<br />
+ */
 public class KetaiList extends ListView {
+	
+	/** The parent. */
 	private PApplet parent;
+	
+	/** The adapter. */
 	private ArrayAdapter<String> adapter;
+	
+	/** The name. */
 	String name = "KetaiList";
+	
+	/** The selection. */
 	String selection = "";
+	
+	/** The self. */
 	ListView self;
+	
+	/** The layout. */
 	RelativeLayout layout;
+	
+	/** The parent callback. */
 	private Method parentCallback;
+	
+	/** The title. */
 	String title = "";
 
+	/**
+	 * Instantiates a new ketai list.
+	 *
+	 * @param _parent the _parent
+	 * @param data the data
+	 */
 	public KetaiList(PApplet _parent, ArrayList<String> data) {
 		super(_parent.getApplicationContext());
 		parent = _parent;
@@ -34,6 +64,12 @@ public class KetaiList extends ListView {
 
 	}
 
+	/**
+	 * Instantiates a new ketai list.
+	 *
+	 * @param _parent the _parent
+	 * @param data the data
+	 */
 	public KetaiList(PApplet _parent, String[] data) {
 		super(_parent.getApplicationContext());
 
@@ -43,6 +79,13 @@ public class KetaiList extends ListView {
 		init();
 	}
 
+	/**
+	 * Instantiates a new ketai list.
+	 *
+	 * @param _parent the _parent
+	 * @param _title the _title
+	 * @param data the data
+	 */
 	public KetaiList(PApplet _parent, String _title, String[] data) {
 		super(_parent.getApplicationContext());
 
@@ -53,6 +96,13 @@ public class KetaiList extends ListView {
 		init();
 	}
 
+	/**
+	 * Instantiates a new ketai list.
+	 *
+	 * @param _parent the _parent
+	 * @param _title the _title
+	 * @param data the data
+	 */
 	public KetaiList(PApplet _parent, String _title, ArrayList<String> data) {
 		super(_parent.getApplicationContext());
 		parent = _parent;
@@ -63,6 +113,9 @@ public class KetaiList extends ListView {
 
 	}
 
+	/**
+	 * Refresh.
+	 */
 	public void refresh() {
 		if (adapter == null)
 			return;
@@ -73,10 +126,18 @@ public class KetaiList extends ListView {
 		});
 	}
 
+	/**
+	 * Gets the selection.
+	 *
+	 * @return the selection
+	 */
 	public String getSelection() {
 		return selection;
 	}
 
+	/**
+	 * Inits the.
+	 */
 	private void init() {
 		setBackgroundColor(Color.BLACK);
 		setAlpha(1);
@@ -94,7 +155,7 @@ public class KetaiList extends ListView {
 
 		cancel = new TextView(parent);
 		cancel.setText("<CANCEL SELECTION>");
-		
+
 		cancel.setOnClickListener(new OnClickListener() {
 			public void onClick(View arg0) {
 				layout.removeAllViewsInLayout();
@@ -105,7 +166,8 @@ public class KetaiList extends ListView {
 					public void run() {
 						layout.removeAllViews();
 						try {
-							parentCallback.invoke(parent, new Object[] { self });
+							parentCallback
+									.invoke(parent, new Object[] { self });
 						} catch (Exception ex) {
 						}
 						layout.setVisibility(View.GONE);
