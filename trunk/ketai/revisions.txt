@@ -1,3 +1,13 @@
+v9 updates
+------------
+Test platforms : Android 4.1, 4.1.2, 4.0.2
+Test Hardware: Nexus 7, Galaxy 3s, Nexus S, Transformer Prime
+
+- added method to change location update paramters
+- formatted code & JDoc generated for all code 
+- added method to see if bluetooth is currently in discovery mode
+
+
 v8 updates
 ------------
 Test platforms : Android 4.1, 4.1.2, 4.0.2
