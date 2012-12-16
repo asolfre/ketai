@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package ketai.net.nfc;
 
 import java.io.IOException;
@@ -7,16 +10,12 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
 
-import javax.microedition.khronos.opengles.GL10;
-
 import ketai.net.nfc.record.ParsedNdefRecord;
-
 import processing.core.PApplet;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
-import android.graphics.SurfaceTexture;
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -27,27 +26,63 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
+import android.nfc.tech.NdefFormatable;
 import android.nfc.tech.NfcA;
 import android.nfc.tech.NfcF;
-import android.opengl.GLES20;
 import android.os.Parcelable;
 import android.util.Log;
-import android.nfc.tech.NdefFormatable;
 
+/**
+ * The KetaiNFC class provides access the Near Field Communication (NFC) 
+ * 	capabilities on supported platforms.  This includes access to android Beam (tm)
+ * 	services.
+ * 
+ * To access data from NFC services a sketch can define the following methods:<br /><br />
+ * 
+ * void onNFCEvent(String txt)   - get text from text formatted NFC tags<br />
+ * void onNFCEvent(byte[] data) -  get raw data from NFC tag<br />
+ * void onNFCEvent(URI _uri) - get URI from URI formatted tags<br /><br />
+ * 
+ * void onNFCWrite(boolean success, String message) - get status from a write operation <br />
+ * 							- message will contain the error if the operation failed
+ * 
+ */
 public class KetaiNFC implements CreateNdefMessageCallback,
 		OnNdefPushCompleteCallback {
+	
+	/** The parent. */
 	private PApplet parent;
+	
+	/** The on nfc event method_b array. */
 	private Method onNFCEventMethod_String, onNFCWriteMethod,
 			onNFCEventMethod_URI, onNFCEventMethod_bArray;
 
+	/** The m filters. */
 	private IntentFilter[] mFilters;
+	
+	/** The m tech lists. */
 	private String[][] mTechLists;
+	
+	/** The m adapter. */
 	private NfcAdapter mAdapter;
+	
+	/** The message to beam. */
 	private NdefMessage messageToWrite, messageToBeam;
+	
+	/** The p. */
 	private PendingIntent p;
+	
+	/** The tag. */
 	NdefFormatable tag;
+	
+	/** The ndef tag. */
 	Ndef ndefTag;
 
+	/**
+	 * Instantiates a new ketai nfc.
+	 *
+	 * @param pParent the calling sketch/Activity
+	 */
 	public KetaiNFC(PApplet pParent) {
 		parent = pParent;
 		Log.d("KetaiNFC", "KetaiNFC instantiated...");
@@ -88,6 +123,9 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		parent.registerMethod("pause", this);
 	}
 
+	/**
+	 * Resume.
+	 */
 	public void resume() {
 		Log.i("KetaiNFC", "resuming...");
 		if (mAdapter != null) {
@@ -111,6 +149,11 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			handleIntent(parent.getIntent());
 	}
 
+	/**
+	 * Start.
+	 *
+	 * @param p the pending intent (used by the android platform for management)
+	 */
 	public void start(PendingIntent p) {
 		p = PendingIntent.getActivity(parent, 0,
 				new Intent(parent, parent.getClass())
@@ -119,6 +162,9 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 
 	}
 
+	/**
+	 * Pause. (used by the android platform for management)
+	 */
 	public void pause() {
 		Log.i("KetaiNFC", "pausing...");
 
@@ -126,6 +172,11 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			mAdapter.disableForegroundDispatch(parent);
 	}
 
+	/**
+	 * Handle intent.(used by the android platform for management)
+	 *
+	 * @param intent the intent
+	 */
 	public void handleIntent(Intent intent) {
 
 		if (mAdapter == null)
@@ -206,6 +257,14 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 			}
 	}
 
+	/**
+	 * New text record.
+	 *
+	 * @param text the text
+	 * @param locale the locale
+	 * @param encodeInUtf8 the encode in utf8
+	 * @return the ndef record
+	 */
 	public static NdefRecord newTextRecord(String text, Locale locale,
 			boolean encodeInUtf8) {
 		byte[] langBytes = locale.getLanguage().getBytes(
@@ -228,6 +287,11 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 				new byte[0], data);
 	}
 
+	/**
+	 * Write a URL to a tag
+	 *
+	 * @param _url the _url
+	 */
 	public void write(URI _url) {
 		NdefRecord record = new NdefRecord(NdefRecord.TNF_ABSOLUTE_URI, _url
 				.toString().getBytes(Charset.forName("UTF-8")), new byte[0],
@@ -236,6 +300,11 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		messageToWrite = new NdefMessage(records);
 	}
 
+	/**
+	 * Write text to a tag
+	 *
+	 * @param textToWrite the text to write
+	 */
 	public void write(String textToWrite) {
 
 		Locale locale = Locale.US;
@@ -258,6 +327,11 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		messageToWrite = new NdefMessage(records);
 	}
 
+	/**
+	 * Beam.
+	 *
+	 * @param textToWrite the text to beam to device
+	 */
 	public void beam(String textToWrite) {
 
 		Locale locale = Locale.US;
@@ -280,14 +354,27 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		messageToBeam = new NdefMessage(records);
 	}
 
+	/**
+	 * Write generic byte array
+	 *
+	 * @param _data the _data to write
+	 */
 	public void write(byte[] _data) {
 		PApplet.println("NFC tag byte writing not yet implemented...");
 	}
 
+	/**
+	 * Cancel pending write operation
+	 */
 	public void cancelWrite() {
 		messageToWrite = null;
 	}
 
+	/**
+	 * Write nfc string to a tag
+	 *
+	 * @param t the tag reference
+	 */
 	private void writeNFCString(Tag t) {
 		tag = NdefFormatable.get(t);
 		ndefTag = null;
@@ -356,8 +443,7 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 						}
 					}
 				}
-			}
-			);
+			});
 		} else if (ndefTag != null) {
 			parent.runOnUiThread(new Runnable() {
 				public void run() {
@@ -407,6 +493,9 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		}
 	}
 
+	/**
+	 * Find parent intentions.
+	 */
 	private void findParentIntentions() {
 		try {
 			onNFCEventMethod_String = parent.getClass().getMethod("onNFCEvent",
@@ -436,11 +525,17 @@ public class KetaiNFC implements CreateNdefMessageCallback,
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.nfc.NfcAdapter.OnNdefPushCompleteCallback#onNdefPushComplete(android.nfc.NfcEvent)
+	 */
 	public void onNdefPushComplete(NfcEvent arg0) {
 		PApplet.println("Completed a beam! clearing out pending message.");
 		messageToBeam = null;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.nfc.NfcAdapter.CreateNdefMessageCallback#createNdefMessage(android.nfc.NfcEvent)
+	 */
 	public NdefMessage createNdefMessage(NfcEvent arg0) {
 
 		if (messageToBeam == null) {

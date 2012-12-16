@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package ketai.net.bluetooth;
 
 import java.io.IOException;
@@ -6,19 +9,38 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
+import processing.core.PApplet;
 import android.bluetooth.BluetoothSocket;
 
-import processing.core.PApplet;
-
+/**
+ * The Class KBluetoothConnection.
+ */
 public class KBluetoothConnection extends Thread {
 
+	/** The mm socket. */
 	private final BluetoothSocket mmSocket;
+	
+	/** The mm in stream. */
 	private final InputStream mmInStream;
+	
+	/** The mm out stream. */
 	private final OutputStream mmOutStream;
+	
+	/** The is connected. */
 	private boolean isConnected = false;
+	
+	/** The address. */
 	private String address = "";
+	
+	/** The btm. */
 	private KetaiBluetooth btm;
 
+	/**
+	 * Instantiates a new bluetooth connection.
+	 *
+	 * @param _btm the Bluetooth managing class
+	 * @param socket the socket reference for the connection
+	 */
 	public KBluetoothConnection(KetaiBluetooth _btm, BluetoothSocket socket) {
 		PApplet.println("create Connection thread to "
 				+ socket.getRemoteDevice().getName());
@@ -41,16 +63,29 @@ public class KBluetoothConnection extends Thread {
 		isConnected = true;
 	}
 
+	/**
+	 * Gets the hardware address.
+	 *
+	 * @return the address (hardware)
+	 */
 	public String getAddress() {
 		return address;
 	}
 
+	/**
+	 * Gets the device name.
+	 *
+	 * @return the device name
+	 */
 	public String getDeviceName() {
 		if (mmSocket == null)
 			return "";
 		return mmSocket.getRemoteDevice().getName();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Thread#run()
+	 */
 	public void run() {
 		PApplet.println("BEGIN mConnectedThread to " + address);
 		byte[] buffer = new byte[1024];
@@ -97,10 +132,20 @@ public class KBluetoothConnection extends Thread {
 		}
 	}
 
+	/**
+	 * Checks if we are connected.
+	 *
+	 * @return true, if is connected
+	 */
 	public boolean isConnected() {
 		return isConnected;
 	}
 
+	/**
+	 * Write data to the connection
+	 *
+	 * @param buffer the buffer
+	 */
 	public void write(byte[] buffer) {
 		try {
 			// PApplet.println("KBTConnection thread writing " + buffer.length
@@ -114,6 +159,9 @@ public class KBluetoothConnection extends Thread {
 		}
 	}
 
+	/**
+	 * Cancel, close out the resource
+	 */
 	public void cancel() {
 		try {
 			mmSocket.close();

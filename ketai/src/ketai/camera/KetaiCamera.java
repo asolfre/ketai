@@ -14,11 +14,8 @@ import java.util.Vector;
 
 import javax.microedition.khronos.opengles.GL10;
 
-import ketai.ui.KetaiAlertDialog;
-
-import processing.core.PImage;
 import processing.core.PApplet;
-
+import processing.core.PImage;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -27,8 +24,6 @@ import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.CameraInfo;
-//import android.hardware.Camera.Face;
-//import android.hardware.Camera.FaceDetectionListener;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.PreviewCallback;
@@ -40,26 +35,62 @@ import android.opengl.GLES20;
 import android.os.Environment;
 import android.view.Surface;
 
+/**
+ * The Class KetaiCamera allows the processing sketches to access android
+ * 	cameras through an object modeled after the desktop/java processing 
+ * 	Camera class.
+ *  
+ */
 public class KetaiCamera extends PImage {
+	
+	/** The camera. */
 	private Camera camera;
+	
+	/** The my pixels. */
 	private int[] myPixels;
+	
+	/** The on face detection event method. */
 	protected Method onPreviewEventMethod, onPreviewEventMethodPImage,
 			onSavePhotoEventMethod, onFaceDetectionEventMethod;
+	
+	/** The camera id. */
 	private int frameWidth, frameHeight, cameraFPS, cameraID;
+	
+	/** The photo height. */
 	private int photoWidth, photoHeight;
+	
+	/** The is rgb preview supported. */
 	public boolean isStarted, requestedStart, enableFlash,
 			isRGBPreviewSupported;
+	
+	/** The save photo path. */
 	private String savePhotoPath = "";
+	
+	/** The self. */
 	KetaiCamera self;
+	
+	/** The save dir. */
 	String SAVE_DIR = "";
 	// Thread runner;
+	/** The available. */
 	boolean available = false;
 	// public boolean isDetectingFaces = false;
+	/** The supports face detection. */
 	boolean supportsFaceDetection = false;
+	
+	/** The m texture. */
 	SurfaceTexture mTexture;
 
 	// private ketaiFaceDetectionListener facelistener;
 
+	/**
+	 * Instantiates a new ketai camera.
+	 *
+	 * @param pParent reference to the main sketch(Activity)
+	 * @param _width width of the camera image
+	 * @param _height height of the camera image
+	 * @param _framesPerSecond the frames per second
+	 */
 	public KetaiCamera(PApplet pParent, int _width, int _height,
 			int _framesPerSecond) {
 		super(_width, _height, PImage.ARGB);
@@ -130,7 +161,9 @@ public class KetaiCamera extends PImage {
 		parent.registerMethod("dispose", this);
 	}
 
-	// lock any auto settings to keep from constant adjustments
+	/**
+	 * Manual settings - attempt to disable "auto" adjustments (like focus, white balance, etc).
+	 */
 	public void manualSettings() {
 		if (camera == null)
 			return;
@@ -186,6 +219,11 @@ public class KetaiCamera extends PImage {
 	// camera.stopFaceDetection();
 	// }
 
+	/**
+	 * Sets the zoom.
+	 *
+	 * @param _zoom the new zoom
+	 */
 	public void setZoom(int _zoom) {
 		if (camera == null)
 			return;
@@ -200,6 +238,11 @@ public class KetaiCamera extends PImage {
 		camera.setParameters(cameraParameters);
 	}
 
+	/**
+	 * Gets the zoom.
+	 *
+	 * @return the zoom
+	 */
 	public int getZoom() {
 		if (camera == null)
 			return 0;
@@ -207,9 +250,9 @@ public class KetaiCamera extends PImage {
 		return (p.getZoom());
 	}
 
-	// allow camera settings to auto-adjust
-	// mainly concerned with focus/white balance
-	//
+	/**
+	 * Auto settings - set camera to use auto adjusting settings
+	 */
 	public void autoSettings() {
 		if (camera == null)
 			return;
@@ -235,6 +278,11 @@ public class KetaiCamera extends PImage {
 		// + camera.getParameters().flatten());
 	}
 
+	/**
+	 * Dump out camera settings into a single string.
+	 *
+	 * @return the string
+	 */
 	public String dump() {
 		String result = "";
 		if (camera == null)
@@ -272,24 +320,52 @@ public class KetaiCamera extends PImage {
 		return result;
 	}
 
+	/**
+	 * Sets the save directory for image/photo settings
+	 *
+	 * @param _dirname the new save directory
+	 */
 	public void setSaveDirectory(String _dirname) {
 		SAVE_DIR = _dirname;
 	}
 
+	/**
+	 * Gets the photo width which may be different from the camera preview width since
+	 * 	photo quality can be better than preview/camera image.
+	 *
+	 * @return the photo width
+	 */
 	public int getPhotoWidth() {
 		return photoWidth;
 	}
 
+	/**
+	 * Gets the photo height which may be different from the camera preview width since
+	 * 	photo quality can be better than preview/camera image.
+	 *
+	 * @return the photo height
+	 */
 	public int getPhotoHeight() {
 		return photoHeight;
 	}
 
+	/**
+	 * Sets the photo dimensions.  Photo dimensions default to camera preview dimensions
+	 * 	but can be set for higher quality.  Typically camera preview dimensions should be
+	 * 	smaller than photo dimensions.
+	 *
+	 * @param width the width
+	 * @param height the height
+	 */
 	public void setPhotoSize(int width, int height) {
 		photoWidth = width;
 		photoHeight = height;
 		determineCameraParameters();
 	}
 
+	/**
+	 * Enable flash.
+	 */
 	public void enableFlash() {
 		enableFlash = true;
 		if (camera == null)
@@ -304,6 +380,9 @@ public class KetaiCamera extends PImage {
 		}// doesnt support flash...its ok...
 	}
 
+	/**
+	 * Disable flash.
+	 */
 	public void disableFlash() {
 		enableFlash = false;
 		if (camera == null)
@@ -317,161 +396,183 @@ public class KetaiCamera extends PImage {
 		} // nopers
 	}
 
+	/**
+	 * Sets the camera id for devices that support multiple cameras.
+	 *
+	 * @param _id the new camera id
+	 */
 	public void setCameraID(int _id) {
 		if (_id < Camera.getNumberOfCameras())
 			cameraID = _id;
 	}
 
+	/**
+	 * Gets the camera id.
+	 *
+	 * @return the camera id
+	 */
 	public int getCameraID() {
 		return cameraID;
 	}
 
+	/**
+	 * Start the camera preview.  Call this in order to start the camera
+	 * 	preview updates.  This will deliver pixels from the camera to the
+	 * 	parent sketch.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean start() {
-			requestedStart = true;
-			if (isStarted)
-				return true;
+		requestedStart = true;
+		if (isStarted)
+			return true;
+
+		try {
+			// PApplet.println("KetaiCamera: opening camera...");
+			if (camera == null)
+				try {
+					camera = Camera.open(cameraID);
+				} catch (Exception x) {
+					// KetaiAlertDialog.popup(
+					// parent,
+					// "KetaiCamera",
+					// "Failed to connect to Camera.\n"
+					// + x.getMessage());
+					PApplet.println("Failed to open camera for camera ID: "
+							+ cameraID + ":" + x.getMessage());
+					return false;
+				}
+			Parameters cameraParameters = camera.getParameters();
+			List<Integer> list = cameraParameters.getSupportedPreviewFormats();
+
+			// PApplet.println("Supported preview modes...");
+			for (Integer i : list) {
+
+				if (i == ImageFormat.RGB_565) {
+					// PApplet.println("RGB Image preview supported!!!!(try better resolutions/fps combos)");
+					isRGBPreviewSupported = true;
+				}
+
+				PApplet.println("\t" + i);
+			}
+
+			if (isRGBPreviewSupported)
+				cameraParameters.setPreviewFormat(ImageFormat.RGB_565);
+			// else if (isNV21Supported)
+			// cameraParameters.setPreviewFormat(ImageFormat.NV21);
+			// else
+			// PApplet.println("Camera does not appear to provide data in a format we can convert. Sorry.");
+			PApplet.println("default imageformat:"
+					+ cameraParameters.getPreviewFormat());
+
+			List<String> flashmodes = cameraParameters.getSupportedFlashModes();
+			if (flashmodes != null && flashmodes.size() > 0) {
+				for (String s : flashmodes)
+					PApplet.println("supported flashmode: " + s);
+				if (enableFlash)
+					cameraParameters.setFlashMode(Parameters.FLASH_MODE_TORCH);
+				else
+					cameraParameters.setFlashMode(Parameters.FLASH_MODE_OFF);
+			} else
+				PApplet.println("No flash support.");
+
+			int rotation = parent.getWindowManager().getDefaultDisplay()
+					.getRotation();
+			int degrees = 0;
+			switch (rotation) {
+			case Surface.ROTATION_0:
+				degrees = 0;
+				break;
+			case Surface.ROTATION_90:
+				degrees = 90;
+				break;
+			case Surface.ROTATION_180:
+				degrees = 180;
+				break;
+			case Surface.ROTATION_270:
+				degrees = 270;
+				break;
+
+			}
+			Camera.CameraInfo info = new CameraInfo();
+			Camera.getCameraInfo(cameraID, info);
+
+			int result;
+			if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+				result = (info.orientation + degrees) % 360;
+				result = (360 - result) % 360; // compensate the mirror
+			} else { // back-facing
+				result = (info.orientation - degrees + 360) % 360;
+			}
+			camera.setDisplayOrientation(result);
+
+			camera.setParameters(cameraParameters);
+			camera.setPreviewCallback(previewcallback);
+
+			// set sizes
+			determineCameraParameters();
 
 			try {
-				// PApplet.println("KetaiCamera: opening camera...");
-				if (camera == null)
-					try {
-						camera = Camera.open(cameraID);
-					} catch (Exception x) {
-//						KetaiAlertDialog.popup(
-//								parent,
-//								"KetaiCamera",
-//								"Failed to connect to Camera.\n"
-//										+ x.getMessage());
-						PApplet.println("Failed to open camera for camera ID: "
-								+ cameraID + ":" + x.getMessage());
-						return false;
-					}
-				Parameters cameraParameters = camera.getParameters();
-				List<Integer> list = cameraParameters
-						.getSupportedPreviewFormats();
+				parent.runOnUiThread(new Runnable() {
+					public void run() {
 
-				// PApplet.println("Supported preview modes...");
-				for (Integer i : list) {
+						int[] textures = new int[1];
+						// generate one texture pointer and bind it as an
+						// external texture so preview will start
+						GLES20.glGenTextures(1, textures, 0);
+						GLES20.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
 
-					if (i == ImageFormat.RGB_565) {
-						// PApplet.println("RGB Image preview supported!!!!(try better resolutions/fps combos)");
-						isRGBPreviewSupported = true;
-					}
+						int texture_id = textures[0];
+						mTexture = new SurfaceTexture(texture_id);
 
-					PApplet.println("\t" + i);
-				}
-
-				if (isRGBPreviewSupported)
-					cameraParameters.setPreviewFormat(ImageFormat.RGB_565);
-				// else if (isNV21Supported)
-				// cameraParameters.setPreviewFormat(ImageFormat.NV21);
-				// else
-				// PApplet.println("Camera does not appear to provide data in a format we can convert. Sorry.");
-				PApplet.println("default imageformat:"
-						+ cameraParameters.getPreviewFormat());
-
-				List<String> flashmodes = cameraParameters
-						.getSupportedFlashModes();
-				if (flashmodes != null && flashmodes.size() > 0) {
-					for (String s : flashmodes)
-						PApplet.println("supported flashmode: " + s);
-					if (enableFlash)
-						cameraParameters
-								.setFlashMode(Parameters.FLASH_MODE_TORCH);
-					else
-						cameraParameters
-								.setFlashMode(Parameters.FLASH_MODE_OFF);
-				} else
-					PApplet.println("No flash support.");
-
-				int rotation = parent.getWindowManager().getDefaultDisplay()
-						.getRotation();
-				int degrees = 0;
-				switch (rotation) {
-				case Surface.ROTATION_0:
-					degrees = 0;
-					break;
-				case Surface.ROTATION_90:
-					degrees = 90;
-					break;
-				case Surface.ROTATION_180:
-					degrees = 180;
-					break;
-				case Surface.ROTATION_270:
-					degrees = 270;
-					break;
-
-				}
-				Camera.CameraInfo info = new CameraInfo();
-				Camera.getCameraInfo(cameraID, info);
-
-				int result;
-				if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-					result = (info.orientation + degrees) % 360;
-					result = (360 - result) % 360; // compensate the mirror
-				} else { // back-facing
-					result = (info.orientation - degrees + 360) % 360;
-				}
-				camera.setDisplayOrientation(result);
-
-				camera.setParameters(cameraParameters);
-				camera.setPreviewCallback(previewcallback);
-
-				// set sizes
-				determineCameraParameters();
-
-				try {
-					parent.runOnUiThread(new Runnable() {
-						public void run() {
-
-							int[] textures = new int[1];
-							// generate one texture pointer and bind it as an
-							// external texture so preview will start
-							GLES20.glGenTextures(1, textures, 0);
-							GLES20.glBindTexture(GL10.GL_TEXTURE_2D,
-									textures[0]);
-
-							int texture_id = textures[0];
-							mTexture = new SurfaceTexture(texture_id);
-
-							try {
-								camera.setPreviewTexture(mTexture);
-							} catch (IOException iox) {
-							}
+						try {
+							camera.setPreviewTexture(mTexture);
+						} catch (IOException iox) {
 						}
-					});
-					camera.startPreview();
-				} catch (NoClassDefFoundError x) {
-					camera.startPreview();
-				}
-				isStarted = true;
-
-				// if (supportsFaceDetection && isDetectingFaces) {
-				// camera.setFaceDetectionListener(this);
-				// camera.startFaceDetection();
-				// }
-
-				PApplet.println("Using preview format: "
-						+ camera.getParameters().getPreviewFormat());
-
-				PApplet.println("Preview size: " + frameWidth + "x"
-						+ frameHeight + "," + cameraFPS);
-				PApplet.println("Photo size: " + photoWidth + "x" + photoHeight);
-
-				return true;
-			} catch (RuntimeException x) {
-				x.printStackTrace();
-				if (camera != null)
-					camera.release();
-				PApplet.println("Exception caught while trying to connect to camera service.  Please check your sketch permissions or that another application is not using the camera.");
-				return false;
+					}
+				});
+				camera.startPreview();
+			} catch (NoClassDefFoundError x) {
+				camera.startPreview();
 			}
+			isStarted = true;
+
+			// if (supportsFaceDetection && isDetectingFaces) {
+			// camera.setFaceDetectionListener(this);
+			// camera.startFaceDetection();
+			// }
+
+			PApplet.println("Using preview format: "
+					+ camera.getParameters().getPreviewFormat());
+
+			PApplet.println("Preview size: " + frameWidth + "x" + frameHeight
+					+ "," + cameraFPS);
+			PApplet.println("Photo size: " + photoWidth + "x" + photoHeight);
+
+			return true;
+		} catch (RuntimeException x) {
+			x.printStackTrace();
+			if (camera != null)
+				camera.release();
+			PApplet.println("Exception caught while trying to connect to camera service.  Please check your sketch permissions or that another application is not using the camera.");
+			return false;
+		}
 	}
 
+	/**
+	 * Checks if flash is enabled.
+	 *
+	 * @return true, if flash is enabled
+	 */
 	public boolean isFlashEnabled() {
 		return enableFlash;
 	}
 
+	/**
+	 * Saves photo to the file system using default settings (
+	 *
+	 * @return true, if successful
+	 */
 	public boolean savePhoto() {
 		if (camera != null && isStarted()) {
 			savePhotoPath = "";
@@ -480,6 +581,12 @@ public class KetaiCamera extends PImage {
 		return false;
 	}
 
+	/**
+	 * Save photo to the file system using the name provided.
+	 *
+	 * @param _filename the _filename
+	 * @return true, if successful
+	 */
 	public boolean savePhoto(String _filename) {
 		String filename = "";
 
@@ -541,12 +648,18 @@ public class KetaiCamera extends PImage {
 		return true;
 	}
 
+	/**
+	 * Resume.
+	 */
 	public void resume() {
 		camera = Camera.open(cameraID);
 		if (!isStarted && requestedStart)
 			start();
 	}
 
+	/**
+	 * Read the pixels from the camera.
+	 */
 	public synchronized void read() {
 		if (pixels.length != frameWidth * frameHeight)
 			pixels = new int[frameWidth * frameHeight];
@@ -558,12 +671,19 @@ public class KetaiCamera extends PImage {
 		}
 	}
 
+	/**
+	 * Checks if the camera has been started.
+	 *
+	 * @return true, if is started
+	 */
 	public boolean isStarted() {
 		return isStarted;
 	}
 
+	/** The last processed frame. */
 	int lastProcessedFrame = 0;
 
+	/** The previewcallback. */
 	PreviewCallback previewcallback = new PreviewCallback() {
 		public void onPreviewFrame(byte[] data, Camera camera) {
 			if ((parent.millis() - lastProcessedFrame) < (1000 / cameraFPS))
@@ -577,10 +697,13 @@ public class KetaiCamera extends PImage {
 			if (myPixels == null || myPixels.length != frameWidth * frameHeight)
 				myPixels = new int[frameWidth * frameHeight];
 
-			if (isRGBPreviewSupported)
-				System.arraycopy(myPixels, 0, data, 0, myPixels.length);
-			else
-				decodeYUV420SP(data);
+			// issue using system.arraycopy between byte/int color data, go slow
+			// but sure route
+			// if (isRGBPreviewSupported)
+			// {
+			// System.arraycopy(myPixels, 0, data, 0, myPixels.length);
+			// }else
+			decodeYUV420SP(data);
 
 			if (myPixels == null)
 				return;
@@ -625,12 +748,15 @@ public class KetaiCamera extends PImage {
 
 		}
 	};
+	
+	/** The autofocus cb. */
 	private AutoFocusCallback autofocusCB = new AutoFocusCallback() {
 		public void onAutoFocus(boolean result, Camera c) {
 			PApplet.println("Autofocus result: " + result);
 		}
 	};
 
+	/** The jpeg callback. */
 	private PictureCallback jpegCallback = new PictureCallback() {
 		public void onPictureTaken(byte[] data, Camera camera) {
 			PApplet.println("pictureCallback entered...");
@@ -679,6 +805,7 @@ public class KetaiCamera extends PImage {
 		}
 	};
 
+	/** The my scanner callback. */
 	private OnScanCompletedListener myScannerCallback = new OnScanCompletedListener() {
 		public void onScanCompleted(String arg0, Uri arg1) {
 			PApplet.println("Media Scanner returned: " + arg1.toString()
@@ -686,6 +813,11 @@ public class KetaiCamera extends PImage {
 		}
 	};
 
+	/**
+	 * Adds the file to media library so that other applications can access it.
+	 *
+	 * @param _file the _file
+	 */
 	public void addToMediaLibrary(String _file) {
 
 		// String[] paths = { mediaFile.getAbsolutePath() };
@@ -695,6 +827,9 @@ public class KetaiCamera extends PImage {
 
 	}
 
+	/**
+	 * Pause the class as since the activity is being paused.
+	 */
 	public void pause() {
 		if (camera != null && isStarted) {
 			isStarted = false;
@@ -706,6 +841,9 @@ public class KetaiCamera extends PImage {
 		isStarted = false;
 	}
 
+	/**
+	 * Stop the camera from receiving updates.
+	 */
 	public void stop() {
 		PApplet.println("Stopping Camera...");
 		requestedStart = false;
@@ -718,10 +856,18 @@ public class KetaiCamera extends PImage {
 		}
 	}
 
+	/**
+	 * Dispose.
+	 */
 	public void dispose() {
 		stop();
 	}
 
+	/**
+	 * Decode yu v420 sp.
+	 *
+	 * @param yuv420sp the yuv420sp
+	 */
 	public void decodeYUV420SP(byte[] yuv420sp) {
 
 		// here we're using our own internal PImage attributes
@@ -764,10 +910,20 @@ public class KetaiCamera extends PImage {
 
 	}
 
+	/**
+	 * Gets the number of cameras.
+	 *
+	 * @return the number of cameras
+	 */
 	public int getNumberOfCameras() {
 		return Camera.getNumberOfCameras();
 	}
 
+	/**
+	 * List available cameras.
+	 *
+	 * @return the collection<? extends string>
+	 */
 	public Collection<? extends String> list() {
 		Vector<String> list = new Vector<String>();
 		String facing = "";
@@ -786,7 +942,10 @@ public class KetaiCamera extends PImage {
 		return list;
 	}
 
-	// figure out closest requested width/height, FPS combos
+	/**
+	 * Determine camera parameters based on requested parameters.  Tries
+	 * 	to get the closest resolution settings.
+	 */
 	private void determineCameraParameters() {
 		if (camera == null)
 			return;
@@ -891,6 +1050,11 @@ public class KetaiCamera extends PImage {
 		resize(frameWidth, frameHeight);
 	}
 
+	/**
+	 * On frame available callback, used by the camera service.
+	 *
+	 * @param arg0 the arg0
+	 */
 	public void onFrameAvailable(SurfaceTexture arg0) {
 		PApplet.print(".");
 	}

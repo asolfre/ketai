@@ -1,64 +1,71 @@
 /*
- * Copyright (C) 2010 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * 
  */
 package ketai.net.nfc.record;
-
-import android.nfc.NdefRecord;
 
 import java.io.UnsupportedEncodingException;
 
 import processing.core.PApplet;
+import android.nfc.NdefRecord;
 
 /**
- * An NFC Text Record
+ * An NFC Text Record.
  */
 public class TextRecord implements ParsedNdefRecord {
 
-	/** ISO/IANA language code */
+	/** ISO/IANA language code. */
 	private final String mLanguageCode;
 
+	/** The m text. */
 	private final String mText;
 
+	/**
+	 * Instantiates a new text record.
+	 *
+	 * @param languageCode the language code
+	 * @param text the text
+	 */
 	private TextRecord(String languageCode, String text) {
 		mLanguageCode = languageCode;
 		mText = text;
 	}
 
+	/**
+	 * Gets the text.
+	 *
+	 * @return the text
+	 */
 	public String getText() {
 		return mText;
 	}
 
 	/**
 	 * Returns the ISO/IANA language code associated with this text element.
+	 *
+	 * @return the language code
 	 */
 	public String getLanguageCode() {
 		return mLanguageCode;
 	}
 
 	// TODO: deal with text fields which span multiple NdefRecords
+	/**
+	 * Parses the.
+	 *
+	 * @param record the record
+	 * @return the text record
+	 */
 	public static TextRecord parse(NdefRecord record) {
 		try {
 			byte[] payload = record.getPayload();
 
 			PApplet.println("TextRecord parsed and NdefRecord with a payload of "
 					+ payload.length + " bytes.");
-			
-//			if (payload.length < 2)
-//			if(true)
-//				throw new IllegalArgumentException(
-//						"Not enough Payload to parse TextRecord");
+
+			// if (payload.length < 2)
+			// if(true)
+			// throw new IllegalArgumentException(
+			// "Not enough Payload to parse TextRecord");
 			/*
 			 * payload[0] contains the "Status Byte Encodings" field, per the
 			 * NFC Forum "Text Record Type Definition" section 3.2.1.
@@ -86,12 +93,18 @@ public class TextRecord implements ParsedNdefRecord {
 		} catch (UnsupportedEncodingException e) {
 			// should never happen unless we get a malformed tag.
 			throw new IllegalArgumentException(e);
-		}
-		catch(Exception x){
-			throw new IllegalArgumentException("Error parsing as a TextRecord: "+x.getMessage());
+		} catch (Exception x) {
+			throw new IllegalArgumentException(
+					"Error parsing as a TextRecord: " + x.getMessage());
 		}
 	}
 
+	/**
+	 * Checks if is text.
+	 *
+	 * @param record the record
+	 * @return true, if is text
+	 */
 	public static boolean isText(NdefRecord record) {
 		try {
 			parse(record);
@@ -102,6 +115,9 @@ public class TextRecord implements ParsedNdefRecord {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see ketai.net.nfc.record.ParsedNdefRecord#getTag()
+	 */
 	public String getTag() {
 		return getText();
 	}
