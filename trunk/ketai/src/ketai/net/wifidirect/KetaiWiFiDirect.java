@@ -1,3 +1,6 @@
+/*
+ * 
+ */
 package ketai.net.wifidirect;
 
 import java.util.ArrayList;
@@ -23,20 +26,44 @@ import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
 import android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener;
 import android.net.wifi.p2p.WifiP2pManager.PeerListListener;
 
+/**
+ * The KetaiWiFiDirect class is an experimental class that provides a wifi direct access to 
+ * 	a sketch.  WifiDirect provides peer-to-peer networking between devices.  No wireless 
+ * 	infrastructure is needed.  
+ */
 public class KetaiWiFiDirect extends BroadcastReceiver implements
 		ChannelListener, ConnectionInfoListener, ActionListener,
 		PeerListListener {
 
+	/** The parent. */
 	PApplet parent;
+	
+	/** The manager. */
 	private WifiP2pManager manager;
+	
+	/** The is wifi p2p enabled. */
 	private boolean isWifiP2pEnabled = false;
+	
+	/** The retry channel. */
 	private boolean retryChannel = false;
+	
+	/** The peers. */
 	private List<WifiP2pDevice> peers = new ArrayList<WifiP2pDevice>();
 
+	/** The intent filter. */
 	private final IntentFilter intentFilter = new IntentFilter();
+	
+	/** The channel. */
 	private Channel channel;
+	
+	/** The ip. */
 	private String ip = "";
 
+	/**
+	 * Instantiates a new ketai wi fi direct object
+	 *
+	 * @param _parent the calling sketch/Activity/PApplet
+	 */
 	public KetaiWiFiDirect(PApplet _parent) {
 		parent = _parent;
 		intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -55,18 +82,34 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		parent.registerMethod("pause", this);
 	}
 
+	/**
+	 * Sets the checks if wifi p2p enabled.
+	 *
+	 * @param isWifiP2pEnabled the new checks if is wifi p2p enabled
+	 */
 	public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
 		this.isWifiP2pEnabled = isWifiP2pEnabled;
 	}
 
+	/**
+	 * Resume. (used by android activity administration)
+	 */
 	public void resume() {
 		parent.registerReceiver(this, intentFilter);
 	}
 
+	/**
+	 * Pause.(used by android activity administration)
+	 */
 	public void pause() {
 		parent.unregisterReceiver(this);
 	}
 
+	/**
+	 * Connect using a specified configuration
+	 *
+	 * @param config the config
+	 */
 	private void connectToConfig(WifiP2pConfig config) {
 		manager.connect(channel, config, new ActionListener() {
 
@@ -80,6 +123,9 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		});
 	}
 
+	/**
+	 * Disconnect. clean out resources
+	 */
 	public void disconnect() {
 		manager.removeGroup(channel, new ActionListener() {
 
@@ -95,6 +141,9 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		});
 	}
 
+	/* (non-Javadoc)
+	 * @see android.net.wifi.p2p.WifiP2pManager.ChannelListener#onChannelDisconnected()
+	 */
 	public void onChannelDisconnected() {
 		// we will try once more
 		if (manager != null && !retryChannel) {
@@ -106,6 +155,9 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		}
 	}
 
+	/**
+	 * Cancel disconnect.
+	 */
 	public void cancelDisconnect() {
 
 		/*
@@ -129,6 +181,9 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
+	 */
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
 		if (WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
@@ -179,10 +234,18 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		}
 	}
 
+	/**
+	 * Gets the connection information.
+	 *
+	 * @return the connection info
+	 */
 	public void getConnectionInfo() {
 		manager.requestConnectionInfo(channel, this);
 	}
 
+	/* (non-Javadoc)
+	 * @see android.net.wifi.p2p.WifiP2pManager.ConnectionInfoListener#onConnectionInfoAvailable(android.net.wifi.p2p.WifiP2pInfo)
+	 */
 	public void onConnectionInfoAvailable(WifiP2pInfo arg0) {
 
 		WifiP2pInfo info = arg0;
@@ -195,16 +258,27 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 				+ "--" + info.groupOwnerAddress.getHostAddress());
 	}
 
+	/**
+	 * Gets the iP address used by the connection.
+	 *
+	 * @return the iP address
+	 */
 	public String getIPAddress() {
 		return ip;
 	}
 
+	/**
+	 * Discover.
+	 */
 	public void discover() {
 		if (manager != null) {
 			manager.discoverPeers(channel, this);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.net.wifi.p2p.WifiP2pManager.ActionListener#onFailure(int)
+	 */
 	public void onFailure(int arg0) {
 		switch (arg0) {
 		case 0:
@@ -222,11 +296,17 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.net.wifi.p2p.WifiP2pManager.ActionListener#onSuccess()
+	 */
 	public void onSuccess() {
 		PApplet.println("WifiDirect succeeded ");
 
 	}
 
+	/* (non-Javadoc)
+	 * @see android.net.wifi.p2p.WifiP2pManager.PeerListListener#onPeersAvailable(android.net.wifi.p2p.WifiP2pDeviceList)
+	 */
 	public void onPeersAvailable(WifiP2pDeviceList arg0) {
 		Collection<WifiP2pDevice> list = arg0.getDeviceList();
 		if (list.size() > 0) {
@@ -241,15 +321,24 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		}
 	}
 
+	/**
+	 * Gets the hardware address of the wifi interface
+	 *
+	 * @return the hardware address
+	 */
 	public String getHardwareAddress() {
-		  
-//		  WifiP2pDevice w  = new WifiP2pDevice();
-//		  PApplet.println("Device :" + w.toString());
-		WifiManager wm = (WifiManager) parent.getSystemService(Context.WIFI_SERVICE);
+
+		// WifiP2pDevice w = new WifiP2pDevice();
+		// PApplet.println("Device :" + w.toString());
+		WifiManager wm = (WifiManager) parent
+				.getSystemService(Context.WIFI_SERVICE);
 		String mac = wm.getConnectionInfo().getMacAddress();
 		return mac;
 	}
 
+	/**
+	 * Reset.
+	 */
 	public void reset() {
 		peers.clear();
 		manager.cancelConnect(channel, this);
@@ -257,6 +346,11 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 
 	}
 
+	/**
+	 * Gets the peer name list.
+	 *
+	 * @return the peer name list
+	 */
 	public ArrayList<String> getPeerNameList() {
 		ArrayList<String> names = new ArrayList<String>();
 		for (WifiP2pDevice d : peers)
@@ -265,6 +359,11 @@ public class KetaiWiFiDirect extends BroadcastReceiver implements
 		return names;
 	}
 
+	/**
+	 * Connect to a device by name.
+	 *
+	 * @param deviceName the device name
+	 */
 	public void connect(String deviceName) {
 
 		// obtain a peer from the WifiP2pDeviceList

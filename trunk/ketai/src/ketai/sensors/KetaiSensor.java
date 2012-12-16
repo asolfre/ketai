@@ -1,33 +1,71 @@
 package ketai.sensors;
 
-import processing.core.*;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
+import processing.core.PApplet;
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.content.Context;
 
+/**
+ * The KetaiSensor class provides access to android sensors.  To receive
+ * 	sensor data the following methods can be defined in your sketch:<br /><br />
+ * 
+ * void onSensorEvent(SensorEvent e) - raw android sensor event <br />
+ * void onAccelerometerEvent(float x, float y, float z, long a, int b): x,y,z force in m/s^2, a=timestamp(nanos), b=accuracy<br />
+ * void onAccelerometerEvent(float x, float y, float z):  x,y,z force in m/s2<br />
+ * void onOrientationEvent(float x, float y, flaot z, long a, int b):  x,y,z rotation in degrees, a=timestamp(nanos), b=accuracy<br />
+ * void onOrientationEvent(float x, float y, float z) : x,y,z rotation in degrees<br />
+ * void onMagneticFieldEvent(float x, float y, float z, long a, int b) : x,y,z geomag field in uT, a=timestamp(nanos), b=accuracy<br />
+ * void onMagneticFieldEvent(float x, float y, float z): x,y,z geomagnetic field in uT<br />
+ * void onGyroscopeEvent(float x, float y, float z, long a, int b):x,y,z rotation in rads/sec, a=timestamp(nanos), b=accuracy<br />
+ * void onGyroscopeEvent(float x, float y, float z): x,y,z rotation in rads/sec<br />
+ * void onGravityEvent(float x, float y, float z, long a, int b): x,y,z force of gravity in m/s^2, a=timestamp(nanos), b=accuracy<br />
+ * void onGravityEvent(float x, float y, float z): x,y,z rotation in m/s^s<br />
+ * void onProximityEvent(float d, long a, int b): d distance from sensor (typically 0,1), a=timestamp(nanos), b=accuracy<br />
+ * void onProximityEvent(float d): d distance from sensor (typically 0,1)<br />
+ * void onLightEvent(float d, long a, int b): d illumination from sensor in lx<br />
+ * void onLightEvent(float d): d illumination from sensor in lx<br />
+ * void onPressureEvent(float p, long a, int b): p ambient pressure in hPa or mbar, a=timestamp(nanos), b=accuracy<br />
+ * void onPressureEvent(float p): p ambient pressure in hPa or mbar<br />
+ * void onTemperatureEvent(float t, long a, int b): t temperature in degrees in degrees Celsius, a=timestamp(nanos), a=timestamp(nanos), b=accuracy<br />
+ * void onTemperatureEvent(float t): t temperature in degrees in degrees Celsius<br />
+ * void onLinearAccelerationEvent(float x, float y, float z, long a, int b): x,y,z acceleration force in m/s^2, minus gravity, a=timestamp(nanos), b=accuracy<br />
+ * void onLinearAccelerationEvent(float x, float y, float z): x,y,z acceleration force in m/s^2, minus gravity<br />
+ * void onRotationVectorEvent(float x, float y, float z, long a, int b): x,y,z rotation vector values, a=timestamp(nanos), b=accuracy<br />
+ * void onRotationVectorEvent(float x, float y, float z):x,y,z rotation vector values<br />
+ * void onAmibentTemperatureEvent(float t): same as temp above (newer API)<br />
+ * void onRelativeHumidityEvent(float h): h ambient humidity in percentage<br />
+
+ */
 public class KetaiSensor implements SensorEventListener {
 
+	/** The sensor manager. */
 	private SensorManager sensorManager = null;
 
+	/** The is registered. */
 	private boolean isRegistered = false;
+	
+	/** The parent. */
 	private PApplet parent;
 
+	/** The on sensor event method. */
 	private Method onSensorEventMethod;
-	
-	float[] accelerometerData, magnetometerData; //for getting orientation data
+
+	/** The magnetometer data. */
+	float[] accelerometerData, magnetometerData; // for getting orientation data
 
 	// Simple methods are of the form v1,v2,v3,v4 (typically x,y,z values)
 	// and the non-simple methods take values of v1,v2,v3, time, accuracy.
 	// see:
 	// http://developer.android.com/reference/android/hardware/SensorEvent.html#values
+	/** The on relative humidity event method. */
 	private Method onAccelerometerEventMethod,
 			onAccelerometerEventMethodSimple, onOrientationSensorEventMethod,
 			onOrientationSensorEventMethodSimple, onGyroscopeSensorEventMethod,
@@ -46,6 +84,7 @@ public class KetaiSensor implements SensorEventListener {
 			onLinearAccelerationSensorEventMethodSimple,
 			onAmbientTemperatureEventMethod, onRelativeHumidityEventMethod;
 
+	/** The relative humidity sensor enabled. */
 	private boolean accelerometerSensorEnabled, magneticFieldSensorEnabled,
 			orientationSensorEnabled, proximitySensorEnabled, useSimulator,
 			lightSensorEnabled, pressureSensorEnabled,
@@ -53,9 +92,18 @@ public class KetaiSensor implements SensorEventListener {
 			rotationVectorSensorEnabled, linearAccelerationSensorEnabled,
 			gravitySensorEnabled, ambientTemperatureSensorEnabled,
 			relativeHumiditySensorEnabled;
+	
+	/** The time of last update. */
 	private long delayInterval, timeOfLastUpdate;
+	
+	/** The Constant SERVICE_DESCRIPTION. */
 	final static String SERVICE_DESCRIPTION = "Android Sensors.";
 
+	/**
+	 * Instantiates a new ketai sensor.
+	 *
+	 * @param pParent PApplet/sketch instance
+	 */
 	public KetaiSensor(PApplet pParent) {
 		parent = pParent;
 		findParentIntentions();
@@ -66,166 +114,321 @@ public class KetaiSensor implements SensorEventListener {
 		delayInterval = timeOfLastUpdate = 0;
 	}
 
+	/**
+	 * Use simulator.
+	 *
+	 * @param flag the flag
+	 */
 	public void useSimulator(boolean flag) {
 		useSimulator = flag;
 	}
 
+	/**
+	 * Using simulator.
+	 *
+	 * @return true, if successful
+	 */
 	public boolean usingSimulator() {
 		return useSimulator;
 	}
 
+	/**
+	 * Sets the delay interval.
+	 *
+	 * @param pDelayInterval the new delay interval
+	 */
 	public void setDelayInterval(long pDelayInterval) {
 		delayInterval = pDelayInterval;
 	}
 
+	/**
+	 * Enable accelerometer.
+	 */
 	public void enableAccelerometer() {
 		accelerometerSensorEnabled = true;
 	}
 
+	/**
+	 * Enable rotation vector.
+	 */
 	public void enableRotationVector() {
 		rotationVectorSensorEnabled = true;
 	}
 
+	/**
+	 * Enable linear acceleration.
+	 */
 	public void enableLinearAcceleration() {
 		linearAccelerationSensorEnabled = true;
 	}
 
+	/**
+	 * Disable accelerometer.
+	 */
 	public void disableAccelerometer() {
 		accelerometerSensorEnabled = true;
 	}
 
+	/**
+	 * Enable magentic field.
+	 */
 	public void enableMagenticField() {
 		magneticFieldSensorEnabled = true;
 	}
 
+	/**
+	 * Disable magnetic field.
+	 */
 	public void disableMagneticField() {
 		magneticFieldSensorEnabled = true;
 	}
 
+	/**
+	 * Enable orientation.
+	 */
 	public void enableOrientation() {
 		orientationSensorEnabled = true;
 	}
 
+	/**
+	 * Disable orientation.
+	 */
 	public void disableOrientation() {
 		orientationSensorEnabled = false;
 	}
 
+	/**
+	 * Enable proximity.
+	 */
 	public void enableProximity() {
 		proximitySensorEnabled = true;
 	}
 
+	/**
+	 * Disable proximity.
+	 */
 	public void disableProximity() {
 		proximitySensorEnabled = false;
 	}
 
+	/**
+	 * Disablelinear acceleration.
+	 */
 	public void disablelinearAcceleration() {
 		linearAccelerationSensorEnabled = false;
 	}
 
+	/**
+	 * Disable rotation vector.
+	 */
 	public void disableRotationVector() {
 		rotationVectorSensorEnabled = false;
 	}
 
+	/**
+	 * Enable light.
+	 */
 	public void enableLight() {
 		lightSensorEnabled = true;
 	}
 
+	/**
+	 * Disable light.
+	 */
 	public void disableLight() {
 		lightSensorEnabled = true;
 	}
 
+	/**
+	 * Enable pressure.
+	 */
 	public void enablePressure() {
 		pressureSensorEnabled = true;
 	}
 
+	/**
+	 * Disable pressure.
+	 */
 	public void disablePressure() {
 		pressureSensorEnabled = true;
 	}
 
+	/**
+	 * Enable temperature.
+	 */
 	public void enableTemperature() {
 		temperatureSensorEnabled = true;
 	}
 
+	/**
+	 * Disable temperature.
+	 */
 	public void disableTemperature() {
 		temperatureSensorEnabled = false;
 	}
 
+	/**
+	 * Enable gyroscope.
+	 */
 	public void enableGyroscope() {
 		gyroscopeSensorEnabled = true;
 	}
 
+	/**
+	 * Disable gyroscope.
+	 */
 	public void disableGyroscope() {
 		gyroscopeSensorEnabled = false;
 	}
 
+	/**
+	 * Disable amibent temperature.
+	 */
 	public void disableAmibentTemperature() {
 		ambientTemperatureSensorEnabled = false;
 	}
 
+	/**
+	 * Disable relative humidity sensor.
+	 */
 	public void disableRelativeHumiditySensor() {
 		relativeHumiditySensorEnabled = false;
 	}
 
+	/**
+	 * Enable amibent temperature.
+	 */
 	public void enableAmibentTemperature() {
 		ambientTemperatureSensorEnabled = true;
 	}
 
+	/**
+	 * Enable relative humidity sensor.
+	 */
 	public void enableRelativeHumiditySensor() {
 		relativeHumiditySensorEnabled = true;
 	}
 
+	/**
+	 * Enable all sensors.
+	 */
 	public void enableAllSensors() {
 		accelerometerSensorEnabled = magneticFieldSensorEnabled = orientationSensorEnabled = proximitySensorEnabled = lightSensorEnabled = pressureSensorEnabled = temperatureSensorEnabled = gyroscopeSensorEnabled = linearAccelerationSensorEnabled = rotationVectorSensorEnabled = ambientTemperatureSensorEnabled = relativeHumiditySensorEnabled = true;
 	}
 
+	/**
+	 * Checks if is accelerometer available.
+	 *
+	 * @return true, if is accelerometer available
+	 */
 	public boolean isAccelerometerAvailable() {
 		return isSensorSupported(Sensor.TYPE_ACCELEROMETER);
 	}
 
+	/**
+	 * Checks if is linear acceleration available.
+	 *
+	 * @return true, if is linear acceleration available
+	 */
 	public boolean isLinearAccelerationAvailable() {
 		return isSensorSupported(Sensor.TYPE_LINEAR_ACCELERATION);
 	}
 
+	/**
+	 * Checks if is rotation vector available.
+	 *
+	 * @return true, if is rotation vector available
+	 */
 	public boolean isRotationVectorAvailable() {
 		return isSensorSupported(Sensor.TYPE_ROTATION_VECTOR);
 	}
 
+	/**
+	 * Checks if is magentic field available.
+	 *
+	 * @return true, if is magentic field available
+	 */
 	public boolean isMagenticFieldAvailable() {
 		return isSensorSupported(Sensor.TYPE_MAGNETIC_FIELD);
 	}
 
+	/**
+	 * Checks if is orientation available.
+	 *
+	 * @return true, if is orientation available
+	 */
 	public boolean isOrientationAvailable() {
 		return isSensorSupported(Sensor.TYPE_ORIENTATION);
 	}
 
+	/**
+	 * Checks if is proximity available.
+	 *
+	 * @return true, if is proximity available
+	 */
 	public boolean isProximityAvailable() {
 		return isSensorSupported(Sensor.TYPE_PROXIMITY);
 	}
 
+	/**
+	 * Checks if is light available.
+	 *
+	 * @return true, if is light available
+	 */
 	public boolean isLightAvailable() {
 		return isSensorSupported(Sensor.TYPE_LIGHT);
 	}
 
+	/**
+	 * Checks if is pressure available.
+	 *
+	 * @return true, if is pressure available
+	 */
 	public boolean isPressureAvailable() {
 		return isSensorSupported(Sensor.TYPE_PRESSURE);
 	}
 
+	/**
+	 * Checks if is temperature available.
+	 *
+	 * @return true, if is temperature available
+	 */
 	public boolean isTemperatureAvailable() {
 		return isSensorSupported(Sensor.TYPE_TEMPERATURE);
 	}
 
+	/**
+	 * Checks if is gyroscope available.
+	 *
+	 * @return true, if is gyroscope available
+	 */
 	public boolean isGyroscopeAvailable() {
 		return isSensorSupported(Sensor.TYPE_GYROSCOPE);
 	}
 
+	/**
+	 * Checks if is ambient temperature available.
+	 *
+	 * @return true, if is ambient temperature available
+	 */
 	public boolean isAmbientTemperatureAvailable() {
 		return isSensorSupported(Sensor.TYPE_AMBIENT_TEMPERATURE);
 	}
 
+	/**
+	 * Checks if is relative humidity available.
+	 *
+	 * @return true, if is relative humidity available
+	 */
 	public boolean isRelativeHumidityAvailable() {
 		return isSensorSupported(Sensor.TYPE_RELATIVE_HUMIDITY);
 	}
 
+	/**
+	 * List.
+	 *
+	 * @return the collection<? extends string>
+	 */
 	public Collection<? extends String> list() {
 		Vector<String> list = new Vector<String>();
 
@@ -241,10 +444,18 @@ public class KetaiSensor implements SensorEventListener {
 		// return returnList;
 	}
 
+	/**
+	 * Checks if is started.
+	 *
+	 * @return true, if is started
+	 */
 	public boolean isStarted() {
 		return isRegistered;
 	}
 
+	/**
+	 * Start services.
+	 */
 	public void start() {
 		PApplet.println("KetaiSensor: start()...");
 		findParentIntentions();
@@ -252,83 +463,102 @@ public class KetaiSensor implements SensorEventListener {
 		if (accelerometerSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (magneticFieldSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (pressureSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (orientationSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (proximitySensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (temperatureSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_TEMPERATURE);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (gyroscopeSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (rotationVectorSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (linearAccelerationSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (lightSensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (gravitySensorEnabled) {
 			Sensor s = sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (ambientTemperatureSensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		if (relativeHumiditySensorEnabled) {
 			Sensor s = sensorManager
 					.getDefaultSensor(Sensor.TYPE_RELATIVE_HUMIDITY);
-			if (s != null) sensorManager.registerListener(this, s,
-					SensorManager.SENSOR_DELAY_UI);
+			if (s != null)
+				sensorManager.registerListener(this, s,
+						SensorManager.SENSOR_DELAY_UI);
 		}
 		isRegistered = true;
 	}
 
+	/**
+	 * Stop services.
+	 */
 	public void stop() {
 		PApplet.println("KetaiSensor: Stop()....");
 		sensorManager.unregisterListener(this);
 		isRegistered = false;
 	}
 
+	/* (non-Javadoc)
+	 * @see android.hardware.SensorEventListener#onSensorChanged(android.hardware.SensorEvent)
+	 */
 	public void onSensorChanged(SensorEvent arg0) {
 
 		Date date = new Date();
@@ -357,7 +587,7 @@ public class KetaiSensor implements SensorEventListener {
 				&& accelerometerSensorEnabled) {
 			if (onAccelerometerEventMethod != null) {
 				try {
-					//holding accel data for orientation
+					// holding accel data for orientation
 					accelerometerData = arg0.values.clone();
 					onAccelerometerEventMethod.invoke(parent, new Object[] {
 							arg0.values[0], arg0.values[1], arg0.values[2],
@@ -373,7 +603,7 @@ public class KetaiSensor implements SensorEventListener {
 
 			if (onAccelerometerEventMethodSimple != null) {
 				try {
-					//holding accel data for orientation calc
+					// holding accel data for orientation calc
 					accelerometerData = arg0.values.clone();
 					onAccelerometerEventMethodSimple.invoke(parent,
 							new Object[] { arg0.values[0], arg0.values[1],
@@ -398,8 +628,7 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Error onGravityEvent():"
-							+ e.getMessage());
+					PApplet.println("Error onGravityEvent():" + e.getMessage());
 					e.printStackTrace();
 				}
 			}
@@ -521,8 +750,7 @@ public class KetaiSensor implements SensorEventListener {
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
-					PApplet.println("Error onLightEvent():"
-							+ e.getMessage());
+					PApplet.println("Error onLightEvent():" + e.getMessage());
 					e.printStackTrace();
 				}
 			}
@@ -720,9 +948,18 @@ public class KetaiSensor implements SensorEventListener {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see android.hardware.SensorEventListener#onAccuracyChanged(android.hardware.Sensor, int)
+	 */
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 	}
 
+	/**
+	 * Checks if is sensor supported.
+	 *
+	 * @param type the type
+	 * @return true, if is sensor supported
+	 */
 	private boolean isSensorSupported(int type) {
 		List<Sensor> foo = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		for (Sensor s : foo) {
@@ -732,6 +969,9 @@ public class KetaiSensor implements SensorEventListener {
 		return false;
 	}
 
+	/**
+	 * Find parent intentions.
+	 */
 	private void findParentIntentions() {
 		try {
 			onSensorEventMethod = parent.getClass().getMethod("onSensorEvent",
@@ -971,30 +1211,65 @@ public class KetaiSensor implements SensorEventListener {
 
 	}
 
+	/**
+	 * Start service.
+	 */
 	public void startService() {
 		start();
 	}
 
+	/**
+	 * Gets the status.
+	 *
+	 * @return the status (not used)
+	 */
 	public int getStatus() {
 		return 0;
 	}
 
+	/**
+	 * Stop service.
+	 */
 	public void stopService() {
 		stop();
 	}
 
+	/**
+	 * Gets the service description.
+	 *
+	 * @return the service description
+	 */
 	public String getServiceDescription() {
 		return SERVICE_DESCRIPTION;
 	}
 
+	/**
+	 * Gets the rotation matrix from vector.
+	 *
+	 * @param R the r
+	 * @param rotationVector the rotation vector
+	 * @return the rotation matrix from vector
+	 */
 	public void getRotationMatrixFromVector(float[] R, float[] rotationVector) {
 		SensorManager.getRotationMatrixFromVector(R, rotationVector);
 	}
 
+	/**
+	 * Gets the quaternion from vector.
+	 *
+	 * @param Q the q
+	 * @param rv the rv
+	 * @return the quaternion from vector
+	 */
 	public void getQuaternionFromVector(float[] Q, float[] rv) {
 		SensorManager.getQuaternionFromVector(Q, rv);
 	}
 
+	/**
+	 * Gets the orientation.
+	 *
+	 * @return the orientation
+	 */
 	public float[] getOrientation() {
 		float[] values = new float[3];
 		float[] R = new float[16];

@@ -1,4 +1,8 @@
+/*
+ * 
+ */
 package ketai.net;
+
 /*
  * 	This class is a utility class that exposes the parseMessage(byte[] data) 
  * 		protected method from the OscMessage class.  This allows us to parse
@@ -9,16 +13,26 @@ package ketai.net;
  */
 import oscP5.OscMessage;
 
-public class KetaiOSCMessage extends OscMessage{
+/**
+ * The Class KetaiOSCMessage.
+ */
+public class KetaiOSCMessage extends OscMessage {
 
+	/**
+	 * Instantiates a new ketai osc message.
+	 *
+	 * @param _data the _data
+	 */
 	public KetaiOSCMessage(byte[] _data) {
 		super("");
 		this.parseMessage(_data);
 	}
-	
-	public boolean isValid()
-	{
+
+	/* (non-Javadoc)
+	 * @see oscP5.OscPacket#isValid()
+	 */
+	public boolean isValid() {
 		return isValid;
 	}
-	
+
 }
