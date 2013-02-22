@@ -19,8 +19,10 @@ import processing.core.PImage;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
+import android.graphics.Bitmap.Config;
 import android.hardware.Camera;
 import android.hardware.Camera.AutoFocusCallback;
 import android.hardware.Camera.CameraInfo;
@@ -37,38 +39,38 @@ import android.view.Surface;
 
 /**
  * The Class KetaiCamera allows the processing sketches to access android
- * 	cameras through an object modeled after the desktop/java processing 
- * 	Camera class.
- *  
+ * cameras through an object modeled after the desktop/java processing Camera
+ * class.
+ * 
  */
 public class KetaiCamera extends PImage {
-	
+
 	/** The camera. */
 	private Camera camera;
-	
+
 	/** The my pixels. */
 	private int[] myPixels;
-	
+
 	/** The on face detection event method. */
 	protected Method onPreviewEventMethod, onPreviewEventMethodPImage,
 			onSavePhotoEventMethod, onFaceDetectionEventMethod;
-	
+
 	/** The camera id. */
 	private int frameWidth, frameHeight, cameraFPS, cameraID;
-	
+
 	/** The photo height. */
 	private int photoWidth, photoHeight;
-	
+
 	/** The is rgb preview supported. */
 	public boolean isStarted, requestedStart, enableFlash,
 			isRGBPreviewSupported;
-	
+
 	/** The save photo path. */
 	private String savePhotoPath = "";
-	
+
 	/** The self. */
 	KetaiCamera self;
-	
+
 	/** The save dir. */
 	String SAVE_DIR = "";
 	// Thread runner;
@@ -77,7 +79,7 @@ public class KetaiCamera extends PImage {
 	// public boolean isDetectingFaces = false;
 	/** The supports face detection. */
 	boolean supportsFaceDetection = false;
-	
+
 	/** The m texture. */
 	SurfaceTexture mTexture;
 
@@ -85,15 +87,20 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Instantiates a new ketai camera.
-	 *
-	 * @param pParent reference to the main sketch(Activity)
-	 * @param _width width of the camera image
-	 * @param _height height of the camera image
-	 * @param _framesPerSecond the frames per second
+	 * 
+	 * @param pParent
+	 *            reference to the main sketch(Activity)
+	 * @param _width
+	 *            width of the camera image
+	 * @param _height
+	 *            height of the camera image
+	 * @param _framesPerSecond
+	 *            the frames per second
 	 */
 	public KetaiCamera(PApplet pParent, int _width, int _height,
 			int _framesPerSecond) {
 		super(_width, _height, PImage.ARGB);
+		bitmap = Bitmap.createBitmap(pixels, width, height, Config.ARGB_8888);
 		parent = pParent;
 		frameWidth = _width;
 		frameHeight = _height;
@@ -162,7 +169,8 @@ public class KetaiCamera extends PImage {
 	}
 
 	/**
-	 * Manual settings - attempt to disable "auto" adjustments (like focus, white balance, etc).
+	 * Manual settings - attempt to disable "auto" adjustments (like focus,
+	 * white balance, etc).
 	 */
 	public void manualSettings() {
 		if (camera == null)
@@ -221,8 +229,9 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Sets the zoom.
-	 *
-	 * @param _zoom the new zoom
+	 * 
+	 * @param _zoom
+	 *            the new zoom
 	 */
 	public void setZoom(int _zoom) {
 		if (camera == null)
@@ -240,7 +249,7 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Gets the zoom.
-	 *
+	 * 
 	 * @return the zoom
 	 */
 	public int getZoom() {
@@ -280,7 +289,7 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Dump out camera settings into a single string.
-	 *
+	 * 
 	 * @return the string
 	 */
 	public String dump() {
@@ -322,17 +331,18 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Sets the save directory for image/photo settings
-	 *
-	 * @param _dirname the new save directory
+	 * 
+	 * @param _dirname
+	 *            the new save directory
 	 */
 	public void setSaveDirectory(String _dirname) {
 		SAVE_DIR = _dirname;
 	}
 
 	/**
-	 * Gets the photo width which may be different from the camera preview width since
-	 * 	photo quality can be better than preview/camera image.
-	 *
+	 * Gets the photo width which may be different from the camera preview width
+	 * since photo quality can be better than preview/camera image.
+	 * 
 	 * @return the photo width
 	 */
 	public int getPhotoWidth() {
@@ -340,9 +350,9 @@ public class KetaiCamera extends PImage {
 	}
 
 	/**
-	 * Gets the photo height which may be different from the camera preview width since
-	 * 	photo quality can be better than preview/camera image.
-	 *
+	 * Gets the photo height which may be different from the camera preview
+	 * width since photo quality can be better than preview/camera image.
+	 * 
 	 * @return the photo height
 	 */
 	public int getPhotoHeight() {
@@ -350,12 +360,14 @@ public class KetaiCamera extends PImage {
 	}
 
 	/**
-	 * Sets the photo dimensions.  Photo dimensions default to camera preview dimensions
-	 * 	but can be set for higher quality.  Typically camera preview dimensions should be
-	 * 	smaller than photo dimensions.
-	 *
-	 * @param width the width
-	 * @param height the height
+	 * Sets the photo dimensions. Photo dimensions default to camera preview
+	 * dimensions but can be set for higher quality. Typically camera preview
+	 * dimensions should be smaller than photo dimensions.
+	 * 
+	 * @param width
+	 *            the width
+	 * @param height
+	 *            the height
 	 */
 	public void setPhotoSize(int width, int height) {
 		photoWidth = width;
@@ -398,8 +410,9 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Sets the camera id for devices that support multiple cameras.
-	 *
-	 * @param _id the new camera id
+	 * 
+	 * @param _id
+	 *            the new camera id
 	 */
 	public void setCameraID(int _id) {
 		if (_id < Camera.getNumberOfCameras())
@@ -408,7 +421,7 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Gets the camera id.
-	 *
+	 * 
 	 * @return the camera id
 	 */
 	public int getCameraID() {
@@ -416,10 +429,9 @@ public class KetaiCamera extends PImage {
 	}
 
 	/**
-	 * Start the camera preview.  Call this in order to start the camera
-	 * 	preview updates.  This will deliver pixels from the camera to the
-	 * 	parent sketch.
-	 *
+	 * Start the camera preview. Call this in order to start the camera preview
+	 * updates. This will deliver pixels from the camera to the parent sketch.
+	 * 
 	 * @return true, if successful
 	 */
 	public boolean start() {
@@ -561,7 +573,7 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Checks if flash is enabled.
-	 *
+	 * 
 	 * @return true, if flash is enabled
 	 */
 	public boolean isFlashEnabled() {
@@ -570,7 +582,7 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Saves photo to the file system using default settings (
-	 *
+	 * 
 	 * @return true, if successful
 	 */
 	public boolean savePhoto() {
@@ -583,8 +595,9 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Save photo to the file system using the name provided.
-	 *
-	 * @param _filename the _filename
+	 * 
+	 * @param _filename
+	 *            the _filename
 	 * @return true, if successful
 	 */
 	public boolean savePhoto(String _filename) {
@@ -673,7 +686,7 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Checks if the camera has been started.
-	 *
+	 * 
 	 * @return true, if is started
 	 */
 	public boolean isStarted() {
@@ -748,7 +761,7 @@ public class KetaiCamera extends PImage {
 
 		}
 	};
-	
+
 	/** The autofocus cb. */
 	private AutoFocusCallback autofocusCB = new AutoFocusCallback() {
 		public void onAutoFocus(boolean result, Camera c) {
@@ -815,8 +828,9 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Adds the file to media library so that other applications can access it.
-	 *
-	 * @param _file the _file
+	 * 
+	 * @param _file
+	 *            the _file
 	 */
 	public void addToMediaLibrary(String _file) {
 
@@ -865,8 +879,9 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Decode yu v420 sp.
-	 *
-	 * @param yuv420sp the yuv420sp
+	 * 
+	 * @param yuv420sp
+	 *            the yuv420sp
 	 */
 	public void decodeYUV420SP(byte[] yuv420sp) {
 
@@ -912,7 +927,7 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * Gets the number of cameras.
-	 *
+	 * 
 	 * @return the number of cameras
 	 */
 	public int getNumberOfCameras() {
@@ -921,7 +936,7 @@ public class KetaiCamera extends PImage {
 
 	/**
 	 * List available cameras.
-	 *
+	 * 
 	 * @return the collection<? extends string>
 	 */
 	public Collection<? extends String> list() {
@@ -943,8 +958,8 @@ public class KetaiCamera extends PImage {
 	}
 
 	/**
-	 * Determine camera parameters based on requested parameters.  Tries
-	 * 	to get the closest resolution settings.
+	 * Determine camera parameters based on requested parameters. Tries to get
+	 * the closest resolution settings.
 	 */
 	private void determineCameraParameters() {
 		if (camera == null)
@@ -1046,14 +1061,17 @@ public class KetaiCamera extends PImage {
 			PApplet.println("Face detection supported!");
 			supportsFaceDetection = true;
 		}
+		PApplet.println("hi!!!!!");
 		// update PImage
+		this.loadPixels();
 		resize(frameWidth, frameHeight);
 	}
 
 	/**
 	 * On frame available callback, used by the camera service.
-	 *
-	 * @param arg0 the arg0
+	 * 
+	 * @param arg0
+	 *            the arg0
 	 */
 	public void onFrameAvailable(SurfaceTexture arg0) {
 		PApplet.print(".");
