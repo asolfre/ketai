@@ -1061,7 +1061,7 @@ public class KetaiCamera extends PImage {
 			PApplet.println("Face detection supported!");
 			supportsFaceDetection = true;
 		}
-		PApplet.println("hi!!!!!");
+
 		// update PImage
 		this.loadPixels();
 		resize(frameWidth, frameHeight);
