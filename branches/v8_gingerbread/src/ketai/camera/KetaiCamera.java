@@ -38,6 +38,8 @@ import android.net.Uri;
 import android.opengl.GLES20;
 import android.os.Environment;
 import android.view.Surface;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 
 public class KetaiCamera extends PImage {
 	private Camera camera;
@@ -61,6 +63,7 @@ public class KetaiCamera extends PImage {
 	public KetaiCamera(PApplet pParent, int _width, int _height,
 			int _framesPerSecond) {
 		super(_width, _height, PImage.ARGB);
+		bitmap = Bitmap.createBitmap(pixels, width, height, Config.ARGB_8888);
 		parent = pParent;
 		frameWidth = _width;
 		frameHeight = _height;

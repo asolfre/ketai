@@ -4,5 +4,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/android-core"/>
 	<classpathentry kind="lib" path="/Applications/eclipse/android-sdk-mac_x86/platforms/android-10/android.jar"/>
+	<classpathentry kind="lib" path="libs/oscP5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -135,6 +135,7 @@ String getBluetoothInformation()
   String btInfo = "Server Running: ";
   btInfo += bt.isStarted() + "\n";
   btInfo += "Device Discoverable: "+bt.isDiscoverable() + "\n";
+  btInfo += "Device Discovering:" + bt.isDiscovering();
   btInfo += "\nConnected Devices: \n";
 
   ArrayList<String> devices = bt.getConnectedDeviceNames();
