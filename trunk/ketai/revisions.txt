@@ -6,6 +6,7 @@ Test Hardware: Nexus 7, Galaxy 3s, Nexus S, Transformer Prime
 - added method to change location update paramters
 - formatted code & JDoc generated for all code 
 - added method to see if bluetooth is currently in discovery mode
+- fixed Camera issue when constructing PImage superclass
 
 
 v8 updates
