@@ -14,35 +14,50 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
 /**
- * The KetaiSensor class provides access to android sensors.  To receive
- * 	sensor data the following methods can be defined in your sketch:<br /><br />
+ * The KetaiSensor class provides access to android sensors. To receive sensor
+ * data the following methods can be defined in your sketch:<br />
+ * <br />
  * 
  * void onSensorEvent(SensorEvent e) - raw android sensor event <br />
- * void onAccelerometerEvent(float x, float y, float z, long a, int b): x,y,z force in m/s^2, a=timestamp(nanos), b=accuracy<br />
- * void onAccelerometerEvent(float x, float y, float z):  x,y,z force in m/s2<br />
- * void onOrientationEvent(float x, float y, flaot z, long a, int b):  x,y,z rotation in degrees, a=timestamp(nanos), b=accuracy<br />
- * void onOrientationEvent(float x, float y, float z) : x,y,z rotation in degrees<br />
- * void onMagneticFieldEvent(float x, float y, float z, long a, int b) : x,y,z geomag field in uT, a=timestamp(nanos), b=accuracy<br />
- * void onMagneticFieldEvent(float x, float y, float z): x,y,z geomagnetic field in uT<br />
- * void onGyroscopeEvent(float x, float y, float z, long a, int b):x,y,z rotation in rads/sec, a=timestamp(nanos), b=accuracy<br />
+ * void onAccelerometerEvent(float x, float y, float z, long a, int b): x,y,z
+ * force in m/s^2, a=timestamp(nanos), b=accuracy<br />
+ * void onAccelerometerEvent(float x, float y, float z): x,y,z force in m/s2<br />
+ * void onOrientationEvent(float x, float y, flaot z, long a, int b): x,y,z
+ * rotation in degrees, a=timestamp(nanos), b=accuracy<br />
+ * void onOrientationEvent(float x, float y, float z) : x,y,z rotation in
+ * degrees<br />
+ * void onMagneticFieldEvent(float x, float y, float z, long a, int b) : x,y,z
+ * geomag field in uT, a=timestamp(nanos), b=accuracy<br />
+ * void onMagneticFieldEvent(float x, float y, float z): x,y,z geomagnetic field
+ * in uT<br />
+ * void onGyroscopeEvent(float x, float y, float z, long a, int b):x,y,z
+ * rotation in rads/sec, a=timestamp(nanos), b=accuracy<br />
  * void onGyroscopeEvent(float x, float y, float z): x,y,z rotation in rads/sec<br />
- * void onGravityEvent(float x, float y, float z, long a, int b): x,y,z force of gravity in m/s^2, a=timestamp(nanos), b=accuracy<br />
+ * void onGravityEvent(float x, float y, float z, long a, int b): x,y,z force of
+ * gravity in m/s^2, a=timestamp(nanos), b=accuracy<br />
  * void onGravityEvent(float x, float y, float z): x,y,z rotation in m/s^s<br />
- * void onProximityEvent(float d, long a, int b): d distance from sensor (typically 0,1), a=timestamp(nanos), b=accuracy<br />
+ * void onProximityEvent(float d, long a, int b): d distance from sensor
+ * (typically 0,1), a=timestamp(nanos), b=accuracy<br />
  * void onProximityEvent(float d): d distance from sensor (typically 0,1)<br />
  * void onLightEvent(float d, long a, int b): d illumination from sensor in lx<br />
  * void onLightEvent(float d): d illumination from sensor in lx<br />
- * void onPressureEvent(float p, long a, int b): p ambient pressure in hPa or mbar, a=timestamp(nanos), b=accuracy<br />
+ * void onPressureEvent(float p, long a, int b): p ambient pressure in hPa or
+ * mbar, a=timestamp(nanos), b=accuracy<br />
  * void onPressureEvent(float p): p ambient pressure in hPa or mbar<br />
- * void onTemperatureEvent(float t, long a, int b): t temperature in degrees in degrees Celsius, a=timestamp(nanos), a=timestamp(nanos), b=accuracy<br />
+ * void onTemperatureEvent(float t, long a, int b): t temperature in degrees in
+ * degrees Celsius, a=timestamp(nanos), a=timestamp(nanos), b=accuracy<br />
  * void onTemperatureEvent(float t): t temperature in degrees in degrees Celsius<br />
- * void onLinearAccelerationEvent(float x, float y, float z, long a, int b): x,y,z acceleration force in m/s^2, minus gravity, a=timestamp(nanos), b=accuracy<br />
- * void onLinearAccelerationEvent(float x, float y, float z): x,y,z acceleration force in m/s^2, minus gravity<br />
- * void onRotationVectorEvent(float x, float y, float z, long a, int b): x,y,z rotation vector values, a=timestamp(nanos), b=accuracy<br />
- * void onRotationVectorEvent(float x, float y, float z):x,y,z rotation vector values<br />
+ * void onLinearAccelerationEvent(float x, float y, float z, long a, int b):
+ * x,y,z acceleration force in m/s^2, minus gravity, a=timestamp(nanos),
+ * b=accuracy<br />
+ * void onLinearAccelerationEvent(float x, float y, float z): x,y,z acceleration
+ * force in m/s^2, minus gravity<br />
+ * void onRotationVectorEvent(float x, float y, float z, long a, int b): x,y,z
+ * rotation vector values, a=timestamp(nanos), b=accuracy<br />
+ * void onRotationVectorEvent(float x, float y, float z):x,y,z rotation vector
+ * values<br />
  * void onAmibentTemperatureEvent(float t): same as temp above (newer API)<br />
  * void onRelativeHumidityEvent(float h): h ambient humidity in percentage<br />
-
  */
 public class KetaiSensor implements SensorEventListener {
 
@@ -51,9 +66,10 @@ public class KetaiSensor implements SensorEventListener {
 
 	/** The is registered. */
 	private boolean isRegistered = false;
-	
+
 	/** The parent. */
 	private PApplet parent;
+	public Object callbackdelegate;
 
 	/** The on sensor event method. */
 	private Method onSensorEventMethod;
@@ -92,7 +108,7 @@ public class KetaiSensor implements SensorEventListener {
 			rotationVectorSensorEnabled, linearAccelerationSensorEnabled,
 			gravitySensorEnabled, ambientTemperatureSensorEnabled,
 			relativeHumiditySensorEnabled;
-	
+
 	/** The time of last update. */
 	private long delayInterval, timeOfLastUpdate;
 	
@@ -101,8 +117,9 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Instantiates a new ketai sensor.
-	 *
-	 * @param pParent PApplet/sketch instance
+	 * 
+	 * @param pParent
+	 *            PApplet/sketch instance
 	 */
 	public KetaiSensor(PApplet pParent) {
 		parent = pParent;
@@ -110,14 +127,14 @@ public class KetaiSensor implements SensorEventListener {
 		useSimulator = false;
 		sensorManager = (SensorManager) parent.getApplicationContext()
 				.getSystemService(Context.SENSOR_SERVICE);
-
 		delayInterval = timeOfLastUpdate = 0;
 	}
 
 	/**
 	 * Use simulator.
-	 *
-	 * @param flag the flag
+	 * 
+	 * @param flag
+	 *            the flag
 	 */
 	public void useSimulator(boolean flag) {
 		useSimulator = flag;
@@ -125,7 +142,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Using simulator.
-	 *
+	 * 
 	 * @return true, if successful
 	 */
 	public boolean usingSimulator() {
@@ -134,8 +151,9 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Sets the delay interval.
-	 *
-	 * @param pDelayInterval the new delay interval
+	 * 
+	 * @param pDelayInterval
+	 *            the new delay interval
 	 */
 	public void setDelayInterval(long pDelayInterval) {
 		delayInterval = pDelayInterval;
@@ -318,7 +336,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is accelerometer available.
-	 *
+	 * 
 	 * @return true, if is accelerometer available
 	 */
 	public boolean isAccelerometerAvailable() {
@@ -327,7 +345,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is linear acceleration available.
-	 *
+	 * 
 	 * @return true, if is linear acceleration available
 	 */
 	public boolean isLinearAccelerationAvailable() {
@@ -336,7 +354,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is rotation vector available.
-	 *
+	 * 
 	 * @return true, if is rotation vector available
 	 */
 	public boolean isRotationVectorAvailable() {
@@ -345,7 +363,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is magentic field available.
-	 *
+	 * 
 	 * @return true, if is magentic field available
 	 */
 	public boolean isMagenticFieldAvailable() {
@@ -354,7 +372,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is orientation available.
-	 *
+	 * 
 	 * @return true, if is orientation available
 	 */
 	public boolean isOrientationAvailable() {
@@ -363,7 +381,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is proximity available.
-	 *
+	 * 
 	 * @return true, if is proximity available
 	 */
 	public boolean isProximityAvailable() {
@@ -372,7 +390,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is light available.
-	 *
+	 * 
 	 * @return true, if is light available
 	 */
 	public boolean isLightAvailable() {
@@ -381,7 +399,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is pressure available.
-	 *
+	 * 
 	 * @return true, if is pressure available
 	 */
 	public boolean isPressureAvailable() {
@@ -390,7 +408,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is temperature available.
-	 *
+	 * 
 	 * @return true, if is temperature available
 	 */
 	public boolean isTemperatureAvailable() {
@@ -399,7 +417,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is gyroscope available.
-	 *
+	 * 
 	 * @return true, if is gyroscope available
 	 */
 	public boolean isGyroscopeAvailable() {
@@ -408,7 +426,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is ambient temperature available.
-	 *
+	 * 
 	 * @return true, if is ambient temperature available
 	 */
 	public boolean isAmbientTemperatureAvailable() {
@@ -417,7 +435,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is relative humidity available.
-	 *
+	 * 
 	 * @return true, if is relative humidity available
 	 */
 	public boolean isRelativeHumidityAvailable() {
@@ -426,7 +444,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * List.
-	 *
+	 * 
 	 * @return the collection<? extends string>
 	 */
 	public Collection<? extends String> list() {
@@ -446,7 +464,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Checks if is started.
-	 *
+	 * 
 	 * @return true, if is started
 	 */
 	public boolean isStarted() {
@@ -458,7 +476,6 @@ public class KetaiSensor implements SensorEventListener {
 	 */
 	public void start() {
 		PApplet.println("KetaiSensor: start()...");
-		findParentIntentions();
 
 		if (accelerometerSensorEnabled) {
 			Sensor s = sensorManager
@@ -556,8 +573,12 @@ public class KetaiSensor implements SensorEventListener {
 		isRegistered = false;
 	}
 
-	/* (non-Javadoc)
-	 * @see android.hardware.SensorEventListener#onSensorChanged(android.hardware.SensorEvent)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.hardware.SensorEventListener#onSensorChanged(android.hardware
+	 * .SensorEvent)
 	 */
 	public void onSensorChanged(SensorEvent arg0) {
 
@@ -570,10 +591,11 @@ public class KetaiSensor implements SensorEventListener {
 			return;
 
 		timeOfLastUpdate = now;
-
+		
 		if (onSensorEventMethod != null) {
 			try {
-				onSensorEventMethod.invoke(parent, new Object[] { arg0 });
+				onSensorEventMethod.invoke(callbackdelegate,
+						new Object[] { arg0 });
 				return;
 			} catch (Exception e) {
 				PApplet.println("Disabling onSensorEvent() because of an error:"
@@ -589,9 +611,10 @@ public class KetaiSensor implements SensorEventListener {
 				try {
 					// holding accel data for orientation
 					accelerometerData = arg0.values.clone();
-					onAccelerometerEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.values[1], arg0.values[2],
-							arg0.timestamp, arg0.accuracy });
+						onAccelerometerEventMethod.invoke(callbackdelegate,
+							new Object[] { arg0.values[0], arg0.values[1],
+									arg0.values[2], arg0.timestamp,
+									arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -605,7 +628,7 @@ public class KetaiSensor implements SensorEventListener {
 				try {
 					// holding accel data for orientation calc
 					accelerometerData = arg0.values.clone();
-					onAccelerometerEventMethodSimple.invoke(parent,
+					onAccelerometerEventMethodSimple.invoke(callbackdelegate,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2] });
 					timeOfLastUpdate = now;
@@ -622,9 +645,10 @@ public class KetaiSensor implements SensorEventListener {
 				&& gravitySensorEnabled) {
 			if (onGravitySensorEventMethod != null) {
 				try {
-					onGravitySensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.values[1], arg0.values[2],
-							arg0.timestamp, arg0.accuracy });
+					onGravitySensorEventMethod.invoke(callbackdelegate,
+							new Object[] { arg0.values[0], arg0.values[1],
+									arg0.values[2], arg0.timestamp,
+									arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -635,7 +659,7 @@ public class KetaiSensor implements SensorEventListener {
 
 			if (onGravitySensorEventMethodSimple != null) {
 				try {
-					onGravitySensorEventMethodSimple.invoke(parent,
+					onGravitySensorEventMethodSimple.invoke(callbackdelegate,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2] });
 					timeOfLastUpdate = now;
@@ -652,9 +676,10 @@ public class KetaiSensor implements SensorEventListener {
 				&& orientationSensorEnabled) {
 			if (onOrientationSensorEventMethod != null) {
 				try {
-					onOrientationSensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.values[1], arg0.values[2],
-							arg0.timestamp, arg0.accuracy });
+					onOrientationSensorEventMethod.invoke(callbackdelegate,
+							new Object[] { arg0.values[0], arg0.values[1],
+									arg0.values[2], arg0.timestamp,
+									arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -665,9 +690,9 @@ public class KetaiSensor implements SensorEventListener {
 			}
 			if (onOrientationSensorEventMethodSimple != null) {
 				try {
-					onOrientationSensorEventMethodSimple.invoke(parent,
-							new Object[] { arg0.values[0], arg0.values[1],
-									arg0.values[2] });
+					onOrientationSensorEventMethodSimple.invoke(
+							callbackdelegate, new Object[] { arg0.values[0],
+									arg0.values[1], arg0.values[2] });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -683,7 +708,7 @@ public class KetaiSensor implements SensorEventListener {
 			if (onMagneticFieldSensorEventMethod != null) {
 				try {
 					magnetometerData = arg0.values.clone();
-					onMagneticFieldSensorEventMethod.invoke(parent,
+					onMagneticFieldSensorEventMethod.invoke(callbackdelegate,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2], arg0.timestamp,
 									arg0.accuracy });
@@ -698,9 +723,9 @@ public class KetaiSensor implements SensorEventListener {
 			if (onMagneticFieldSensorEventMethodSimple != null) {
 				try {
 					magnetometerData = arg0.values.clone();
-					onMagneticFieldSensorEventMethodSimple.invoke(parent,
-							new Object[] { arg0.values[0], arg0.values[1],
-									arg0.values[2] });
+					onMagneticFieldSensorEventMethodSimple.invoke(
+							callbackdelegate, new Object[] { arg0.values[0],
+									arg0.values[1], arg0.values[2] });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -715,9 +740,10 @@ public class KetaiSensor implements SensorEventListener {
 				&& gyroscopeSensorEnabled) {
 			if (onGyroscopeSensorEventMethod != null) {
 				try {
-					onGyroscopeSensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.values[1], arg0.values[2],
-							arg0.timestamp, arg0.accuracy });
+					onGyroscopeSensorEventMethod.invoke(callbackdelegate,
+							new Object[] { arg0.values[0], arg0.values[1],
+									arg0.values[2], arg0.timestamp,
+									arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -728,7 +754,7 @@ public class KetaiSensor implements SensorEventListener {
 			}
 			if (onGyroscopeSensorEventMethodSimple != null) {
 				try {
-					onGyroscopeSensorEventMethodSimple.invoke(parent,
+					onGyroscopeSensorEventMethodSimple.invoke(callbackdelegate,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2] });
 					timeOfLastUpdate = now;
@@ -745,8 +771,9 @@ public class KetaiSensor implements SensorEventListener {
 			if (onLightSensorEventMethod != null) {
 				try {
 
-					onLightSensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.timestamp, arg0.accuracy });
+					onLightSensorEventMethod.invoke(callbackdelegate,
+							new Object[] { arg0.values[0], arg0.timestamp,
+									arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -757,7 +784,7 @@ public class KetaiSensor implements SensorEventListener {
 			if (onLightSensorEventMethodSimple != null) {
 				try {
 
-					onLightSensorEventMethodSimple.invoke(parent,
+					onLightSensorEventMethodSimple.invoke(callbackdelegate,
 							new Object[] { arg0.values[0] });
 					timeOfLastUpdate = now;
 					return;
@@ -773,8 +800,9 @@ public class KetaiSensor implements SensorEventListener {
 				&& proximitySensorEnabled) {
 			if (onProximitySensorEventMethod != null) {
 				try {
-					onProximitySensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.timestamp, arg0.accuracy });
+					onProximitySensorEventMethod.invoke(callbackdelegate,
+							new Object[] { arg0.values[0], arg0.timestamp,
+									arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -785,7 +813,7 @@ public class KetaiSensor implements SensorEventListener {
 			}
 			if (onProximitySensorEventMethodSimple != null) {
 				try {
-					onProximitySensorEventMethodSimple.invoke(parent,
+					onProximitySensorEventMethodSimple.invoke(callbackdelegate,
 							new Object[] { arg0.values[0] });
 					timeOfLastUpdate = now;
 					return;
@@ -801,8 +829,9 @@ public class KetaiSensor implements SensorEventListener {
 
 			if (onPressureSensorEventMethod != null) {
 				try {
-					onPressureSensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.timestamp, arg0.accuracy });
+					onPressureSensorEventMethod.invoke(callbackdelegate,
+							new Object[] { arg0.values[0], arg0.timestamp,
+									arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -813,7 +842,7 @@ public class KetaiSensor implements SensorEventListener {
 			}
 			if (onPressureSensorEventMethodSimple != null) {
 				try {
-					onPressureSensorEventMethodSimple.invoke(parent,
+					onPressureSensorEventMethodSimple.invoke(callbackdelegate,
 							new Object[] { arg0.values[0] });
 					timeOfLastUpdate = now;
 					return;
@@ -829,8 +858,9 @@ public class KetaiSensor implements SensorEventListener {
 				&& temperatureSensorEnabled) {
 			if (onTemperatureSensorEventMethod != null) {
 				try {
-					onTemperatureSensorEventMethod.invoke(parent, new Object[] {
-							arg0.values[0], arg0.timestamp, arg0.accuracy });
+					onTemperatureSensorEventMethod.invoke(callbackdelegate,
+							new Object[] { arg0.values[0], arg0.timestamp,
+									arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -841,8 +871,8 @@ public class KetaiSensor implements SensorEventListener {
 			}
 			if (onTemperatureSensorEventMethodSimple != null) {
 				try {
-					onTemperatureSensorEventMethodSimple.invoke(parent,
-							new Object[] { arg0.values[0] });
+					onTemperatureSensorEventMethodSimple.invoke(
+							callbackdelegate, new Object[] { arg0.values[0] });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -857,10 +887,10 @@ public class KetaiSensor implements SensorEventListener {
 
 			if (onLinearAccelerationSensorEventMethod != null) {
 				try {
-					onLinearAccelerationSensorEventMethod.invoke(parent,
-							new Object[] { arg0.values[0], arg0.values[1],
-									arg0.values[2], arg0.timestamp,
-									arg0.accuracy });
+					onLinearAccelerationSensorEventMethod.invoke(
+							callbackdelegate, new Object[] { arg0.values[0],
+									arg0.values[1], arg0.values[2],
+									arg0.timestamp, arg0.accuracy });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -872,9 +902,9 @@ public class KetaiSensor implements SensorEventListener {
 
 			if (onLinearAccelerationSensorEventMethodSimple != null) {
 				try {
-					onLinearAccelerationSensorEventMethodSimple.invoke(parent,
-							new Object[] { arg0.values[0], arg0.values[1],
-									arg0.values[2] });
+					onLinearAccelerationSensorEventMethodSimple.invoke(
+							callbackdelegate, new Object[] { arg0.values[0],
+									arg0.values[1], arg0.values[2] });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -889,7 +919,7 @@ public class KetaiSensor implements SensorEventListener {
 				&& rotationVectorSensorEnabled) {
 			if (onRotationVectorSensorEventMethod != null) {
 				try {
-					onRotationVectorSensorEventMethod.invoke(parent,
+					onRotationVectorSensorEventMethod.invoke(callbackdelegate,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2], arg0.timestamp,
 									arg0.accuracy });
@@ -903,9 +933,9 @@ public class KetaiSensor implements SensorEventListener {
 			}
 			if (onRotationVectorSensorEventMethodSimple != null) {
 				try {
-					onRotationVectorSensorEventMethodSimple.invoke(parent,
-							new Object[] { arg0.values[0], arg0.values[1],
-									arg0.values[2] });
+					onRotationVectorSensorEventMethodSimple.invoke(
+							callbackdelegate, new Object[] { arg0.values[0],
+									arg0.values[1], arg0.values[2] });
 					timeOfLastUpdate = now;
 					return;
 				} catch (Exception e) {
@@ -919,7 +949,7 @@ public class KetaiSensor implements SensorEventListener {
 				&& ambientTemperatureSensorEnabled) {
 			if (onAmbientTemperatureEventMethod != null) {
 				try {
-					onAmbientTemperatureEventMethod.invoke(parent,
+					onAmbientTemperatureEventMethod.invoke(callbackdelegate,
 							new Object[] { arg0.values[0] });
 					timeOfLastUpdate = now;
 					return;
@@ -935,7 +965,7 @@ public class KetaiSensor implements SensorEventListener {
 				&& relativeHumiditySensorEnabled) {
 			if (onRelativeHumidityEventMethod != null) {
 				try {
-					onRelativeHumidityEventMethod.invoke(parent,
+					onRelativeHumidityEventMethod.invoke(callbackdelegate,
 							new Object[] { arg0.values[0] });
 					timeOfLastUpdate = now;
 					return;
@@ -948,16 +978,21 @@ public class KetaiSensor implements SensorEventListener {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see android.hardware.SensorEventListener#onAccuracyChanged(android.hardware.Sensor, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.hardware.SensorEventListener#onAccuracyChanged(android.hardware
+	 * .Sensor, int)
 	 */
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
 	}
 
 	/**
 	 * Checks if is sensor supported.
-	 *
-	 * @param type the type
+	 * 
+	 * @param type
+	 *            the type
 	 * @return true, if is sensor supported
 	 */
 	private boolean isSensorSupported(int type) {
@@ -973,25 +1008,31 @@ public class KetaiSensor implements SensorEventListener {
 	 * Find parent intentions.
 	 */
 	private void findParentIntentions() {
+		findObjectIntentions(parent);
+	}
+
+	private void findObjectIntentions(Object o) {
+		callbackdelegate = o;
+		
 		try {
-			onSensorEventMethod = parent.getClass().getMethod("onSensorEvent",
+			onSensorEventMethod = o.getClass().getMethod("onSensorEvent",
 					new Class[] { SensorEvent.class });
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
-			onAccelerometerEventMethod = parent.getClass().getMethod(
+			onAccelerometerEventMethod = o.getClass().getMethod(
 					"onAccelerometerEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
 			accelerometerSensorEnabled = true;
-			PApplet.println("Found onAccelerometerEvent	Method...");
+			PApplet.println("Found onAccelerometerEvent	Method...in " + o.getClass());
 
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
-			onAccelerometerEventMethodSimple = parent.getClass().getMethod(
+			onAccelerometerEventMethodSimple = o.getClass().getMethod(
 					"onAccelerometerEvent",
 					new Class[] { float.class, float.class, float.class });
 			accelerometerSensorEnabled = true;
@@ -1001,7 +1042,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onOrientationSensorEventMethod = parent.getClass().getMethod(
+			onOrientationSensorEventMethod = o.getClass().getMethod(
 					"onOrientationEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
@@ -1011,7 +1052,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onOrientationSensorEventMethodSimple = parent.getClass().getMethod(
+			onOrientationSensorEventMethodSimple = o.getClass().getMethod(
 					"onOrientationEvent",
 					new Class[] { float.class, float.class, float.class });
 			orientationSensorEnabled = true;
@@ -1020,7 +1061,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onMagneticFieldSensorEventMethod = parent.getClass().getMethod(
+			onMagneticFieldSensorEventMethod = o.getClass().getMethod(
 					"onMagneticFieldEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class });
@@ -1030,18 +1071,16 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onMagneticFieldSensorEventMethodSimple = parent
-					.getClass()
-					.getMethod(
-							"onMagneticFieldEvent",
-							new Class[] { float.class, float.class, float.class });
+			onMagneticFieldSensorEventMethodSimple = o.getClass().getMethod(
+					"onMagneticFieldEvent",
+					new Class[] { float.class, float.class, float.class });
 			magneticFieldSensorEnabled = true;
 			PApplet.println("Found onMagneticFieldEventMethod(simple)...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
-			onGyroscopeSensorEventMethod = parent.getClass().getMethod(
+			onGyroscopeSensorEventMethod = o.getClass().getMethod(
 					"onGyroscopeEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
@@ -1051,7 +1090,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onGyroscopeSensorEventMethodSimple = parent.getClass().getMethod(
+			onGyroscopeSensorEventMethodSimple = o.getClass().getMethod(
 					"onGyroscopeEvent",
 					new Class[] { float.class, float.class, float.class });
 			gyroscopeSensorEnabled = true;
@@ -1060,7 +1099,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onGravitySensorEventMethod = parent.getClass().getMethod(
+			onGravitySensorEventMethod = o.getClass().getMethod(
 					"onGravityEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
@@ -1071,7 +1110,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onGravitySensorEventMethodSimple = parent.getClass().getMethod(
+			onGravitySensorEventMethodSimple = o.getClass().getMethod(
 					"onGravityEvent",
 					new Class[] { float.class, float.class, float.class });
 			gravitySensorEnabled = true;
@@ -1081,7 +1120,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onProximitySensorEventMethod = parent.getClass().getMethod(
+			onProximitySensorEventMethod = o.getClass().getMethod(
 					"onProximityEvent",
 					new Class[] { float.class, long.class, int.class });
 			proximitySensorEnabled = true;
@@ -1090,7 +1129,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onProximitySensorEventMethodSimple = parent.getClass().getMethod(
+			onProximitySensorEventMethodSimple = o.getClass().getMethod(
 					"onProximityEvent", new Class[] { float.class });
 			proximitySensorEnabled = true;
 			PApplet.println("Found onProximityEventMethod(simple)...");
@@ -1098,8 +1137,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onLightSensorEventMethod = parent.getClass().getMethod(
-					"onLightEvent",
+			onLightSensorEventMethod = o.getClass().getMethod("onLightEvent",
 					new Class[] { float.class, long.class, int.class });
 			lightSensorEnabled = true;
 			PApplet.println("Found onLightEventMethod...");
@@ -1107,7 +1145,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onLightSensorEventMethodSimple = parent.getClass().getMethod(
+			onLightSensorEventMethodSimple = o.getClass().getMethod(
 					"onLightEvent", new Class[] { float.class });
 			lightSensorEnabled = true;
 			PApplet.println("Found onLightEventMethod(simple)...");
@@ -1115,7 +1153,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onPressureSensorEventMethod = parent.getClass().getMethod(
+			onPressureSensorEventMethod = o.getClass().getMethod(
 					"onPressureEvent",
 					new Class[] { float.class, long.class, int.class });
 			pressureSensorEnabled = true;
@@ -1124,7 +1162,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onPressureSensorEventMethodSimple = parent.getClass().getMethod(
+			onPressureSensorEventMethodSimple = o.getClass().getMethod(
 					"onPressureEvent", new Class[] { float.class });
 			pressureSensorEnabled = true;
 			PApplet.println("Found onPressureEventMethod(simple)...");
@@ -1132,7 +1170,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onTemperatureSensorEventMethod = parent.getClass().getMethod(
+			onTemperatureSensorEventMethod = o.getClass().getMethod(
 					"onTemperatureEvent",
 					new Class[] { float.class, long.class, int.class });
 			temperatureSensorEnabled = true;
@@ -1141,7 +1179,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onTemperatureSensorEventMethodSimple = parent.getClass().getMethod(
+			onTemperatureSensorEventMethodSimple = o.getClass().getMethod(
 					"onTemperatureEvent", new Class[] { float.class });
 			temperatureSensorEnabled = true;
 			PApplet.println("Found onTemperatureEventMethod(simple)...");
@@ -1149,18 +1187,17 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onLinearAccelerationSensorEventMethod = parent.getClass()
-					.getMethod(
-							"onLinearAccelerationEvent",
-							new Class[] { float.class, float.class,
-									float.class, long.class, int.class });
+			onLinearAccelerationSensorEventMethod = o.getClass().getMethod(
+					"onLinearAccelerationEvent",
+					new Class[] { float.class, float.class, float.class,
+							long.class, int.class });
 			linearAccelerationSensorEnabled = true;
 			PApplet.println("Found onLinearAccelerationEventMethod...");
 		} catch (NoSuchMethodException e) {
 		}
 
 		try {
-			onLinearAccelerationSensorEventMethodSimple = parent
+			onLinearAccelerationSensorEventMethodSimple = o
 					.getClass()
 					.getMethod(
 							"onLinearAccelerationEvent",
@@ -1171,7 +1208,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onRotationVectorSensorEventMethod = parent.getClass().getMethod(
+			onRotationVectorSensorEventMethod = o.getClass().getMethod(
 					"onRotationVectorEvent",
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class });
@@ -1182,11 +1219,9 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onRotationVectorSensorEventMethodSimple = parent
-					.getClass()
-					.getMethod(
-							"onRotationVectorEvent",
-							new Class[] { float.class, float.class, float.class });
+			onRotationVectorSensorEventMethodSimple = o.getClass().getMethod(
+					"onRotationVectorEvent",
+					new Class[] { float.class, float.class, float.class });
 			rotationVectorSensorEnabled = true;
 			PApplet.println("Found onRotationVectorEventMethod(simple)...");
 
@@ -1194,7 +1229,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onAmbientTemperatureEventMethod = parent.getClass().getMethod(
+			onAmbientTemperatureEventMethod = o.getClass().getMethod(
 					"onAmibentTemperatureEvent", new Class[] { float.class });
 			ambientTemperatureSensorEnabled = true;
 			PApplet.println("Found onAmbientTemperatureEvent callback...");
@@ -1202,7 +1237,7 @@ public class KetaiSensor implements SensorEventListener {
 		}
 
 		try {
-			onRelativeHumidityEventMethod = parent.getClass().getMethod(
+			onRelativeHumidityEventMethod = o.getClass().getMethod(
 					"onRelativeHumidityEvent", new Class[] { float.class });
 			relativeHumiditySensorEnabled = true;
 			PApplet.println("Found onRelativeHumidityEventMethod...");
@@ -1220,7 +1255,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Gets the status.
-	 *
+	 * 
 	 * @return the status (not used)
 	 */
 	public int getStatus() {
@@ -1236,7 +1271,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Gets the service description.
-	 *
+	 * 
 	 * @return the service description
 	 */
 	public String getServiceDescription() {
@@ -1245,9 +1280,11 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Gets the rotation matrix from vector.
-	 *
-	 * @param R the r
-	 * @param rotationVector the rotation vector
+	 * 
+	 * @param R
+	 *            the r
+	 * @param rotationVector
+	 *            the rotation vector
 	 * @return the rotation matrix from vector
 	 */
 	public void getRotationMatrixFromVector(float[] R, float[] rotationVector) {
@@ -1256,9 +1293,11 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Gets the quaternion from vector.
-	 *
-	 * @param Q the q
-	 * @param rv the rv
+	 * 
+	 * @param Q
+	 *            the q
+	 * @param rv
+	 *            the rv
 	 * @return the quaternion from vector
 	 */
 	public void getQuaternionFromVector(float[] Q, float[] rv) {
@@ -1267,7 +1306,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/**
 	 * Gets the orientation.
-	 *
+	 * 
 	 * @return the orientation
 	 */
 	public float[] getOrientation() {
@@ -1287,5 +1326,10 @@ public class KetaiSensor implements SensorEventListener {
 			values = SensorManager.getOrientation(null, values);
 
 		return values;
+	}
+
+	public void register(Object delegate) {
+		PApplet.println("KetaiSensor delegating Events to class: " + delegate.getClass());
+		findObjectIntentions(delegate);
 	}
 }
