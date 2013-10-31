@@ -15,48 +15,57 @@ import android.os.Bundle;
 /**
  * The KetaiLocation class provides android location services data to a sketch.
  * 
- * To receive location data a sketch can define the following method:<br /><br />
+ * To receive location data a sketch can define the following method:<br />
+ * <br />
  * 
  * void onLocationEvent(Location l) : l is the raw android Location class<br />
- * void onLocationEvent(double lat, double lon) : lat, lon are the latitude & longitude in degrees<br />
- * void onLocationEvent(double lat, double lon, double alt) : lat, lon are the latitude & longitude in degrees, alt is altitude in meters<br />
- * void onLocationEvent(double lat, double lon, double alt. float acc) : lat, lon are the latitude & longitude in degrees, alt is altitude in meters, acc is the accuracy in meters<br />
+ * void onLocationEvent(double lat, double lon) : lat, lon are the latitude &
+ * longitude in degrees<br />
+ * void onLocationEvent(double lat, double lon, double alt) : lat, lon are the
+ * latitude & longitude in degrees, alt is altitude in meters<br />
+ * void onLocationEvent(double lat, double lon, double alt. float acc) : lat,
+ * lon are the latitude & longitude in degrees, alt is altitude in meters, acc
+ * is the accuracy in meters<br />
  * 
  */
 public class KetaiLocation implements LocationListener {
-	
+
 	/** The location manager. */
 	private LocationManager locationManager = null;
-	
+
 	/** The parent. */
 	private PApplet parent;
-	
+
 	/** The on location event method4arg. */
 	private Method onLocationEventMethod1arg, onLocationEventMethod2arg,
 			onLocationEventMethod3arg, onLocationEventMethod4arg;
-	
+
 	/** The provider. */
 	private String provider;
-	
+
 	/** The location. */
 	private Location location;
-	
+
 	/** The me. */
 	KetaiLocation me;
-	
+
 	/** The min time. */
 	private long minTime = 10000; // millis
-	
+
 	/** The min distance. */
 	private float minDistance = 1; // meters
 
 	/** The Constant SERVICE_DESCRIPTION. */
 	final static String SERVICE_DESCRIPTION = "Android Location.";
 
+	/** reference to callback object for updates */
+	private Object callbackdelegate;
+
 	/**
 	 * Instantiates a new ketai location.
-	 *
-	 * @param pParent the calling sketch/Activity/PApplet
+	 * 
+	 * @param pParent
+	 *            the calling sketch/Activity/PApplet
 	 */
 	public KetaiLocation(PApplet pParent) {
 		parent = pParent;
@@ -65,12 +74,16 @@ public class KetaiLocation implements LocationListener {
 				.getSystemService(Context.LOCATION_SERVICE);
 		PApplet.println("KetaiLocationManager instantiated:"
 				+ locationManager.toString());
-		findParentIntentions();
+		findObjectIntentions(parent);
 		start();
 	}
 
-	/* (non-Javadoc)
-	 * @see android.location.LocationListener#onLocationChanged(android.location.Location)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.location.LocationListener#onLocationChanged(android.location.
+	 * Location)
 	 */
 	public void onLocationChanged(Location _location) {
 		PApplet.println("LocationChanged:" + _location.toString());
@@ -78,7 +91,7 @@ public class KetaiLocation implements LocationListener {
 
 		if (onLocationEventMethod1arg != null)
 			try {
-				onLocationEventMethod1arg.invoke(parent,
+				onLocationEventMethod1arg.invoke(callbackdelegate,
 						new Object[] { location });
 
 				return;
@@ -91,8 +104,10 @@ public class KetaiLocation implements LocationListener {
 
 		if (onLocationEventMethod2arg != null)
 			try {
-				onLocationEventMethod2arg.invoke(parent, new Object[] {
-						location.getLatitude(), location.getLongitude() });
+				onLocationEventMethod2arg.invoke(
+						callbackdelegate,
+						new Object[] { location.getLatitude(),
+								location.getLongitude() });
 				return;
 			} catch (Exception e) {
 				PApplet.println("Disabling onLocationEvent() because of an error:"
@@ -103,9 +118,11 @@ public class KetaiLocation implements LocationListener {
 
 		if (onLocationEventMethod3arg != null)
 			try {
-				onLocationEventMethod3arg.invoke(parent, new Object[] {
-						location.getLatitude(), location.getLongitude(),
-						location.getAltitude() });
+				onLocationEventMethod3arg
+						.invoke(callbackdelegate,
+								new Object[] { location.getLatitude(),
+										location.getLongitude(),
+										location.getAltitude() });
 				return;
 			} catch (Exception e) {
 				PApplet.println("Disabling onLocationEvent() because of an error:"
@@ -115,9 +132,12 @@ public class KetaiLocation implements LocationListener {
 			}
 		if (onLocationEventMethod4arg != null)
 			try {
-				onLocationEventMethod4arg.invoke(parent, new Object[] {
-						location.getLatitude(), location.getLongitude(),
-						location.getAltitude(), location.getAccuracy() });
+				onLocationEventMethod4arg
+						.invoke(callbackdelegate,
+								new Object[] { location.getLatitude(),
+										location.getLongitude(),
+										location.getAltitude(),
+										location.getAccuracy() });
 				return;
 			} catch (Exception e) {
 				PApplet.println("Disabling onLocationEvent() because of an error:"
@@ -129,7 +149,7 @@ public class KetaiLocation implements LocationListener {
 
 	/**
 	 * Gets the last location.
-	 *
+	 * 
 	 * @return the location
 	 */
 	public Location getLocation() {
@@ -138,7 +158,7 @@ public class KetaiLocation implements LocationListener {
 
 	/**
 	 * Checks if started.
-	 *
+	 * 
 	 * @return true, if started
 	 */
 	public boolean isStarted() {
@@ -194,24 +214,33 @@ public class KetaiLocation implements LocationListener {
 		locationManager.removeUpdates(this);
 	}
 
-	/* (non-Javadoc)
-	 * @see android.location.LocationListener#onProviderDisabled(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.location.LocationListener#onProviderDisabled(java.lang.String)
 	 */
 	public void onProviderDisabled(String arg0) {
 		PApplet.println("LocationManager onProviderDisabled: " + arg0);
 		determineProvider();
 	}
 
-	/* (non-Javadoc)
-	 * @see android.location.LocationListener#onProviderEnabled(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.location.LocationListener#onProviderEnabled(java.lang.String)
 	 */
 	public void onProviderEnabled(String arg0) {
 		PApplet.println("LocationManager onProviderEnabled: " + arg0);
 		determineProvider();
 	}
 
-	/* (non-Javadoc)
-	 * @see android.location.LocationListener#onStatusChanged(java.lang.String, int, android.os.Bundle)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.location.LocationListener#onStatusChanged(java.lang.String,
+	 * int, android.os.Bundle)
 	 */
 	public void onStatusChanged(String arg0, int arg1, Bundle arg2) {
 		PApplet.println("LocationManager onStatusChanged: " + arg0 + ":" + arg1
@@ -221,7 +250,7 @@ public class KetaiLocation implements LocationListener {
 
 	/**
 	 * Gets the location provider.
-	 *
+	 * 
 	 * @return the provider
 	 */
 	public String getProvider() {
@@ -230,7 +259,7 @@ public class KetaiLocation implements LocationListener {
 
 	/**
 	 * Returns a list of Location providers
-	 *
+	 * 
 	 * @return the collection<? extends string>
 	 */
 	public Collection<? extends String> list() {
@@ -241,9 +270,11 @@ public class KetaiLocation implements LocationListener {
 
 	/**
 	 * Sets the update update rate based on time or distance traveled.
-	 *
-	 * @param millis the millis
-	 * @param meters the meters
+	 * 
+	 * @param millis
+	 *            the millis
+	 * @param meters
+	 *            the meters
 	 */
 	public void setUpdateRate(int millis, int meters) {
 		minTime = millis;
@@ -254,7 +285,7 @@ public class KetaiLocation implements LocationListener {
 
 	/**
 	 * Determine provider, GPS preferred.
-	 *
+	 * 
 	 * @return true, if successful
 	 */
 	private boolean determineProvider() {
@@ -279,9 +310,11 @@ public class KetaiLocation implements LocationListener {
 	/**
 	 * Find parent callback methods
 	 */
-	private void findParentIntentions() {
+	private void findObjectIntentions(Object o) {
+		callbackdelegate = o;
+
 		try {
-			onLocationEventMethod1arg = parent.getClass().getMethod(
+			onLocationEventMethod1arg = callbackdelegate.getClass().getMethod(
 					"onLocationEvent", new Class[] { Location.class });
 			PApplet.println("Found Advanced onLocationEventMethod(Location)...");
 
@@ -289,7 +322,7 @@ public class KetaiLocation implements LocationListener {
 		}
 
 		try {
-			onLocationEventMethod2arg = parent.getClass().getMethod(
+			onLocationEventMethod2arg = callbackdelegate.getClass().getMethod(
 					"onLocationEvent",
 					new Class[] { double.class, double.class });
 			PApplet.println("Found Advanced onLocationEventMethod(long, lat)...");
@@ -298,7 +331,7 @@ public class KetaiLocation implements LocationListener {
 		}
 
 		try {
-			onLocationEventMethod3arg = parent.getClass().getMethod(
+			onLocationEventMethod3arg = callbackdelegate.getClass().getMethod(
 					"onLocationEvent",
 					new Class[] { double.class, double.class, double.class });
 			PApplet.println("Found basic onLocationEventMethod(long,lat,alt)...");
@@ -307,7 +340,7 @@ public class KetaiLocation implements LocationListener {
 		}
 
 		try {
-			onLocationEventMethod4arg = parent.getClass().getMethod(
+			onLocationEventMethod4arg = callbackdelegate.getClass().getMethod(
 					"onLocationEvent",
 					new Class[] { double.class, double.class, double.class,
 							float.class });
@@ -318,10 +351,23 @@ public class KetaiLocation implements LocationListener {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see android.location.LocationListener#onLocationChanged(android.location.Location)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * android.location.LocationListener#onLocationChanged(android.location.
+	 * Location)
 	 */
 	public void onLocationChanged(android.location.Location arg0) {
 		onLocationChanged(new Location(arg0));
+	}
+
+	public void register(Object delegate) {
+		boolean running = isStarted();
+		if (running)
+			stop();
+		findObjectIntentions(delegate);
+		if (running)
+			start();
 	}
 }
