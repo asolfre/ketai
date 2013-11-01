@@ -1,3 +1,14 @@
+v10 updates
+------------
+Test platforms : Android 4.1, 4.1.2, 4.0.2, 4.2, 4.3
+Test Hardware: Nexus 7, Galaxy 3s, Nexus S, Transformer Prime
+
+- updated jdocs
+- added Audio Input class
+- added audio input example
+- bluetooth fixes
+
+
 v9 updates
 ------------
 Test platforms : Android 4.1, 4.1.2, 4.0.2
