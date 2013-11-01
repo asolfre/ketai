@@ -45,7 +45,7 @@ void setup()
     "r - reset all connections\n" ;
 
   //register for key events(keyPressed currently Broken)
-  registerMethod("keyEvent", this);
+  //registerMethod("keyEvent", this);
 }
 
 void draw()

@@ -25,7 +25,7 @@ void draw()
     }
   }
   
-  if(mic.isRecording())
+  if(mic.isActive())
     text("READING MIC", width/2, height/2);
   else
     text("NOT READING MIC", width/2, height/2);
@@ -40,7 +40,7 @@ void onAudioEvent(short[] _data)
 
 void mousePressed()
 {
-  if (mic.isRecording())
+  if (mic.isActive())
     mic.stop(); 
   else
     mic.start();
