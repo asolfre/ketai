@@ -111,7 +111,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	/** The time of last update. */
 	private long delayInterval, timeOfLastUpdate;
-	
+
 	/** The Constant SERVICE_DESCRIPTION. */
 	final static String SERVICE_DESCRIPTION = "Android Sensors.";
 
@@ -128,6 +128,11 @@ public class KetaiSensor implements SensorEventListener {
 		sensorManager = (SensorManager) parent.getApplicationContext()
 				.getSystemService(Context.SENSOR_SERVICE);
 		delayInterval = timeOfLastUpdate = 0;
+	}
+
+	public static boolean remapCoordinateSystem(float[] inR, int X, int Y,
+			float[] outR) {
+		return SensorManager.remapCoordinateSystem(inR, X, Y, outR);
 	}
 
 	/**
@@ -591,7 +596,7 @@ public class KetaiSensor implements SensorEventListener {
 			return;
 
 		timeOfLastUpdate = now;
-		
+
 		if (onSensorEventMethod != null) {
 			try {
 				onSensorEventMethod.invoke(callbackdelegate,
@@ -611,7 +616,7 @@ public class KetaiSensor implements SensorEventListener {
 				try {
 					// holding accel data for orientation
 					accelerometerData = arg0.values.clone();
-						onAccelerometerEventMethod.invoke(callbackdelegate,
+					onAccelerometerEventMethod.invoke(callbackdelegate,
 							new Object[] { arg0.values[0], arg0.values[1],
 									arg0.values[2], arg0.timestamp,
 									arg0.accuracy });
@@ -1013,7 +1018,7 @@ public class KetaiSensor implements SensorEventListener {
 
 	private void findObjectIntentions(Object o) {
 		callbackdelegate = o;
-		
+
 		try {
 			onSensorEventMethod = o.getClass().getMethod("onSensorEvent",
 					new Class[] { SensorEvent.class });
@@ -1026,7 +1031,8 @@ public class KetaiSensor implements SensorEventListener {
 					new Class[] { float.class, float.class, float.class,
 							long.class, int.class, });
 			accelerometerSensorEnabled = true;
-			PApplet.println("Found onAccelerometerEvent	Method...in " + o.getClass());
+			PApplet.println("Found onAccelerometerEvent	Method...in "
+					+ o.getClass());
 
 		} catch (NoSuchMethodException e) {
 		}
@@ -1287,7 +1293,7 @@ public class KetaiSensor implements SensorEventListener {
 	 *            the rotation vector
 	 * @return the rotation matrix from vector
 	 */
-	public void getRotationMatrixFromVector(float[] R, float[] rotationVector) {
+	public static void getRotationMatrixFromVector(float[] R, float[] rotationVector) {
 		SensorManager.getRotationMatrixFromVector(R, rotationVector);
 	}
 
@@ -1329,7 +1335,8 @@ public class KetaiSensor implements SensorEventListener {
 	}
 
 	public void register(Object delegate) {
-		PApplet.println("KetaiSensor delegating Events to class: " + delegate.getClass());
+		PApplet.println("KetaiSensor delegating Events to class: "
+				+ delegate.getClass());
 		findObjectIntentions(delegate);
 	}
 }
